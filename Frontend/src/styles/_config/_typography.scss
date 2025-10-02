@@ -1,0 +1,21 @@
+// Import Google Fonts
+@import url('https://fonts.googleapis.com/css2?family=Merriweather:wght@300;400;700;900&family=Open+Sans:wght@300;400;500;600;700&display=swap');
+
+// Font families
+$font-family-sans-serif: 'Open Sans', system-ui, -apple-system, sans-serif;
+$font-family-serif: 'Merriweather', serif;
+$font-family-base: $font-family-sans-serif;
+$headings-font-family: $font-family-serif;
+
+// Font sizes
+$font-size-base: 1rem;
+$h1-font-size: $font-size-base * 2.5;
+$h2-font-size: $font-size-base * 2;
+$h3-font-size: $font-size-base * 1.75;
+
+// Font weights
+$font-weight-light: 300;
+$font-weight-normal: 400;
+$font-weight-medium: 500;
+$font-weight-semibold: 600;
+$font-weight-bold: 700;
