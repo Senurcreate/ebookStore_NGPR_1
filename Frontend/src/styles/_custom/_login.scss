@@ -1,0 +1,121 @@
+.label-text{
+    color:#374151;
+    font-weight: 600 ;
+}
+
+.input-text{
+    color:#c5cad1;
+    font-weight: 600 ;
+}
+
+.text-secondary{
+  color:#c5cad1;
+}
+
+.extra-text{
+  font-size:14px;
+}
+
+.extra-text-left{
+  padding-right: 36px;
+}
+
+.heading-spacing{
+  margin-bottom: 50px;
+}
+
+.login-page {
+  background-color: #F5F5F5;   
+  min-height: 100vh;          
+  
+}
+
+.split-container {
+  display: flex;
+  height: 100vh; 
+  overflow: hidden
+}
+
+.left, .right {
+  flex: 1; // each takes 50%
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.left {
+  background-color: #f5f5f5;
+}
+
+.login-form-container {
+  width: 100%;
+  max-width: 400px;
+  align-items: center;
+  justify-content: center;
+}
+
+
+
+.right {
+  width: 100vw;   
+  height: 100vh; 
+  overflow: hidden; 
+  background-image: url('/bg-login.png'); /* put image in public folder */
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: cover; /* fits entire image without zooming */
+  background-color: #ffffff;   /* fallback color if image doesn’t fill */
+}
+
+.brand-container{
+  width: 70%;
+  height: 30%;
+  justify-content: center;
+  align-items: center;
+  padding-bottom: 1rem;
+  padding-top: 1rem;
+  
+}
+
+
+
+/* Primary Button */
+.btn-primary {
+  background-color: #3B5FD2;
+  border-color: #3B5FD2;
+  color: #fff;
+}
+
+.btn-primary:hover {
+  background-color: #93A1F4;
+  border-color: #93A1F4;
+  color: #fff;
+}
+
+.btn-primary:active,
+.btn-primary:focus {
+  background-color: #2a48a3; /* darker shade for click */
+  border-color: #2a48a3;
+  color: #fff;
+}
+
+/* Outline Primary Button */
+.btn-outline-primary {
+  background-color: #F5F5F5;
+  border-color: #3B5FD2;
+  color: #1D1D20;
+}
+
+.btn-outline-primary:hover {
+  background-color: #fff;
+  border-color: #93A1F4;
+  color: #1D1D20;
+}
+
+.btn-outline-primary:active,
+.btn-outline-primary:focus {
+  background-color: #e1e1e1; /* subtle gray for click */
+  border-color: #2a48a3;
+  color: #1D1D20;
+}
+
