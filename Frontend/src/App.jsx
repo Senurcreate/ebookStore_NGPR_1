@@ -1,17 +1,20 @@
-// src/App.jsx
-import "./styles/main.scss";  // Import styles here
-import React from 'react'
+import React from "react";
+import Navbar from "./components/Navbar";
+import Hero from "./components/Hero";
+import {BrowserRouter as Router, Routes, Route} from 'react-router-dom'
 
 function App() {
   return (
-    <div className="container mt-5">
-      <h1 className="text-primary">Ebook Store</h1>
-      <p className="text-secondary">Testing custom styles</p>
-      <button className="btn btn-primary me-2">Primary</button>
-      <button className="btn btn-customcolor">Custom Color</button>
-      <button className="btn btn-altlight">Alt Light</button>
+    <div className="App">
+      <Router>
+        <Navbar /> {/* Navbar always visible */}
+        <Routes>
+          <Route path='/' element={<Hero/>}/>
+        </Routes>
+      </Router>
     </div>
   )
 }
 
-export default App
+
+export default App;

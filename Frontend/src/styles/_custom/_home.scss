@@ -1,0 +1,22 @@
+.hero {
+  width: 100%;
+  height: 100vh;
+  background-image: url('path/to/your/heroBg-image.jpg');
+  background-size: cover;
+  background-position: center;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding-left: 80px;
+}
+
+.content {
+  max-width: 600px;
+}
+
+.title {
+  font-size: 42px;
+  font-weight: bold;
+  color: #fff;
+  margin-bottom: 20px;
+}

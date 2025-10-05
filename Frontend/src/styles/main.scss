@@ -4,7 +4,7 @@
 // 2. Import custom configuration
 @import "../styles/_config/variables";
 @import "../styles/_config/typography";
-@import "../styles/_config/variables";
+// @import "../styles/_config/variables";
 
 // 3. Import Bootstrap variables
 @import "bootstrap/scss/variables";
@@ -62,6 +62,16 @@ $theme-colors: map-merge($theme-colors, $ebook-colors);
 @import "bootstrap/scss/utilities/api";
 
 // 13. Import custom components (add as you create them)
+
+// 14. Import icons
+@import "bootstrap/scss/bootstrap";
+@import "bootstrap-icons/font/bootstrap-icons.css";
 // @import "components/buttons";
 // @import "components/cards";
 // @import "components/forms";
+//@import "_component/navbar";
+//@import "_component/button";
+
+@import "./_component/navbar";
+@import "./_component/button";
+@import "./_custom/home"
