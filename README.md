@@ -43,4 +43,18 @@
 
 ```bash
 git clone https://github.com/Senurcreate/ebookStore_NGPR_1.git
+```
+
+2. **Install Dependencies**
+
+```bash
+npm ci
+```
+
+3. **Start the development server**
+   
+```bash
+npm run dev
+```
+
 
