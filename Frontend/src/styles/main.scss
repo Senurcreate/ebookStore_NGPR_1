@@ -74,5 +74,6 @@ $theme-colors: map-merge($theme-colors, $ebook-colors);
 
 @import "./_component/navbar";
 @import "./_component/button";
+@import "./_component/btn";
 @import "./_custom/home";
 @import "_custom/login";
