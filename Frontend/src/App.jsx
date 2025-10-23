@@ -3,6 +3,9 @@ import { BrowserRouter as Router, Routes, Route, useLocation } from "react-route
 import Navbar from "./components/Navbar";
 import Hero from "./components/Hero";
 import LoginPage from "./pages/LoginPage";
+import Footer from "./components/Footer/Footer";
+
+
 
 function App() {
   return (
@@ -27,6 +30,9 @@ function MainLayout() {
         <Route path="/" element={<Hero />} />
         <Route path="/login" element={<LoginPage />} />
       </Routes>
+
+    <Footer />
+      
     </div>
   );
 }
