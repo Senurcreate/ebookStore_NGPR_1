@@ -1,0 +1,39 @@
+/* Primary Button */
+.btn-primary {
+  background-color: #3B5FD2;
+  border-color: #3B5FD2;
+  color: #fff;
+}
+
+.btn-primary:hover {
+  background-color: #93A1F4;
+  border-color: #93A1F4;
+  color: #fff;
+}
+
+.btn-primary:active,
+.btn-primary:focus {
+  background-color: #2a48a3; /* darker shade for click */
+  border-color: #2a48a3;
+  color: #fff;
+}
+
+/* Outline Primary Button */
+.btn-outline-primary {
+  background-color: #F5F5F5;
+  border-color: #3B5FD2;
+  color: #1D1D20;
+}
+
+.btn-outline-primary:hover {
+  background-color: #fff;
+  border-color: #93A1F4;
+  color: #1D1D20;
+}
+
+.btn-outline-primary:active,
+.btn-outline-primary:focus {
+  background-color: #e1e1e1; /* subtle gray for click */
+  border-color: #2a48a3;
+  color: #1D1D20;
+}
