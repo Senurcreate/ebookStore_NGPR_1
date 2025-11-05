@@ -1,22 +1,18 @@
-.hero {
+.hero-section {
+  position: relative; /* important: enables absolute positioning inside */
   width: 100%;
-  height: 100vh;
-  background-image: url('path/to/your/heroBg-image.jpg');
+  height: 85vh;
   background-size: cover;
   background-position: center;
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  padding-left: 80px;
-}
-
-.content {
-  max-width: 600px;
-}
-
-.title {
-  font-size: 42px;
-  font-weight: bold;
+  background-repeat: no-repeat;
   color: #fff;
-  margin-bottom: 20px;
+  overflow: hidden;
+}
+
+.hero-btn {
+  position: absolute;
+  top: 75%;  /* Y position: move up/down */
+  left: 22%; /* X position: move left/right */
+  transform: translate(-0%, -50%);
+
 }
