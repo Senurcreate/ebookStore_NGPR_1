@@ -1,8 +1,11 @@
 import React from "react";
 import { Routes, Route, useLocation } from "react-router-dom";
 import Navbar from "./components/Navbar";
-import Hero from "./components/Hero";
+import Home from "./pages/Home/Home";
 import LoginPage from "./pages/LoginPage";
+import SignupPage from "./pages/SignUpPage";
+
+import { AuthProvider } from "./context/AuthContext";
 
 function App() {
   return <MainLayout />;
@@ -14,13 +17,16 @@ function MainLayout() {
   const showNavbar = location.pathname === "/";
 
   return (
+    <AuthProvider>
     <div className="App">
       {showNavbar && <Navbar />}
       <Routes>
-        <Route path="/" element={<Hero />} />
+        <Route path="/" element={<Home/>} />
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/signup" element={<SignupPage />} />
       </Routes>
     </div>
+    </AuthProvider>
   );
 }
 
