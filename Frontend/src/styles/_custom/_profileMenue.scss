@@ -1,0 +1,55 @@
+.menu-item {
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-radius: 4px;
+  margin: 2px 0;
+  
+  &:hover {
+    background-color: #f8f9fa;
+    transform: translateX(2px);
+  }
+}
+
+.menu-item i {
+  font-size: 1.2rem;
+}
+
+// Navbar specific styles
+.custom-navbar {
+  background-color: #fff;
+}
+
+.custom-icon, .custom-person {
+  font-size: 1.3rem;
+  color: #495057;
+  transition: color 0.2s ease;
+  
+  &:hover {
+    color: #007bff;
+  }
+}
+
+.search-wrapper {
+  .form-control {
+    border-radius: 20px;
+    border: 1px solid #dee2e6;
+    
+    &:focus {
+      border-color: #007bff;
+      box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    }
+  }
+  
+  .search-icon {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #6c757d;
+  }
+}
+
+// Ensure the profile menu appears above other content
+.position-relative {
+  position: relative;
+}
