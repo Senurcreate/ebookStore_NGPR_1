@@ -3,6 +3,8 @@ import { Routes, Route, useLocation } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import Hero from "./components/Hero";
 import LoginPage from "./pages/LoginPage";
+import Home from "./pages/Home";
+
 
 function App() {
   return <MainLayout />;
@@ -19,6 +21,7 @@ function MainLayout() {
       <Routes>
         <Route path="/" element={<Hero />} />
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/home" element={<Home />} />
       </Routes>
     </div>
   );

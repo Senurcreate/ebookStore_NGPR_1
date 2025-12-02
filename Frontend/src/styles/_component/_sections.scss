@@ -1,0 +1,231 @@
+/* category section (with drop down menu for book selection */
+.categories-section {
+  background-color: #fdfcff;
+  padding-bottom: 10px;
+
+  .section-title {
+    font-weight: 600;
+    color: #1a3da8;
+  }
+
+  .category-carousel {
+    .category-btn {
+      border: 1px solid #1a3da8;
+      border-radius: 25px;
+      color: #1a3da8;
+      font-weight: 500;
+      background: #eaf0ff;
+      transition: 0.3s;
+
+      &.active,
+      &:hover {
+        background-color: #1a3da8;
+        color: #fff;
+        transform: scale(1.05);
+      }
+    }
+
+    .arrow-btn {
+      border: 0.5px solid;
+      background: #eaf0ff;
+      color: #1a3da8;
+      font-size: 1.2rem;
+      font-weight: bold;
+      border-radius: 8px;
+      width: 35px;
+      height: 35px;
+      transition: 0.3s ease;
+
+      &:hover {
+        background-color: #1a3da8;
+        color: #fff;
+      }
+    }
+  }
+
+  .dropdown-menu-box {
+    width: 160px;
+    border-radius: 8px;
+    border: 1px solid #1a3da8;
+    color: #1a3da8;
+    font-weight: 500;
+    background-color: #fff;
+    padding: 0.4rem 0.6rem;
+    transition: 0.2s ease;
+
+    &:hover {
+      box-shadow: 0 0 5px rgba(26, 61, 168, 0.3);
+    }
+
+    option {
+      color: #000;
+    }
+  }
+}
+
+
+
+/* common book carousel for each sections */
+
+
+.book-carousel-section {
+  background-color: #fff;
+
+  .section-title {
+    font-weight: 600;
+    color: #1a3da8;
+  }
+
+  .book-carousel {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    .scroll-btn {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: #eaf0ff;
+      border-radius: 8px;
+      width: 32px;
+      height: 32px;
+      border: 0.5px solid;
+    }
+
+    .left {
+      left: 0;
+    }
+
+    .right {
+      right: 0;
+    }
+
+    .carousel-container {
+      width: 100%;
+      overflow: hidden;
+    }
+
+    .book-row {
+      display: flex;
+      gap: 1.5rem;
+      scroll-behavior: smooth;
+      transition: transform 0.4s ease-in-out;
+    }
+
+    /* Each book card adapts based on screen size */
+    .book-card {
+      flex: 0 0 calc(100% / 2.2); 
+    }
+
+    @media (min-width: 576px) {
+      .book-card {
+        flex: 0 0 calc(100% / 3.2); 
+      }
+    }
+
+    @media (min-width: 768px) {
+      .book-card {
+        flex: 0 0 calc(100% / 4.2); 
+      }
+    }
+
+    @media (min-width: 992px) {
+      .book-card {
+        flex: 0 0 calc(100% / 5.2); 
+      }
+    }
+
+    @media (min-width: 1200px) {
+      .book-card {
+        flex: 0 0 calc(100% / 6.2); 
+      }
+    }
+
+    .scroll-btn {
+      position: absolute;
+      top: 40%;
+      transform: translateY(-50%);
+      background-color: white;
+      border: 1.5px solid #cdd7ff;
+      border-radius: 6px;
+      font-size: 1.2rem;
+      color: #1a3da8;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+
+      &:hover {
+        background-color: #1a3da8;
+        color: white;
+      }
+    }
+
+    .left {
+      left: -40px;
+    }
+
+    .right {
+      right: -40px;
+    }
+  }
+}
+
+/* audio bookcard carousel section */
+
+.audiobook-carousel-section {
+  background-color: #fff;
+
+  .section-title {
+    font-weight: 600;
+    color: #1a3da8;
+  }
+
+  .audiobook-carousel {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    .scroll-btn {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: #eaf0ff;
+      border-radius: 8px;
+      width: 32px;
+      height: 32px;
+      border: 0.5px solid;
+      z-index: 2;
+    }
+
+    .left { left: 0; }
+    .right { right: 0; }
+
+    .carousel-container {
+      width: 100%;
+      overflow-x: auto;
+      scroll-behavior: smooth;
+
+      &::-webkit-scrollbar {
+        display: none;
+      }
+
+      -ms-overflow-style: none;
+    }
+
+    .audiobook-row {
+      display: flex;
+      gap: 1.5rem;
+      align-items: flex-start;
+    }
+  }
+}
+
+
+
+
