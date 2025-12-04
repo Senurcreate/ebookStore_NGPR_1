@@ -1,9 +1,76 @@
-import React from "react";
+import React, {useState, useRef, useEffect} from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
-import logo from "../assets/BrandLogo.svg"; // adjust path if needed
+import logo from "../assets/BrandLogo.svg"; 
+import ProfileMenu from "../components/ProfileMenu";
 
 function Navbar() {
+
+    const [showProfileMenu, setShowProfileMenu] = useState(false);
+    const menuRef = useRef(null);
+    const profileIconRef = useRef(null);
+    const hoverTimeoutRef = useRef(null);
+
+    // Close menu when clicking outside
+    useEffect(() => {
+      const handleClickOutside = (event) => {
+        if (
+          menuRef.current && 
+          !menuRef.current.contains(event.target) &&
+          profileIconRef.current && 
+          !profileIconRef.current.contains(event.target)
+        ) {
+          setShowProfileMenu(false);
+        }
+      };
+
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => {
+        document.removeEventListener('mousedown', handleClickOutside);
+        if (hoverTimeoutRef.current) {
+          clearTimeout(hoverTimeoutRef.current);
+        }
+      };
+    }, []);
+
+    const handleProfileClick = () => {
+      setShowProfileMenu(!showProfileMenu);
+    };
+
+    const handleProfileMouseEnter = () => {
+      if (hoverTimeoutRef.current) {
+        clearTimeout(hoverTimeoutRef.current);
+      }
+      setShowProfileMenu(true);
+    };
+
+    const handleProfileMouseLeave = () => {
+      // Start timeout when leaving profile icon
+      hoverTimeoutRef.current = setTimeout(() => {
+        // Only close if mouse is not over menu
+        if (menuRef.current && !menuRef.current.matches(':hover')) {
+          setShowProfileMenu(false);
+        }
+      }, 300);
+    };
+
+    const handleMenuMouseEnter = () => {
+      if (hoverTimeoutRef.current) {
+        clearTimeout(hoverTimeoutRef.current);
+      }
+    };
+
+    const handleMenuMouseLeave = () => {
+      // Start timeout when leaving menu
+      hoverTimeoutRef.current = setTimeout(() => {
+        // Only close if mouse is not over profile icon
+        if (profileIconRef.current && !profileIconRef.current.matches(':hover')) {
+          setShowProfileMenu(false);
+        }
+      }, 300);
+    };
+
+  
   return (
     <nav className="navbar navbar-expand-lg fixed-top shadow-sm custom-navbar ">
       <div className="container-fluid px-4">
@@ -58,7 +125,31 @@ function Navbar() {
             {/* Icons */}
             <i className="bi bi-bell custom-icon me-2"></i>
             <i className="bi bi-cart custom-icon me-2"></i>
-            <i className="bi bi-person custom-person"></i>
+            {/* Profile Icon with Menu */}
+            <div className="position-relative">
+              <i 
+                ref={profileIconRef}
+                className="bi bi-person custom-person"
+                onClick={handleProfileClick}
+                onMouseEnter={handleProfileMouseEnter}
+                onMouseLeave={handleProfileMouseLeave}
+                style={{ cursor: 'pointer' }}
+              ></i>
+              
+              {/* Profile Menu */}
+              {showProfileMenu && (
+                <div 
+                  ref={menuRef}
+                  className="position-absolute end-0 mt-2"
+                  style={{ zIndex: 1000 }}
+                  onMouseEnter={handleMenuMouseEnter}
+                  onMouseLeave={handleMenuMouseLeave}
+                >
+                  <ProfileMenu />
+                </div>
+              )}
+            </div>
+
 
              {/*}
             <div className="profile-circle">
@@ -75,43 +166,3 @@ function Navbar() {
 export default Navbar;
 
 
-{/*import React from "react";
-import Logo from "../assets/BrandLogo.svg";
-
-function Navbar() {
-  return (
-    <nav className="navbar">
-      
-      <div className="navbar-logo"
-      style={{ backgroundImage: `url(${Logo})` }}>
-      </div>
-
-    
-      <ul className="navbar-links">
-        <li>Home</li>
-        <li>E-Books</li>
-        <li>AudioBooks</li>
-        <li>Help</li>
-      </ul>
-
-     
-      <div className="navbar-actions">
-        <div className="search-wrapper">
-          <input
-          type="text"
-          placeholder="Search books, authors, genres"
-        />
-        <i className="bi bi-search search-icon"></i>
-        </div>
-        
-        <i className="bi bi-bell-fill custom-icon"></i>
-        <i className="bi bi-cart-fill custom-icon"></i>
-        <i className="bi bi-person-circle custom-icon"></i>
-      </div>
-    </nav>
-  );
-}
-
-export default Navbar;
-
-*/}
