@@ -1,0 +1,331 @@
+// SignUp Specific Styles
+.split-container {
+  display: flex;
+  height: 100vh; 
+  overflow: hidden;
+  
+  // Desktop: left-right layout (form on left, image on right)
+  flex-direction: row;
+  
+  // Tablet & Mobile: stack with image on top
+  @media (max-width: 992px) {
+    flex-direction: column;
+    height: auto;
+    min-height: 100vh;
+    
+    // Only apply order changes on mobile/tablet
+    .left {
+      order: 2; // Form comes second on mobile
+    }
+    
+    .right {
+      order: 1; // Image comes first on mobile
+    }
+  }
+}
+
+.left, .right {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  // Tablet & Mobile: full width
+  @media (max-width: 992px) {
+    flex: none;
+    width: 100%;
+  }
+}
+
+.left {
+  background-color: #f5f5f5;
+  
+  // Tablet & Mobile: adjust height
+  @media (max-width: 992px) {
+    min-height: auto;
+    padding: 2rem 0;
+  }
+  
+  // Mobile styles
+  @media (max-width: 576px) {
+    padding: 1.5rem 0;
+  }
+}
+
+.login-form-container {
+  width: 100%;
+  max-width: 400px;
+  align-items: center;
+  justify-content: center;
+  padding: 0 1rem;
+  
+  // Mobile styles
+  @media (max-width: 576px) {
+    max-width: 100%;
+    padding: 0 1.5rem;
+  }
+}
+
+.right {
+  background-image: url('/bg-login.png');
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: cover;
+  background-color: #ffffff;
+  
+  // Tablet & Mobile: image on top
+  @media (max-width: 992px) {
+    min-height: 40vh;
+    width: 100%;
+  }
+  
+  // Mobile styles
+  @media (max-width: 576px) {
+    min-height: 35vh;
+  }
+}
+
+.brand-container{
+  width: 70%;
+  height: 30%;
+  justify-content: center;
+  align-items: center;
+  padding-bottom: 1rem;
+  padding-top: 1rem;
+  
+  // Tablet styles
+  @media (max-width: 992px) {
+    width: 80%;
+    height: auto;
+    padding: 2rem 0;
+  }
+  
+  // Mobile styles
+  @media (max-width: 576px) {
+    width: 90%;
+    padding: 1.5rem 0;
+    
+    h4 {
+      font-size: 1.1rem;
+      margin-top: 1rem !important;
+    }
+    
+    p {
+      font-size: 0.9rem;
+      margin-top: 0.5rem !important;
+    }
+  }
+}
+
+// Password eye icon alignment
+.password-eye-icon {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  cursor: pointer;
+  font-size: 18px;
+  color: #6c757d;
+  
+  // Default alignment for desktop/larger screens
+  transform: translateY(-40%);
+  
+  // Adjust for mobile/smaller screens if needed
+  @media (max-width: 576px) {
+    transform: translateY(-50%);
+  }
+}
+
+// Password Strength Indicator Styles
+.password-strength-container {
+  border: 1px solid #dee2e6;
+  border-radius: 0.375rem;
+  background-color: #f8f9fa;
+  
+  // Mobile styles
+  @media (max-width: 576px) {
+    padding: 0.75rem !important;
+    
+    .small {
+      font-size: 0.75rem;
+    }
+  }
+}
+
+// Progress bar responsiveness
+.progress {
+  // Mobile styles
+  @media (max-width: 576px) {
+    height: 6px !important;
+  }
+}
+
+// Password match indicators
+.password-match-success {
+  color: #198754;
+  font-size: 0.875rem;
+}
+
+.password-match-error {
+  color: #dc3545;
+  font-size: 0.875rem;
+}
+
+// Strength Bar Container
+.strength-bar-container {
+  width: 100%;
+  height: 6px;
+  background: #e5e5e5;
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+.strength-bar {
+  height: 100%;
+  transition: width 0.3s ease;
+}
+
+// Width + colors for each level
+.strength-0 { width: 0%; }
+.strength-1 { width: 20%; background: #ff4d4d; }
+.strength-2 { width: 40%; background: #ff944d; }
+.strength-3 { width: 60%; background: #f2c200; }
+.strength-4 { width: 80%; background: #74c365; }
+.strength-5 { width: 100%; background: #2e8b57; }
+
+// Strength Text
+.strength-text {
+  font-size: 0.85rem;
+  display: block;
+  margin-bottom: 5px;
+}
+
+.strength-text-1, .strength-text-2 { color: #ff4d4d; }
+.strength-text-3 { color: #f2c200; }
+.strength-text-4, 
+.strength-text-5 { color: #2e8b57; }
+
+// Checklist
+.password-checklist {
+  list-style: none;
+  padding-left: 0;
+  font-size: 0.8rem;
+}
+
+.password-checklist li {
+  color: #999;
+  margin-bottom: 2px;
+  transition: 0.2s;
+}
+
+.password-checklist li.valid {
+  color: #2e8b57;
+  font-weight: 600;
+}
+
+// Form responsive adjustments
+.login-form-container {
+  h3 {
+    // Mobile styles
+    @media (max-width: 576px) {
+      font-size: 1.5rem;
+      margin-bottom: 1rem !important;
+    }
+  }
+  
+  p.fs-6 {
+    // Mobile styles
+    @media (max-width: 576px) {
+      font-size: 0.8rem !important;
+    }
+  }
+}
+
+// Form elements responsiveness
+.form-label {
+  // Mobile styles
+  @media (max-width: 576px) {
+    font-size: 0.9rem;
+  }
+}
+
+.form-control {
+  // Mobile styles
+  @media (max-width: 576px) {
+    font-size: 0.9rem;
+    padding: 0.5rem 0.75rem;
+  }
+}
+
+// Button responsiveness
+.btn {
+  // Mobile styles
+  @media (max-width: 576px) {
+    font-size: 0.9rem;
+    padding: 0.5rem 1rem;
+  }
+}
+
+// Alert responsiveness
+.alert {
+  // Mobile styles
+  @media (max-width: 576px) {
+    font-size: 0.85rem;
+    padding: 0.5rem !important;
+  }
+}
+
+// Extra text links
+.extra-text {
+  // Mobile styles
+  @media (max-width: 576px) {
+    font-size: 0.9rem;
+  }
+}
+
+// Hide browser password toggle buttons
+input[type="password"]::-ms-reveal,
+input[type="password"]::-webkit-password-toggle-button {
+    display: none;
+}
+
+// Additional utility classes for better mobile experience
+@media (max-width: 576px) {
+  .p-8 {
+    padding: 1rem !important;
+  }
+  
+  .mb-3 {
+    margin-bottom: 1rem !important;
+  }
+  
+  .mb-4 {
+    margin-bottom: 1.5rem !important;
+  }
+  
+  .mb-2 {
+    margin-bottom: 0.5rem !important;
+  }
+}
+
+// Text Styles
+.label-text{
+    color:#374151;
+    font-weight: 600 ;
+}
+
+.input-text{
+    color:#c5cad1;
+    font-weight: 600 ;
+}
+
+.text-secondary{
+  color:#c5cad1;
+}
+
+.extra-text{
+  font-size:14px;
+}
+
+.welcome-header {
+  margin-bottom: 2rem;
+}

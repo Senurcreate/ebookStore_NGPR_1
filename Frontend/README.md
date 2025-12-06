@@ -1,16 +1,60 @@
-# React + Vite
+# 📚 eBook Store
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+**eBook Store** is a web application that allows users to browse, sign up, and purchase digital books. The platform provides a simple, user-friendly interface with secure account management and a seamless browsing experience.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## 📝 Table of Contents
 
-## React Compiler
+- [Features](#-features)  
+- [Technologies Used](#-technologies-used)  
+- [Getting Started](#-getting-started)  
+- [Usage](#-usage)  
+- [Project Structure](#-project-structure)  
+- [Contributing](#-contributing)  
+- [License](#-license)  
 
-The React Compiler is not enabled on this template. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+---
 
-## Expanding the ESLint configuration
+## ✨ Features
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+- User registration and login (authentication system)  
+- Browse and search eBooks  
+- View book details and cover images  
+- Add books to a shopping cart  
+- Freemium and premium eBook options  
+- Responsive design for desktop and mobile  
+
+---
+
+## 🛠️ Technologies Used
+
+- **Frontend:** React.js, Bootstrap (customized with SCSS)  
+- **Backend:** Node.js, Express.js, MongoDB (MERN stack)  
+- **Authentication, storage &  :** Firebase  
+- **Version Control:** Git & GitHub  
+- **Optional:** RESTful APIs for future integration  
+
+---
+
+## 🚀 Getting Started
+
+1. **Clone the repository**  
+
+```bash
+git clone https://github.com/Senurcreate/ebookStore_NGPR_1.git
+```
+
+2. **Install Dependencies**
+
+```bash
+npm ci
+```
+
+3. **Start the development server**
+   
+```bash
+npm run dev
+```
+
+

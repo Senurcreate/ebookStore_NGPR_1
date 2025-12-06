@@ -9,6 +9,11 @@
   }
 
   .category-carousel {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 12px;
+
     .category-btn {
       border: 1px solid #1a3da8;
       border-radius: 25px;
@@ -16,6 +21,7 @@
       font-weight: 500;
       background: #eaf0ff;
       transition: 0.3s;
+      flex-wrap: wrap; 
 
       &.active,
       &:hover {
@@ -52,6 +58,7 @@
     background-color: #fff;
     padding: 0.4rem 0.6rem;
     transition: 0.2s ease;
+    flex-wrap: wrap; 
 
     &:hover {
       box-shadow: 0 0 5px rgba(26, 61, 168, 0.3);
@@ -60,6 +67,93 @@
     option {
       color: #000;
     }
+  }
+}
+
+/* category section responsive*/
+
+/* Tablet & Medium Screens (≤ 992px) */
+@media (max-width: 992px) {
+  .categories-section {
+    padding: 15px 0;
+  }
+
+  .categories-section .section-title {
+    font-size: 20px;
+    text-align: center;
+  }
+
+  .categories-section .category-carousel .category-btn {
+    font-size: 14px;
+    padding: 6px 14px;
+  }
+
+  .categories-section .category-carousel .arrow-btn {
+    width: 30px;
+    height: 30px;
+    font-size: 1rem;
+  }
+
+  .categories-section .dropdown-menu-box {
+    width: 140px;
+    font-size: 14px;
+  }
+}
+
+/* Mobile (≤ 768px) */
+@media (max-width: 768px) {
+  .categories-section {
+    padding: 12px 0;
+  }
+
+  .categories-section .section-title {
+    font-size: 18px;
+  }
+
+  .categories-section .category-carousel .category-btn {
+    padding: 5px 12px;
+    font-size: 13px;
+  }
+
+  .categories-section .category-carousel .arrow-btn {
+    width: 28px;
+    height: 28px;
+    font-size: 0.9rem;
+  }
+
+  .categories-section .dropdown-menu-box {
+    width: 130px;
+    padding: 0.3rem 0.5rem;
+    font-size: 13px;
+  }
+}
+
+/* Small Mobile (≤ 480px) */
+@media (max-width: 480px) {
+  .categories-section {
+    padding: 10px 0;
+  }
+
+  .categories-section .section-title {
+    font-size: 16px;
+  }
+
+  .categories-section .category-carousel .category-btn {
+    padding: 4px 10px;
+    font-size: 12px;
+    border-radius: 20px;
+  }
+
+  .categories-section .category-carousel .arrow-btn {
+    width: 26px;
+    height: 26px;
+    font-size: 0.8rem;
+  }
+
+  .categories-section .dropdown-menu-box {
+    width: 100%;
+    max-width: 180px;
+    font-size: 12px;
   }
 }
 
