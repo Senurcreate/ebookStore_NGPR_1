@@ -1,5 +1,5 @@
 import React from "react";
-import bannerBg from "../assets/banner.jpg";
+import bannerBg from "../../assets/banner.jpg";
 
 export default function Banner() {
   return (

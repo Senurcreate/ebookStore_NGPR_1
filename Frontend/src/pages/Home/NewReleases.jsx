@@ -1,6 +1,6 @@
 import React from "react";
-import BookCarousel from "../components/BookCarousel";
-import booksData from "../data/books.json"; 
+import BookCarousel from "../../components/BookCarousel";
+import booksData from "../../data/books.json"; 
 
 const NewReleases = () => {
   // Optional: filter only ebooks

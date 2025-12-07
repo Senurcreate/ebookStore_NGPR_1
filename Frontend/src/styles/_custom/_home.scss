@@ -2,7 +2,7 @@
   position: relative; /* important: enables absolute positioning inside */
   width: 100%;
   height: 85vh;
-  background-size: cover;   // contain
+  background-size: cover;  
   background-position: center;
   background-repeat: no-repeat;
   color: #fff;
@@ -22,6 +22,7 @@
     //height: 70vh;
     //background-position: center;
     //position: relative; 
+
     height: auto;
     padding: 40px 0 80px;
     background-size: cover;
@@ -44,6 +45,9 @@
 
 
 @media (max-width: 480px) {
+  .hero-section {
+    object-fit: contain; 
+  }
   .hero-btn {
     width: 70%;
 

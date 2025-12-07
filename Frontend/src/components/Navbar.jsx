@@ -11,6 +11,7 @@ function Navbar() {
     const profileIconRef = useRef(null);
     const hoverTimeoutRef = useRef(null);
 
+
     // Close menu when clicking outside
     useEffect(() => {
       const handleClickOutside = (event) => {
@@ -160,6 +161,7 @@ function Navbar() {
         </div>
       </div>
     </nav>
+
   );
 }
 

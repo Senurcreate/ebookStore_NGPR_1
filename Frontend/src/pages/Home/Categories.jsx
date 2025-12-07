@@ -1,6 +1,7 @@
 import React, { useState, useRef } from "react";
-import BookCarousel from "../components/BookCarousel";
-import booksData from "../data/books.json"; 
+//import BookCarousel from "../components/BookCarousel";
+import BookCarousel from "../../components/BookCarousel";
+import booksData from "../../data/books.json"; 
 
 const Categories = () => {
   const categories = ["Romance", "Mystery", "Thriller", "Adventure", "Fiction", "Sci-Fi"];

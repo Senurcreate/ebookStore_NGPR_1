@@ -1,6 +1,6 @@
 import React from "react";
-import AudioBookCarousel from "../components/AudioBookCarousel";
-import booksData from "../data/books.json"; 
+import AudioBookCarousel from "../../components/AudioBookCarousel";
+import booksData from "../../data/books.json"; 
 
 const NewAudiobooks = () => {
   // Optional: filter only audiobooks
