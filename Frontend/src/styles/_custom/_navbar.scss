@@ -69,6 +69,12 @@
   color: #3B5FD2;
 }
 
+// other
+.navbar-toggler {
+  border: none;
+  outline: none;
+}
+
 /* Mobile responsiveness */
 @media (max-width: 992px) {
   .search-wrapper {
@@ -79,7 +85,6 @@
     height: 45px;
   }
 }
-
 
 /*
 .profile-circle {

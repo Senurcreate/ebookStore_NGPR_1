@@ -1,0 +1,94 @@
+.book-card {
+  width: 14rem;
+  border: none;
+  border-radius: 1rem;
+  padding: 0.5rem;
+  text-align: left;
+  background-color: #F2F6FF;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+
+  
+
+  .card-img-top {
+    border-radius: 0.75rem;
+    height: auto;
+    width: 100%;
+    object-fit: cover;
+    cursor: pointer;
+  }
+
+  .card-body {
+    padding: 0.8rem 0.8rem 0.8rem 0.4rem;
+  }
+
+  .card-title {
+    font-weight: 600;
+    margin-bottom: 0.3rem;
+    overflow: hidden;
+    display: -webkit-box;
+    display: box; 
+    -webkit-box-orient: vertical;
+    box-orient: vertical; 
+    -webkit-line-clamp: 1;
+    line-clamp: 1;
+  }
+
+  .text-muted {
+    margin-bottom: 0.4rem;
+    font-size: 0.9rem;
+  }
+
+  .rating {
+    display: flex;
+    align-items: center;
+    margin-bottom: 0.4rem;
+
+    i {
+      color: #f4b400;
+      margin-right: 0.15rem;
+    }
+
+    span {
+      color: #6c757d;
+      margin-left: 0.3rem;
+      font-size: 0.9rem;
+    }
+  }
+
+  .price-cart {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .price {
+    font-weight: 600;
+    font-size: 0.95rem;
+    margin: 0;
+  }
+
+  .cart-btn {
+    background-color: #1a73e8;
+    border: none;
+    width: 2.2rem;
+    height: 2.2rem;
+    border-radius: 0.4rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s ease;
+
+    i {
+      color: white;
+      font-size: 1.1rem;
+    }
+
+    &:hover {
+      background-color: #155bc5;
+    }
+  }
+}
+
+
+
