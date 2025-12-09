@@ -1,71 +1,685 @@
-const mongoose =  require('mongoose');
+const mongoose = require('mongoose');
 
 const bookSchema = new mongoose.Schema({
     title: {
         type: String,
         required: true,
+        trim: true
     },
     author: {
         type: String,
         required: true,
+        trim: true
     },
     publisher: {
         type: String,
         required: true,
+        trim: true
     },
     publication_date: {
         type: Date,
-        required: true,
+        required: true
     },
-    description:  {
+    description: {
         type: String,
         required: true,
+        trim: true
     },
-    genre:  {
+    genre: {
         type: String,
         required: true,
+        trim: true
     },
-    language:  {
+    language: {
         type: String,
         required: true,
+        trim: true,
+        default: 'English'
     },
-    isbn:  {
+    isbn: {
         type: String,
         required: true,
+        unique: true,
+        trim: true
     },
     trending: {
         type: Boolean,
-        required: true,
+        default: false
     },
     coverImage: {
         type: String,
         required: true,
+        trim: true
     },
     type: {
         type: String,
-        enum: ["ebook", "audiobook"], // only allows these values
-        default: "ebook" // optional default
+        enum: ["ebook", "audiobook"],
+        default: "ebook"
     },
-    fileUrl: {
-        type: String, // link to Google Drive 
-        required: true
-    },
+    
+    // Conditional fields based on type
+    // For ebooks
     pages: {
         type: Number,
-        required: true
+        min: 1,
+        // Required only for ebooks
+        required: function() {
+            return this.type === 'ebook';
+        }
     },
-    price: { 
-        type: Number, 
-        default: 0 
+    
+    // For audiobooks
+    audioLength: {
+        type: String,
+        // Format: "HH:MM:SS" or "MM:SS"
+        trim: true,
+        // Required only for audiobooks
+        required: function() {
+            return this.type === 'audiobook';
+        },
+        validate: {
+            validator: function(v) {
+                if (!v || this.type !== 'audiobook') return true;
+                // Validate time format (HH:MM:SS or MM:SS)
+                const timePattern = /^([0-9]{1,2}:)?[0-9]{1,2}:[0-9]{2}$/;
+                return timePattern.test(v);
+            },
+            message: 'Audio length must be in format HH:MM:SS or MM:SS'
+        }
     },
+    
+    narrators: {
+        type: [{
+            name: {
+                type: String,
+                required: true,
+                trim: true
+            }
+        }],
+        // Required only for audiobooks
+        required: function() {
+            return this.type === 'audiobook';
+        },
+        default: undefined,
+        validate: {
+            validator: function(v) {
+                if (this.type !== 'audiobook') return true;
+                return Array.isArray(v) && v.length > 0;
+            },
+            message: 'At least one narrator is required for audiobooks'
+        }
+    },
+    
+    // Audio sample file (separate from main audio file)
+    audioSampleDriveUrl: {
+        type: String,
+        trim: true,
+        validate: {
+            validator: function(v) {
+                if (!v || this.type !== 'audiobook') return true;
+                const SimpleStorageService = require('../services/simpleStorage.service');
+                return SimpleStorageService.isValidDriveUrl(v);
+            },
+            message: 'Please provide a valid Google Drive URL for audio sample'
+        }
+    },
+    
+    // Main file (ebook or audiobook)
+    driveUrl: {
+        type: String,
+        required: true,
+        trim: true,
+        validate: {
+            validator: function(v) {
+                const SimpleStorageService = require('../services/simpleStorage.service');
+                return SimpleStorageService.isValidDriveUrl(v);
+            },
+            message: 'Please provide a valid Google Drive URL or file ID'
+        }
+    },
+    
+    // Auto-calculated fields (populated by pre-save middleware)
+    fileInfo: {
+        fileId: {
+            type: String,
+            default: null
+        },
+        downloadUrl: {
+            type: String,
+            default: null
+        },
+        previewUrl: {
+            type: String,
+            default: null
+        },
+        embedCode: {
+            type: String,
+            default: null
+        }
+    },
+    
+    // Download restrictions
+    downloadPolicy: {
+        maxDownloads: {
+            type: Number,
+            default: function() {
+                return this.price > 0 ? 3 : 1;
+            },
+            min: 1
+        },
+        validityHours: {
+            type: Number,
+            default: 24,
+            min: 1,
+            max: 168 // 1 week max
+        },
+        allowMultipleDevices: {
+            type: Boolean,
+            default: true
+        }
+    },
+    
+    // Preview settings - different for ebooks vs audiobooks
+    preview: {
+        enabled: {
+            type: Boolean,
+            default: true
+        },
+        // For ebooks
+        pages: {
+            type: Number,
+            default: 20,
+            min: 1,
+            max: 50
+        },
+        // For audiobooks - sample length in minutes
+        sampleMinutes: {
+            type: Number,
+            default: 5,
+            min: 1,
+            max: 30 // Max 30 minutes sample
+        },
+        note: {
+            type: String,
+            default: function() {
+                if (this.type === 'ebook') {
+                    return 'First 20 pages available in preview';
+                } else if (this.type === 'audiobook') {
+                    return '5 minute sample available';
+                }
+                return 'Preview available';
+            }
+        }
+    },
+
+    price: {
+        type: Number,
+        required: true,
+        default: 0,
+        min: 0
+    },
+    
+    // Rating statistics
+    ratingStats: {
+        average: {
+            type: Number,
+            default: 0,
+            min: 0,
+            max: 5,
+            set: v => parseFloat(v.toFixed(1))
+        },
+        count: {
+            type: Number,
+            default: 0
+        },
+        distribution: {
+            1: { type: Number, default: 0 },
+            2: { type: Number, default: 0 },
+            3: { type: Number, default: 0 },
+            4: { type: Number, default: 0 },
+            5: { type: Number, default: 0 }
+        }
+    },
+    
+    // Additional metadata
+    fileSize: {
+        type: Number,
+        default: 0 // Size in bytes
+    },
+    fileFormat: {
+        type: String,
+        default: function() {
+            if (this.type === 'ebook') return 'PDF';
+            if (this.type === 'audiobook') return 'MP3';
+            return 'Unknown';
+        }
+    },
+    
+    // For audiobook quality/bitrate
+    audioQuality: {
+        type: String,
+        enum: ['Standard', 'High', 'Lossless'],
+        default: 'Standard'
+    },
+    
     createdAt: {
         type: Date,
-        default: Date.now,
+        default: Date.now
     }
-  }, {
+}, {
     timestamps: true,
-  });
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true }
+});
 
-  const Book = mongoose.model('Book', bookSchema);
+// Indexes for better query performance
+bookSchema.index({ title: 'text', author: 'text', description: 'text' });
+bookSchema.index({ genre: 1, type: 1 });
+bookSchema.index({ price: 1 });
+bookSchema.index({ 'ratingStats.average': -1 });
+bookSchema.index({ trending: -1, createdAt: -1 });
+bookSchema.index({ type: 1, createdAt: -1 });
+bookSchema.index({ narrators: 1 });
 
-  module.exports = Book;
+// Virtual for formatted publication date
+bookSchema.virtual('formattedPublicationDate').get(function() {
+    return this.publication_date.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+    });
+});
+
+// Virtual for price display
+bookSchema.virtual('priceDisplay').get(function() {
+    if (this.price === 0) return 'Free';
+    return `$${this.price.toFixed(2)}`;
+});
+
+// Virtual for isPremium
+bookSchema.virtual('isPremium').get(function() {
+    return this.price > 0;
+});
+
+// Virtual for narrators list as string
+bookSchema.virtual('narratorsList').get(function() {
+    if (!this.narrators || this.narrators.length === 0) return '';
+    return this.narrators.map(n => n.name).join(', ');
+});
+
+// Virtual for formatted audio length (e.g., "2 hours 15 minutes")
+bookSchema.virtual('formattedAudioLength').get(function() {
+    if (this.type !== 'audiobook' || !this.audioLength) return '';
+    
+    const parts = this.audioLength.split(':').map(Number);
+    let hours = 0, minutes = 0, seconds = 0;
+    
+    if (parts.length === 3) {
+        [hours, minutes, seconds] = parts;
+    } else if (parts.length === 2) {
+        [minutes, seconds] = parts;
+    }
+    
+    const partsArray = [];
+    if (hours > 0) {
+        partsArray.push(`${hours} hour${hours !== 1 ? 's' : ''}`);
+    }
+    if (minutes > 0) {
+        partsArray.push(`${minutes} minute${minutes !== 1 ? 's' : ''}`);
+    }
+    if (seconds > 0 && hours === 0 && minutes === 0) {
+        partsArray.push(`${seconds} second${seconds !== 1 ? 's' : ''}`);
+    }
+    
+    return partsArray.join(' ');
+});
+
+// Virtual for formatted file size
+bookSchema.virtual('formattedFileSize').get(function() {
+    if (!this.fileSize) return 'Unknown size';
+    
+    const units = ['bytes', 'KB', 'MB', 'GB'];
+    let size = this.fileSize;
+    let unitIndex = 0;
+    
+    while (size >= 1024 && unitIndex < units.length - 1) {
+        size /= 1024;
+        unitIndex++;
+    }
+    
+    return `${size.toFixed(1)} ${units[unitIndex]}`;
+});
+
+// Virtual for audio sample URL (using separate sample file)
+bookSchema.virtual('audioSampleUrl').get(function() {
+    if (this.type !== 'audiobook') return null;
+    
+    if (this.audioSampleDriveUrl) {
+        const SimpleStorageService = require('../services/simpleStorage.service');
+        return SimpleStorageService.generateDownloadLink(this.audioSampleDriveUrl);
+    }
+    
+    // Fallback to main file if no sample provided
+    return this.fileInfo?.downloadUrl || null;
+});
+
+// Virtual for audio embed code (for inline playback)
+bookSchema.virtual('audioEmbedCode').get(function() {
+    if (this.type !== 'audiobook') return null;
+    
+    const audioUrl = this.audioSampleUrl || this.fileInfo?.downloadUrl;
+    if (!audioUrl) return null;
+    
+    return `
+        <audio controls style="width: 100%;">
+            <source src="${audioUrl}" type="audio/mpeg">
+            Your browser does not support the audio element.
+        </audio>
+    `;
+});
+
+// Middleware to auto-populate fileInfo when driveUrl is set
+bookSchema.pre('save', function(next) {
+    const SimpleStorageService = require('../services/simpleStorage.service');
+    
+    // Update file info if driveUrl changed or fileInfo is empty
+    if (this.isModified('driveUrl') || !this.fileInfo?.fileId) {
+        const fileId = SimpleStorageService.extractFileId(this.driveUrl);
+        
+        if (fileId) {
+            this.fileInfo = {
+                fileId: fileId,
+                downloadUrl: SimpleStorageService.generateDownloadLink(this.driveUrl),
+                previewUrl: SimpleStorageService.generatePreviewLink(this.driveUrl),
+                embedCode: SimpleStorageService.generateEmbedCode(this.driveUrl)
+            };
+        }
+    }
+    
+    // Ensure preview note is set based on type
+    if (!this.preview.note || this.isModified('type') || 
+        this.isModified('preview.pages') || this.isModified('preview.sampleMinutes')) {
+        if (this.type === 'ebook') {
+            this.preview.note = `First ${this.preview.pages || 20} pages available in preview`;
+        } else if (this.type === 'audiobook') {
+            this.preview.note = `${this.preview.sampleMinutes || 5} minute sample available`;
+        }
+    }
+    
+    // Clear type-specific fields if type changes
+    if (this.isModified('type')) {
+        if (this.type === 'ebook') {
+            // Clear audiobook fields
+            if (this.audioLength !== undefined) delete this.audioLength;
+            if (this.narrators !== undefined) delete this.narrators;
+            if (this.audioSampleDriveUrl !== undefined) delete this.audioSampleDriveUrl;
+            if (this.audioQuality !== undefined) delete this.audioQuality;
+        } else if (this.type === 'audiobook') {
+            // Clear ebook fields
+            if (this.pages !== undefined) delete this.pages;
+        }
+    }
+    
+    // Set default file format based on type
+    if (this.isModified('type')) {
+        if (this.type === 'ebook') {
+            this.fileFormat = 'PDF';
+        } else if (this.type === 'audiobook') {
+            this.fileFormat = 'MP3';
+        }
+    }
+    
+    next();
+});
+
+// Static method to update rating stats
+bookSchema.statics.updateRatingStats = async function(bookId) {
+    try {
+        const Review = require('../reviews/review.model');
+        
+        const stats = await Review.aggregate([
+            { $match: { book: mongoose.Types.ObjectId(bookId), isHidden: { $ne: true } } },
+            {
+                $group: {
+                    _id: '$book',
+                    average: { $avg: '$rating' },
+                    count: { $sum: 1 },
+                    distribution: {
+                        $push: '$rating'
+                    }
+                }
+            }
+        ]);
+        
+        if (stats.length > 0) {
+            const stat = stats[0];
+            const distribution = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+            
+            // Count each rating
+            stat.distribution.forEach(rating => {
+                const intRating = Math.round(rating);
+                if (intRating >= 1 && intRating <= 5) {
+                    distribution[intRating] = (distribution[intRating] || 0) + 1;
+                }
+            });
+            
+            await this.findByIdAndUpdate(bookId, {
+                'ratingStats.average': parseFloat(stat.average.toFixed(1)),
+                'ratingStats.count': stat.count,
+                'ratingStats.distribution': distribution
+            });
+            
+            return {
+                average: parseFloat(stat.average.toFixed(1)),
+                count: stat.count,
+                distribution: distribution
+            };
+        } else {
+            // Reset if no reviews
+            await this.findByIdAndUpdate(bookId, {
+                'ratingStats.average': 0,
+                'ratingStats.count': 0,
+                'ratingStats.distribution': { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 }
+            });
+            
+            return {
+                average: 0,
+                count: 0,
+                distribution: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 }
+            };
+        }
+    } catch (error) {
+        console.error('Error updating rating stats:', error);
+        throw error;
+    }
+};
+
+// Method to check download eligibility
+bookSchema.methods.checkDownloadEligibility = async function(userId) {
+    const Purchase = require('../purchases/purchase.model');
+    const SimpleStorageService = require('../services/simpleStorage.service');
+    
+    // Free books - anyone can download
+    if (this.price === 0) {
+        return {
+            canDownload: true,
+            reason: 'Free book',
+            downloadsRemaining: this.downloadPolicy.maxDownloads,
+            isFree: true,
+            type: this.type
+        };
+    }
+    
+    // Premium books - need purchase
+    const purchase = await Purchase.findOne({
+        user: userId,
+        book: this._id,
+        status: 'completed'
+    });
+    
+    if (!purchase) {
+        return {
+            canDownload: false,
+            reason: 'Purchase required',
+            requiresPurchase: true,
+            price: this.price,
+            type: this.type
+        };
+    }
+    
+    // Check download count
+    if (purchase.downloadedCount >= this.downloadPolicy.maxDownloads) {
+        return {
+            canDownload: false,
+            reason: `Maximum downloads reached (${this.downloadPolicy.maxDownloads})`,
+            downloadsUsed: purchase.downloadedCount,
+            maxDownloads: this.downloadPolicy.maxDownloads,
+            type: this.type
+        };
+    }
+    
+    // Check time window
+    const windowCheck = SimpleStorageService.checkDownloadWindow(
+        purchase.purchasedAt,
+        this.downloadPolicy.validityHours
+    );
+    
+    if (!windowCheck.canDownload) {
+        return {
+            canDownload: false,
+            reason: `Download window expired (${this.downloadPolicy.validityHours} hours)`,
+            purchasedAt: purchase.purchasedAt,
+            hoursPassed: windowCheck.hoursPassed,
+            expiresAt: windowCheck.expiresAt,
+            type: this.type
+        };
+    }
+    
+    // All checks passed
+    return {
+        canDownload: true,
+        reason: 'Eligible for download',
+        purchase: purchase._id,
+        downloadsRemaining: this.downloadPolicy.maxDownloads - purchase.downloadedCount,
+        expiresAt: windowCheck.expiresAt,
+        hoursRemaining: windowCheck.hoursRemaining,
+        type: this.type
+    };
+};
+
+// Method to get preview content based on type
+bookSchema.methods.getPreviewContent = function() {
+    if (!this.preview.enabled) {
+        return {
+            available: false,
+            message: 'Preview not available for this book'
+        };
+    }
+    
+    if (this.type === 'ebook') {
+        return {
+            available: true,
+            type: 'ebook',
+            format: this.fileFormat,
+            content: {
+                previewUrl: this.fileInfo?.previewUrl,
+                pages: this.preview.pages,
+                note: this.preview.note
+            }
+        };
+    } else if (this.type === 'audiobook') {
+        return {
+            available: true,
+            type: 'audiobook',
+            format: this.fileFormat,
+            content: {
+                sampleUrl: this.audioSampleUrl,
+                durationMinutes: this.preview.sampleMinutes,
+                note: this.preview.note,
+                audioEmbedCode: this.audioEmbedCode,
+                narrators: this.narratorsList,
+                length: this.formattedAudioLength
+            }
+        };
+    }
+    
+    return {
+        available: false,
+        message: 'Unknown book type'
+    };
+};
+
+// Method to get download URL (with type-specific naming)
+bookSchema.methods.getDownloadInfo = function() {
+    const baseInfo = {
+        url: this.fileInfo?.downloadUrl,
+        fileId: this.fileInfo?.fileId,
+        fileName: `${this.title.replace(/[^a-z0-9]/gi, '_')}.${this.fileFormat.toLowerCase()}`,
+        type: this.type,
+        format: this.fileFormat,
+        size: this.formattedFileSize
+    };
+    
+    if (this.type === 'audiobook') {
+        baseInfo.audioLength = this.formattedAudioLength;
+        baseInfo.quality = this.audioQuality;
+    } else if (this.type === 'ebook') {
+        baseInfo.pages = this.pages;
+    }
+    
+    return baseInfo;
+};
+
+// Static method to find books by type
+bookSchema.statics.findByType = function(type, query = {}) {
+    return this.find({ ...query, type });
+};
+
+// Static method to find audiobooks by narrator
+bookSchema.statics.findByNarrator = function(narratorName) {
+    return this.find({
+        type: 'audiobook',
+        'narrators.name': { $regex: narratorName, $options: 'i' }
+    });
+};
+
+// Static method to get statistics
+bookSchema.statics.getTypeStats = async function() {
+    const stats = await this.aggregate([
+        {
+            $group: {
+                _id: '$type',
+                count: { $sum: 1 },
+                avgPrice: { $avg: '$price' },
+                freeCount: {
+                    $sum: { $cond: [{ $eq: ['$price', 0] }, 1, 0] }
+                },
+                premiumCount: {
+                    $sum: { $cond: [{ $gt: ['$price', 0] }, 1, 0] }
+                },
+                totalPages: {
+                    $sum: {
+                        $cond: [
+                            { $and: [
+                                { $eq: ['$type', 'ebook'] },
+                                { $ifNull: ['$pages', false] }
+                            ]},
+                            '$pages',
+                            0
+                        ]
+                    }
+                },
+                avgRating: { $avg: '$ratingStats.average' }
+            }
+        }
+    ]);
+    
+    return stats.reduce((acc, stat) => {
+        acc[stat._id] = stat;
+        return acc;
+    }, {});
+};
+
+const Book = mongoose.model('Book', bookSchema);
+
+module.exports = Book;
