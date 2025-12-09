@@ -104,16 +104,16 @@ function Navbar() {
           {/* Center links */}
           <ul className="navbar-nav ms-4 me-auto mb-2 mb-lg-0">
             <li className="nav-item">
-              <a className="nav-link fw-medium text-dark" href="#">Home</a>
+              <a className="nav-link fw-medium" href="#">Home</a>
             </li>
             <li className="nav-item font-family-sans-serif">
-              <a className="nav-link fw-medium text-dark" href="#">About</a>
+              <a className="nav-link fw-medium" href="#">E-books</a>
             </li>
             <li className="nav-item">
-              <a className="nav-link fw-medium text-dark" href="#">Services</a>
+              <a className="nav-link fw-medium" href="#">Audiobooks</a>
             </li>
             <li className="nav-item">
-              <a className="nav-link fw-medium text-dark" href="#">Contact</a>
+              <a className="nav-link fw-medium" href="#">Help</a>
             </li>
           </ul>
 
