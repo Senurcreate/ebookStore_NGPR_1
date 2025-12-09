@@ -1,8 +1,10 @@
 import React, {useState, useRef, useEffect} from "react";
+import { useSelector } from "react-redux"; 
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import logo from "../assets/BrandLogo.svg"; 
 import ProfileMenu from "../components/ProfileMenu";
+import { Link } from "react-router-dom";
 
 function Navbar() {
 
@@ -10,6 +12,10 @@ function Navbar() {
     const menuRef = useRef(null);
     const profileIconRef = useRef(null);
     const hoverTimeoutRef = useRef(null);
+
+    // Get cart items and count from Redux store
+    const cartItems = useSelector(state => state.cart.cartItems);
+    const cartCount = useSelector(state => state.cart.cartCount);
 
 
     // Close menu when clicking outside
@@ -98,16 +104,16 @@ function Navbar() {
           {/* Center links */}
           <ul className="navbar-nav ms-4 me-auto mb-2 mb-lg-0">
             <li className="nav-item">
-              <a className="nav-link fw-medium text-dark" href="#">Home</a>
+              <a className="nav-link fw-medium" href="#">Home</a>
             </li>
             <li className="nav-item font-family-sans-serif">
-              <a className="nav-link fw-medium text-dark" href="#">About</a>
+              <a className="nav-link fw-medium" href="#">E-books</a>
             </li>
             <li className="nav-item">
-              <a className="nav-link fw-medium text-dark" href="#">Services</a>
+              <a className="nav-link fw-medium" href="#">Audiobooks</a>
             </li>
             <li className="nav-item">
-              <a className="nav-link fw-medium text-dark" href="#">Contact</a>
+              <a className="nav-link fw-medium" href="#">Help</a>
             </li>
           </ul>
 
@@ -125,7 +131,25 @@ function Navbar() {
             
             {/* Icons */}
             <i className="bi bi-bell custom-icon me-2"></i>
-            <i className="bi bi-cart custom-icon me-2"></i>
+
+            {/* Cart Icon with Counter */}
+              <Link to="/cart" className="position-relative me-2 text-decoration-none">
+                <i className="bi bi-cart custom-icon"></i>
+                {cartCount > 0 && (
+                  <span 
+                    className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+                    style={{
+                      fontSize: '0.65rem',
+                      padding: '0.25em 0.5em',
+                      minWidth: '1.25rem',
+                      animation: cartCount > 0 ? 'cartBounce 0.5s' : 'none'
+                    }}
+                  >
+                    {cartCount > 9 ? '9+' : cartCount}
+                  </span>
+                )}
+              </Link>
+
             {/* Profile Icon with Menu */}
             <div className="position-relative">
               <i 
