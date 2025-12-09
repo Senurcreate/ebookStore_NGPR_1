@@ -81,7 +81,7 @@ npm run start:dev
    
 ---
 
-📦 Project Structure
+## 📦 Project Structure
 
 ```bash
 /frontend    → React UI  
@@ -98,7 +98,7 @@ Only team members involved in the coursework are allowed to make changes.
 
 ---
 
-##📄 License
+## 📄 License
 
 This project is licensed under the MIT License.
 
