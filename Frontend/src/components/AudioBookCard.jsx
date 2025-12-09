@@ -1,15 +1,34 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import { useDispatch, useSelector} from "react-redux";
+import { addToCart, removeFromCart } from "../redux/features/cart/cartSlice";
 
 
 const AudioBookCard = ({ book }) => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+
+  // Get cart items from Redux store
+  const cartItems = useSelector((state) => state.cart.cartItems);
 
   // Only render if type is 'audiobook'
   if (book.type !== "audiobook") return null;
 
+  // Check if current book is in cart
+  const isInCart = cartItems.some(item => item.id === book.id);
+
   const handleClick = () => {
     navigate(`/audiobooks/${book.id}`);
+  };
+
+  const handleCartAction = () => {
+    if (isInCart) {
+      dispatch(removeFromCart(book.id));
+      
+    } else {
+      dispatch(addToCart(book));
+      
+    }
   };
 
   return (
@@ -33,8 +52,15 @@ const AudioBookCard = ({ book }) => {
         </div>
         <div className="price-audiocart">
           <p className="audioprice">Rs {book.price}</p>
-          <button className="audiocart-btn">
-            <i className="bi bi-cart3"></i>
+          <button className={`audiocart-btn ${isInCart ? 'btn-success' : 'btn-outline-primary'}`}
+            onClick={handleCartAction}
+              style={{ 
+                transition: 'all 0.3s',
+                position: 'relative',
+                overflow: 'hidden'
+              }}
+          >
+            <i className={`bi ${isInCart ? 'bi-check-lg' : 'bi-cart3'}`}></i>
           </button>
         </div>
       </div>

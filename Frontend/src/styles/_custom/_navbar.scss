@@ -31,10 +31,10 @@
 
 .search-wrapper input {
   height: 36px;
-  border: 1px solid #68686b;
-  border-radius: 10px;
+  border: 1px solid #4d4d4d;
+  border-radius: 5px;
   font-size: 14px;
-  background-color: #f2ebfa;
+  background-color: #e2e2e2;
   color: #1D1D20;
 }
 
@@ -73,6 +73,48 @@
 .navbar-toggler {
   border: none;
   outline: none;
+}
+
+/* Cart Badge Animation */
+@keyframes cartBounce {
+  0%, 100% { 
+    transform: translate(-50%, -50%) scale(1); 
+  }
+  50% { 
+    transform: translate(-50%, -50%) scale(1.2); 
+  }
+}
+
+/* Style for the cart link */
+.position-relative {
+  position: relative;
+}
+
+.badge {
+  transform: translate(-50%, -50%);
+}
+
+/* Cart Icon bounce animation on add */
+.bi-cart {
+  transition: transform 0.3s ease;
+}
+
+.bi-cart:hover {
+  animation: gentleBounce 0.5s;
+}
+
+@keyframes gentleBounce {
+  0%, 100% { 
+    transform: scale(1); 
+  }
+  50% { 
+    transform: scale(1.1); 
+  }
+}
+
+/* Make sure cart icon has proper spacing */
+.me-2 {
+  margin-right: 0.5rem;
 }
 
 /* Mobile responsiveness */
