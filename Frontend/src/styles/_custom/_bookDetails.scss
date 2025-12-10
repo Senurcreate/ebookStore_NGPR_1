@@ -697,13 +697,13 @@ h6 { font-size: 1rem; }
   height: 0;
 }
 
-.popup-arrow.left {
+/*.popup-arrow.lleft {
   left: -8px;
   top: 20px;
   border-top: 8px solid transparent;
   border-bottom: 8px solid transparent;
   border-right: 8px solid #dc3545;
-}
+}*/
 
 .popup-arrow.left::after {
   content: '';

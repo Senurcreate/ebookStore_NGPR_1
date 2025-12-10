@@ -496,7 +496,7 @@ const CommentSection = () => {
           <div className="popup-footer">
             <button 
               type="button" 
-              className="btn btn-sm btn-outline-secondary"
+              className="btn  btn-outline-secondary"
               onClick={cancelFlag}
             >
               Cancel
@@ -510,8 +510,8 @@ const CommentSection = () => {
               Report
             </button>
           </div>
-          {/* Arrow pointing to flag button */}
-          <div className={`popup-arrow ${flagPopup.position.arrowPosition || 'left'}`}></div>
+          {/* Arrow pointing to flag button 
+          <div className={`popup-arrow ${flagPopup.position.arrowPosition || 'lleft'}`}></div>*/}
         </div>
       )}
 
