@@ -547,3 +547,34 @@ h6 { font-size: 1rem; }
         top: 10px;
     }
 }
+
+// banner2
+/* BookDetails.css */
+.card {
+  border: none;
+  border-radius: 10px;
+}
+
+.card-header {
+  border-radius: 10px 10px 0 0 ;
+  font-size: 1.2rem;
+}
+
+.form-label {
+  color: #495057;
+}
+
+.table th {
+  font-weight: 600;
+}
+
+.badge {
+  font-size: 0.9rem;
+  padding: 0.5em 1em;
+}
+
+.table-primary th {
+  background-color: #e7f1ff !important;
+  color: #0d6efd;
+}
+

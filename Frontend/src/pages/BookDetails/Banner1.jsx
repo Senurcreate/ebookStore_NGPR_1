@@ -1,8 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
-import "../styles/main.scss";
-import bCover from '../assets/bCover.jpg'
+import "../../styles/main.scss";
+import bCover from '../../assets/bCover.jpg'
 import { useDispatch, useSelector} from "react-redux";
-import { addToCart, removeFromCart } from "../redux/features/cart/cartSlice";
+import { addToCart, removeFromCart } from "../../redux/features/cart/cartSlice";
 
 const BookHeaderSection = () => {
     const [isWishlisted, setIsWishlisted] = useState(false);
