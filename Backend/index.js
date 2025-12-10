@@ -57,9 +57,14 @@ app.get('/api/test', (req, res) => {
 
 // Defining all routes first
 const bookRoutes = require('./src/books/book.route')
+const downloadRoutes = require('.src/downloads/download.route')
+const adminRoutes = require('./src/admin/admin.route')
+const purchaseRoutes = require('./src/purchases/purchase.route')
 
 app.use("/api/books", bookRoutes)
-
+app.use("/api/downloads" , downloadRoutes)
+app.use("/api/admin" , adminRoutes)
+app.use("/api/purchases" , purchaseRoutes)
 
 
 // 404 Handler
