@@ -547,3 +547,604 @@ h6 { font-size: 1rem; }
         top: 10px;
     }
 }
+
+// banner2
+/* BookDetails.css */
+.card {
+  border: none;
+  border-radius: 10px;
+}
+
+.card-header {
+  border-radius: 10px 10px 0 0 ;
+  font-size: 1.2rem;
+}
+
+.form-label {
+  color: #495057;
+}
+
+.table th {
+  font-weight: 600;
+}
+
+.badge {
+  font-size: 0.9rem;
+  padding: 0.5em 1em;
+}
+
+.table-primary th {
+  background-color: #e7f1ff !important;
+  color: #0d6efd;
+}
+
+/* CommentSection.css */
+.comment-section {
+  max-width: 800px;
+  margin: 0 auto;
+  position: relative;
+
+  .star-rating-container {
+    display: flex;
+    align-items: center;
+    
+    .rating-number {
+      font-weight: 600;
+      color: #4d4d4d;
+      font-size: 0.8rem;
+      padding: 2px 8px;
+      border-radius: 12px;
+      min-width: 40px;
+      text-align: center;
+    }
+  }
+
+  .comment-text {
+    max-width: 75%;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+  }
+  
+  .reply-text {
+    max-width: 70%; // Slightly less for replies
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+  }
+}
+
+/* Flag Popup Styles - FIXED POSITION */
+.flag-popup {
+  position: fixed;
+  z-index: 10000;
+  width: 280px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+  border: 1px solid #dc3545;
+  animation: slideIn 0.2s ease;
+  font-size: 0.9rem;
+  transform-origin: center;
+  pointer-events: auto;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.popup-header {
+  padding: 12px 15px;
+  background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%);
+  border-bottom: 1px solid #dc3545;
+  border-radius: 8px 8px 0 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-weight: 600;
+  color: #c62828;
+}
+
+.popup-close {
+  background: none;
+  border: none;
+  color: #c62828;
+  cursor: pointer;
+  padding: 0;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background-color 0.2s;
+}
+
+.popup-close:hover {
+  background-color: rgba(198, 40, 40, 0.1);
+}
+
+.popup-body {
+  padding: 15px;
+}
+
+.popup-body p {
+  margin: 0;
+  line-height: 1.4;
+}
+
+.popup-footer {
+  padding: 12px 15px;
+  border-top: 1px solid #e0e0e0;
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.popup-footer .btn {
+  padding: 4px 12px;
+  font-size: 0.85rem;
+}
+
+.popup-arrow {
+  position: absolute;
+  width: 0;
+  height: 0;
+}
+
+/*.popup-arrow.lleft {
+  left: -8px;
+  top: 20px;
+  border-top: 8px solid transparent;
+  border-bottom: 8px solid transparent;
+  border-right: 8px solid #dc3545;
+}*/
+
+.popup-arrow.left::after {
+  content: '';
+  position: absolute;
+  left: 1px;
+  top: -8px;
+  width: 0;
+  height: 0;
+  border-top: 8px solid transparent;
+  border-bottom: 8px solid transparent;
+  border-right: 8px solid white;
+}
+
+.popup-arrow.right {
+  right: -8px;
+  top: 20px;
+  border-top: 8px solid transparent;
+  border-bottom: 8px solid transparent;
+  border-left: 8px solid #dc3545;
+}
+
+.popup-arrow.right::after {
+  content: '';
+  position: absolute;
+  right: 1px;
+  top: -8px;
+  width: 0;
+  height: 0;
+  border-top: 8px solid transparent;
+  border-bottom: 8px solid transparent;
+  border-left: 8px solid white;
+}
+
+/* Badge styles */
+.badge {
+  font-size: 0.7em;
+  padding: 0.25em 0.6em;
+  font-weight: 500;
+}
+
+.badge.bg-danger {
+  background-color: #dc3545 !important;
+}
+
+.badge.bg-primary {
+  background-color: #007bff !important;
+}
+
+/* Review card styles */
+.review-card {
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+  background: white;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  position: relative;
+}
+
+.review-card:hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.review-card.flagged {
+  opacity: 0.9;
+  background: linear-gradient(135deg, #fff5f5 0%, #ffeaea 100%);
+  border-color: #ffcdd2;
+}
+
+.reply-card {
+  border-left: 3px solid #007bff;
+  padding-left: 15px;
+  margin-left: 30px;
+  margin-top: 10px;
+  background: #f8f9fa;
+  border-radius: 4px;
+  padding: 10px 15px;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.reply-card:hover {
+  background: #e9ecef;
+}
+
+.reply-card.flagged {
+  background: linear-gradient(135deg, #fff5f5 0%, #ffeaea 100%);
+  border-color: #ffcdd2;
+}
+
+/* Flag icon styles */
+.bi-flag.text-danger {
+  color: #dc3545 !important;
+}
+
+.bi-flag-fill.text-danger {
+  color: #dc3545 !important;
+}
+
+.bi-flag-fill.text-warning {
+  color: #ffc107 !important;
+}
+
+/* Action Buttons */
+.action-buttons {
+  display: flex;
+  gap: 15px;
+  margin-top: 15px;
+  flex-wrap: wrap;
+}
+
+.action-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: none;
+  border: none;
+  color: #6c757d;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  padding: 5px 10px;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  position: relative;
+}
+
+.action-btn:hover {
+  color: #007bff;
+  background-color: rgba(0, 123, 255, 0.1);
+}
+
+.action-btn.active {
+  color: #007bff;
+  background-color: rgba(0, 123, 255, 0.1);
+}
+
+.action-btn.like-btn.active {
+  color: #28a745;
+  background-color: rgba(40, 167, 69, 0.1);
+}
+
+.action-btn.dislike-btn.active {
+  color: #dc3545;
+  background-color: rgba(220, 53, 69, 0.1);
+}
+
+.action-btn.flag-btn:hover {
+  color: #dc3545;
+  background-color: rgba(220, 53, 69, 0.1);
+}
+
+.action-btn.user-flagged {
+  color: #dc3545;
+  background-color: rgba(220, 53, 69, 0.1);
+}
+
+.action-btn.user-flagged:hover {
+  color: #dc3545;
+  background-color: rgba(220, 53, 69, 0.15);
+}
+
+/* User badges and info */
+.user-badge {
+  font-weight: bold;
+  color: #252525;
+  font-size: 1rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.time-badge {
+  color: #6c757d;
+  font-size: 0.85rem;
+}
+
+/* Review header */
+.review-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.review-actions {
+  display: flex;
+  gap: 8px;
+  position: relative;
+}
+
+.review-actions .action-btn {
+  padding: 4px 8px;
+  font-size: 0.8rem;
+}
+
+/* Star Rating */
+.star-rating {
+  color: #ffc107;
+  font-size: 1.0rem;
+  display: flex;
+  align-items: center;
+}
+
+.star-rating .star {
+  margin-right: 2px;
+  transition: transform 0.2s;
+}
+
+.star-rating .star.editable {
+  cursor: pointer;
+}
+
+.star-rating .star.editable:hover {
+  transform: scale(1.2);
+}
+
+.star-rating .bi-star-fill,
+.star-rating .bi-star-half {
+  fill: #ffc107;
+}
+
+.star-rating .star.editable:hover {
+  color: #ffca2c;
+}
+
+// Add these styles to your main.scss file
+
+
+
+/* Reply Input */
+.reply-input-container {
+  margin-top: 15px;
+  margin-left: 30px;
+  animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Show More/Less Button */
+.show-more-btn {
+  margin-top: 20px;
+  width: 100%;
+  padding: 10px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.show-more-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Post Review Button */
+.post-review-btn {
+  margin-top: 15px;
+  padding: 10px 20px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.post-review-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.post-review-btn:disabled {
+  opacity: 0.7;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+/* Replies Section */
+.replies-section {
+  margin-top: 15px;
+  border-top: 1px solid #e0e0e0;
+  padding-top: 15px;
+}
+
+.toggle-replies-btn {
+  background: none;
+  border: none;
+  color: #007bff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 0;
+  font-size: 0.9rem;
+  transition: color 0.2s;
+  margin-bottom: 10px;
+}
+
+.toggle-replies-btn:hover {
+  color: #0056b3;
+  text-decoration: underline;
+}
+
+.reply-actions {
+  display: flex;
+  gap: 8px;
+  position: relative;
+}
+
+.reply-actions .action-btn {
+  padding: 2px 6px;
+  font-size: 0.8rem;
+}
+
+/* Form controls styling */
+.form-control:focus {
+  border-color: #007bff;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.form-label {
+  font-weight: 500;
+  color: #495057;
+  margin-bottom: 5px;
+}
+
+/* Animation for new reviews */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.review-card:first-child {
+  animation: fadeIn 0.5s ease;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .comment-section {
+    padding: 0 15px;
+  }
+  
+  .review-card {
+    padding: 15px;
+  }
+  
+  .review-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 5px;
+  }
+  
+  .review-actions {
+    align-self: flex-end;
+  }
+  
+  .reply-card {
+    margin-left: 15px;
+    padding-left: 10px;
+  }
+  
+  .reply-input-container {
+    margin-left: 15px;
+  }
+  
+  .action-buttons {
+    gap: 10px;
+  }
+  
+  .action-btn {
+    padding: 4px 8px;
+    font-size: 0.85rem;
+  }
+  
+  /* Adjust popup positioning on mobile */
+  .flag-popup {
+    position: fixed;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    width: 90%;
+    max-width: 300px;
+    z-index: 9999;
+    animation: slideIn 0.2s ease;
+  }
+  
+  .popup-arrow {
+    display: none;
+  }
+}
+
+@media (max-width: 576px) {
+  .review-card {
+    padding: 12px;
+  }
+  
+  .user-badge {
+    font-size: 0.95rem;
+  }
+  
+  .time-badge {
+    font-size: 0.8rem;
+  }
+  
+  .star-rating {
+    font-size: 1rem;
+  }
+  
+  .action-buttons {
+    gap: 8px;
+  }
+  
+  .action-btn {
+    font-size: 0.8rem;
+    padding: 3px 6px;
+  }
+  
+  .reply-card {
+    margin-left: 10px;
+    padding: 8px 10px;
+  }
+  
+  .flag-popup {
+    width: 95%;
+    margin: 0 auto;
+  }
+}
+
+/* Ensure popup stays on top of everything */
+.flag-popup {
+  z-index: 10000 !important;
+}

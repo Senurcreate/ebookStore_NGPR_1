@@ -4,7 +4,8 @@ import Navbar from "./components/Navbar";
 import Home from "./pages/Home/Home";
 import LoginPage from "./pages/LoginPage";
 import SignupPage from "./pages/SignUpPage";
-import BookDetails from "./pages/BookHeaderSection";
+import BookDetails from "./pages/BookDetails/BookDetails";
+
 
 import { AuthProvider } from "./context/AuthContext";
 
@@ -32,7 +33,6 @@ function MainLayout() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
         <Route path="/bookDetails" element={<BookDetails />} />
-        <Route path="/books/:id" element={<BookDetails />} />
       </Routes>
       </main>
     </div>
