@@ -1,39 +1,42 @@
 import React from "react";
-import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
+import { Routes, Route, useLocation } from "react-router-dom";
 import Navbar from "./components/Navbar";
-import Hero from "./components/Hero";
+import Home from "./pages/Home/Home";
 import LoginPage from "./pages/LoginPage";
-import Footer from "./components/Footer";
+import SignupPage from "./pages/SignUpPage";
+import BookDetails from "./pages/BookDetails/BookDetails";
 
 
+import { AuthProvider } from "./context/AuthContext";
 
 function App() {
-  return (
-    <Router>
-      <MainLayout />
-    </Router>
-  );
+  return <MainLayout />;
 }
 
-// Separate component so we can use useLocation()
+// useLocation only works inside a Router (we put BrowserRouter in main.jsx)
 function MainLayout() {
   const location = useLocation();
+  
 
-  // Show Navbar only on home page
-  const showNavbar = location.pathname === "/";
+  // Hide navbar on login and signup pages
+  const hideNavbarPaths = ["/login", "/signup"];
+  const showNavbar = !hideNavbarPaths.includes(location.pathname);
+
 
   return (
+    <AuthProvider>
     <div className="App">
-      {showNavbar && <Navbar />}  {/* only show Navbar on '/' */}
-      
+      {showNavbar && <Navbar />}
+      <main className="py-4"> {/*  Added padding */}
       <Routes>
-        <Route path="/" element={<Hero />} />
+        <Route path="/" element={<Home/>} />
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/signup" element={<SignupPage />} />
+        <Route path="/bookDetails" element={<BookDetails />} />
       </Routes>
-
-    <Footer />
-      
+      </main>
     </div>
+    </AuthProvider>
   );
 }
 

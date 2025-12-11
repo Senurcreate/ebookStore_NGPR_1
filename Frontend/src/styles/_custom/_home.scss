@@ -1,22 +1,84 @@
-.hero {
+.hero-section {
+  position: relative; /* important: enables absolute positioning inside */
   width: 100%;
-  height: 100vh;
-  background-image: url('path/to/your/heroBg-image.jpg');
-  background-size: cover;
+  height: 85vh;
+  background-size: cover;  
   background-position: center;
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  padding-left: 80px;
-}
-
-.content {
-  max-width: 600px;
-}
-
-.title {
-  font-size: 42px;
-  font-weight: bold;
+  background-repeat: no-repeat;
   color: #fff;
-  margin-bottom: 20px;
+  overflow: hidden;
+}
+
+.hero-btn {
+  position: absolute;
+  top: 75%;  /* Y position: move up/down */
+  left: 22%; /* X position: move left/right */
+  transform: translate(-0%, -50%); 
+
+}
+
+@media (max-width: 768px) {
+  .hero-section {
+    //height: 70vh;
+    //background-position: center;
+    //position: relative; 
+
+    height: auto;
+    padding: 40px 0 80px;
+    background-size: cover;
+    background-position: center;
+    min-height: 355px;
+    min-width: 350px;
+  }
+
+  .hero-btn {
+    position: relative;  
+    top: auto; 
+    left: auto;  
+    transform: none;
+    margin: 20px auto 0;
+    width: 60%;
+    display: block;
+    text-align: center;
+  }
+}
+
+
+@media (max-width: 480px) {
+  .hero-section {
+    object-fit: contain; 
+  }
+  .hero-btn {
+    width: 70%;
+
+  }
+}
+
+// banner section 
+
+.banner-section {
+  position: relative; 
+  width: 90%;
+  height: 60vh;
+  background-size: contain;   // cover
+  background-position: center;
+  background-repeat: no-repeat;
+  color: #fff;
+  overflow: hidden;
+  margin: 0 auto;
+}
+
+@media (max-width: 768px) {
+  .banner-section {
+    width: 95%;
+    height: 40vh; 
+    background-position: center top;
+  }
+}
+
+@media (max-width: 480px) {
+  .banner-section {
+    width: 100%;
+    height: 35vh; 
+  }
 }

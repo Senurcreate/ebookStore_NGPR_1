@@ -1,41 +1,194 @@
-import React from "react";
-
+import React, {useState, useRef, useEffect} from "react";
+import { useSelector } from "react-redux"; 
+import "bootstrap/dist/css/bootstrap.min.css";
+import "bootstrap-icons/font/bootstrap-icons.css";
+import logo from "../assets/BrandLogo.svg"; 
+import ProfileMenu from "../components/ProfileMenu";
+import { Link } from "react-router-dom";
 
 function Navbar() {
+
+    const [showProfileMenu, setShowProfileMenu] = useState(false);
+    const menuRef = useRef(null);
+    const profileIconRef = useRef(null);
+    const hoverTimeoutRef = useRef(null);
+
+    // Get cart items and count from Redux store
+    const cartItems = useSelector(state => state.cart.cartItems);
+    const cartCount = useSelector(state => state.cart.cartCount);
+
+
+    // Close menu when clicking outside
+    useEffect(() => {
+      const handleClickOutside = (event) => {
+        if (
+          menuRef.current && 
+          !menuRef.current.contains(event.target) &&
+          profileIconRef.current && 
+          !profileIconRef.current.contains(event.target)
+        ) {
+          setShowProfileMenu(false);
+        }
+      };
+
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => {
+        document.removeEventListener('mousedown', handleClickOutside);
+        if (hoverTimeoutRef.current) {
+          clearTimeout(hoverTimeoutRef.current);
+        }
+      };
+    }, []);
+
+    const handleProfileClick = () => {
+      setShowProfileMenu(!showProfileMenu);
+    };
+
+    const handleProfileMouseEnter = () => {
+      if (hoverTimeoutRef.current) {
+        clearTimeout(hoverTimeoutRef.current);
+      }
+      setShowProfileMenu(true);
+    };
+
+    const handleProfileMouseLeave = () => {
+      // Start timeout when leaving profile icon
+      hoverTimeoutRef.current = setTimeout(() => {
+        // Only close if mouse is not over menu
+        if (menuRef.current && !menuRef.current.matches(':hover')) {
+          setShowProfileMenu(false);
+        }
+      }, 300);
+    };
+
+    const handleMenuMouseEnter = () => {
+      if (hoverTimeoutRef.current) {
+        clearTimeout(hoverTimeoutRef.current);
+      }
+    };
+
+    const handleMenuMouseLeave = () => {
+      // Start timeout when leaving menu
+      hoverTimeoutRef.current = setTimeout(() => {
+        // Only close if mouse is not over profile icon
+        if (profileIconRef.current && !profileIconRef.current.matches(':hover')) {
+          setShowProfileMenu(false);
+        }
+      }, 300);
+    };
+
+  
   return (
-    <nav className="navbar">
-      {/* Left: Logo */}
-      <div className="navbar-logo">
-        <img src="/icon.svg" alt="Ayod Ebookstore" />
-        <span>Ayod <strong>Ebookstore</strong></span>
-        
+    <nav className="navbar navbar-expand-lg fixed-top shadow-sm custom-navbar ">
+      <div className="container-fluid px-4">
+        {/* Logo */}
+        <a className="navbar-brand d-flex align-items-center" href="#">
+          <img src={logo} alt="Logo" className="navbar-logo" />
+        </a>
 
-      </div>
+        {/* Toggler for mobile */}
+        <button
+          className="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarNav"
+          aria-controls="navbarNav"
+          aria-expanded="false"
+          aria-label="Toggle navigation"
+        >
+          <span className="navbar-toggler-icon"></span>
+        </button>
 
-      {/* Center: Links */}
-      <ul className="navbar-links">
-        <li>Home</li>
-        <li>E-Books</li>
-        <li>AudioBooks</li>
-        <li>Help</li>
-      </ul>
+        {/* Navbar links and actions */}
+        <div className="collapse navbar-collapse" id="navbarNav">
+          {/* Center links */}
+          <ul className="navbar-nav ms-4 me-auto mb-2 mb-lg-0">
+            <li className="nav-item">
+              <a className="nav-link fw-medium" href="#">Home</a>
+            </li>
+            <li className="nav-item font-family-sans-serif">
+              <a className="nav-link fw-medium" href="#">E-books</a>
+            </li>
+            <li className="nav-item">
+              <a className="nav-link fw-medium" href="#">Audiobooks</a>
+            </li>
+            <li className="nav-item">
+              <a className="nav-link fw-medium" href="#">Help</a>
+            </li>
+          </ul>
 
-      {/* Right: Search + Icons */}
-      <div className="navbar-actions">
-        <div className="search-wrapper">
-          <input
-          type="text"
-          placeholder="Search books, authors, genres"
-        />
-        <i className="bi bi-search search-icon"></i>
+          {/* Right actions */}
+          <div className="d-flex align-items-center gap-3 ">
+            {/* Search box */}
+            <div className="position-relative search-wrapper me-5">
+              <input
+                type="text"
+                placeholder="Search books, authors, genres..."
+                className="form-control ps-3 pe-5"
+              />
+              <i className="bi bi-search search-icon"></i>
+            </div>
+            
+            {/* Icons */}
+            <i className="bi bi-bell custom-icon me-2"></i>
+
+            {/* Cart Icon with Counter */}
+              <Link to="/cart" className="position-relative me-2 text-decoration-none">
+                <i className="bi bi-cart custom-icon"></i>
+                {cartCount > 0 && (
+                  <span 
+                    className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+                    style={{
+                      fontSize: '0.65rem',
+                      padding: '0.25em 0.5em',
+                      minWidth: '1.25rem',
+                      animation: cartCount > 0 ? 'cartBounce 0.5s' : 'none'
+                    }}
+                  >
+                    {cartCount > 9 ? '9+' : cartCount}
+                  </span>
+                )}
+              </Link>
+
+            {/* Profile Icon with Menu */}
+            <div className="position-relative">
+              <i 
+                ref={profileIconRef}
+                className="bi bi-person custom-person"
+                onClick={handleProfileClick}
+                onMouseEnter={handleProfileMouseEnter}
+                onMouseLeave={handleProfileMouseLeave}
+                style={{ cursor: 'pointer' }}
+              ></i>
+              
+              {/* Profile Menu */}
+              {showProfileMenu && (
+                <div 
+                  ref={menuRef}
+                  className="position-absolute end-0 mt-2"
+                  style={{ zIndex: 1000 }}
+                  onMouseEnter={handleMenuMouseEnter}
+                  onMouseLeave={handleMenuMouseLeave}
+                >
+                  <ProfileMenu />
+                </div>
+              )}
+            </div>
+
+
+             {/*}
+            <div className="profile-circle">
+              <img src="/path/to/default-avatar.jpg" alt="User" />
+            </div>*/}
+          
+          </div>
         </div>
-        
-        <i className="bi bi-bell-fill custom-icon"></i>
-        <i className="bi bi-cart-fill custom-icon"></i>
-        <i className="bi bi-person-circle custom-icon"></i>
       </div>
     </nav>
+
   );
 }
 
 export default Navbar;
+
+

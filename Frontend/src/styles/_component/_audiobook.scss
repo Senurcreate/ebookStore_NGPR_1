@@ -1,0 +1,144 @@
+.audiobook-card {
+  display: flex;
+  align-items: center;
+  background-color: #f2f6ff; 
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  border-radius: 1rem;
+  padding: 0.8rem;
+  width: 30rem;
+  height: 12rem;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+
+  .audiobook-img {
+    width: 8rem;
+    height: 11rem;
+    border-radius: 0.8rem;
+    object-fit: cover;
+    flex-shrink: 0;
+    cursor: pointer;
+  }
+
+  // Right-side details
+  .audiobook-details {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding-left: 0.1rem;
+    flex: 1;
+    padding-top: 0.8rem;
+
+    min-width: 0;
+
+    h5 {
+      font-weight: 600;
+      margin: 0 0 0.25rem 0; 
+      //margin-bottom: 0.3rem;
+      font-size: 1.0rem;
+      overflow: hidden;
+      display: -webkit-box;
+      display: box;
+      -webkit-box-orient: vertical;
+      box-orient: vertical;
+      -webkit-line-clamp: 1;
+      line-clamp: 1;
+      height: 45px;  
+
+      i {
+        font-size: 1.2rem;
+        color: #6c757d;
+      }
+    }
+
+
+    p {
+      //margin-bottom: 0.2rem;
+      margin: 0 0 0.35rem 0;
+      font-size: 0.9rem;
+      color: #6c757d;
+
+      height: 45px; 
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .rating {
+      display: flex;
+      align-items: center;
+      margin-bottom: 0.4rem;
+
+      height: 1.3rem;
+
+      i {
+        color: #f4b400; 
+        margin-right: 0.15rem;
+      }
+
+      span {
+        color: #6c757d;
+        margin-left: 0.3rem;
+        font-size: 0.9rem;
+      }
+    }
+
+    .price-audiocart {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+
+        margin-top: auto; 
+    }
+
+    .audioprice {
+        font-weight: 600;
+        font-size: 0.95rem;
+        margin: 0;
+        margin-top: 0.6rem;
+    }
+
+    .audiocart-btn {
+        background-color: #3B5FD2;
+        border: none;
+        width: 2.2rem;
+        height: 2.2rem;
+        border-radius: 0.4rem;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        margin-left: 1rem;
+        padding: 0.5rem 0.6rem;
+        transition: background-color 0.2s ease;
+        margin-top: 0.2rem;
+
+        i {
+            color: white;
+            font-size: 1.1rem;
+            transition: transform 0.2s ease;
+        }
+
+        &:hover {
+          background-color:  #214acf;
+        }
+
+        /* When item is IN cart - green color */
+    &.btn-success {
+      background-color: #3B5FD2;
+      
+      &:hover {
+        background-color: #214acf;
+      }
+    }
+    
+    /* When item is NOT in cart - blue color (default) */
+    &.btn-outline-primary {
+      background-color: #1a73e8;
+      
+      &:hover {
+        background-color: #155bc5;
+      }
+    }
+    }
+  } 
+}
+

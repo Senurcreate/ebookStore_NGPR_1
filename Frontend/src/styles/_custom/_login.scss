@@ -1,3 +1,4 @@
+// Text Styles
 .label-text{
     color:#374151;
     font-weight: 600 ;
@@ -27,24 +28,61 @@
 .login-page {
   background-color: #F5F5F5;   
   min-height: 100vh;          
-  
 }
 
+// Split Container Layout
 .split-container {
   display: flex;
   height: 100vh; 
-  overflow: hidden
+  overflow: hidden;
+  
+  // Desktop: left-right layout (form on left, image on right)
+  flex-direction: row;
+  
+  // Tablet & Mobile: stack with image on top
+  @media (max-width: 992px) {
+    flex-direction: column;
+    height: auto;
+    min-height: 100vh;
+    
+    // Only apply order changes on mobile/tablet
+    .left {
+      order: 2; // Form comes second on mobile
+    }
+    
+    .right {
+      order: 1; // Image comes first on mobile
+    }
+  }
 }
 
 .left, .right {
-  flex: 1; // each takes 50%
+  flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
+  
+  // Tablet & Mobile: full width
+  @media (max-width: 992px) {
+    flex: none;
+    width: 100%;
+  }
 }
 
 .left {
   background-color: #f5f5f5;
+  
+  // Tablet & Mobile: adjust height
+  @media (max-width: 992px) {
+    min-height: 60vh;
+    padding: 2rem 0;
+  }
+  
+  // Mobile styles
+  @media (max-width: 576px) {
+    min-height: 65vh;
+    padding: 1.5rem 0;
+  }
 }
 
 .login-form-container {
@@ -52,19 +90,32 @@
   max-width: 400px;
   align-items: center;
   justify-content: center;
+  padding: 0 1rem;
+  
+  // Mobile styles
+  @media (max-width: 576px) {
+    max-width: 100%;
+    padding: 0 1.5rem;
+  }
 }
 
-
-
 .right {
-  width: 100vw;   
-  height: 100vh; 
-  overflow: hidden; 
-  background-image: url('/bg-login.png'); /* put image in public folder */
+  background-image: url('/bg-login.png');
   background-repeat: no-repeat;
   background-position: center;
-  background-size: cover; /* fits entire image without zooming */
-  background-color: #ffffff;   /* fallback color if image doesn’t fill */
+  background-size: cover;
+  background-color: #ffffff;
+  
+  // Tablet & Mobile: image on top
+  @media (max-width: 992px) {
+    min-height: 40vh;
+    width: 100%;
+  }
+  
+  // Mobile styles
+  @media (max-width: 576px) {
+    min-height: 35vh;
+  }
 }
 
 .brand-container{
@@ -75,47 +126,232 @@
   padding-bottom: 1rem;
   padding-top: 1rem;
   
+  // Tablet styles
+  @media (max-width: 992px) {
+    width: 80%;
+    height: auto;
+    padding: 2rem 0;
+  }
+  
+  // Mobile styles
+  @media (max-width: 576px) {
+    width: 90%;
+    padding: 1.5rem 0;
+    
+    h4 {
+      font-size: 1.1rem;
+      margin-top: 1rem !important;
+    }
+    
+    p {
+      font-size: 0.9rem;
+      margin-top: 0.5rem !important;
+    }
+  }
 }
 
-
-
-/* Primary Button */
-.btn-primary {
-  background-color: #3B5FD2;
-  border-color: #3B5FD2;
-  color: #fff;
+// Responsive image adjustments
+.brand-container img {
+  // Tablet styles
+  @media (max-width: 992px) {
+    width: 200px !important;
+    height: auto !important;
+    margin-bottom: 1rem !important;
+  }
+  
+  // Mobile styles
+  @media (max-width: 576px) {
+    width: 160px !important;
+    margin-bottom: 0.5rem !important;
+  }
 }
 
-.btn-primary:hover {
-  background-color: #93A1F4;
-  border-color: #93A1F4;
-  color: #fff;
+// Password eye icon alignment
+.password-eye-icon {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  cursor: pointer;
+  font-size: 18px;
+  color: #6c757d;
+  
+  // Default alignment for desktop/larger screens
+  transform: translateY(-40%);
+  
+  // Adjust for mobile/smaller screens if needed
+  @media (max-width: 576px) {
+    transform: translateY(-50%);
+  }
 }
 
-.btn-primary:active,
-.btn-primary:focus {
-  background-color: #2a48a3; /* darker shade for click */
-  border-color: #2a48a3;
-  color: #fff;
+// Form responsive adjustments
+.login-form-container {
+  h3 {
+    // Mobile styles
+    @media (max-width: 576px) {
+      font-size: 1.5rem;
+      margin-bottom: 1rem !important;
+    }
+  }
+  
+  p.fs-8 {
+    // Mobile styles
+    @media (max-width: 576px) {
+      font-size: 0.8rem !important;
+    }
+  }
 }
 
-/* Outline Primary Button */
-.btn-outline-primary {
-  background-color: #F5F5F5;
-  border-color: #3B5FD2;
-  color: #1D1D20;
+// Form elements responsiveness
+.form-label {
+  // Mobile styles
+  @media (max-width: 576px) {
+    font-size: 0.9rem;
+  }
 }
 
-.btn-outline-primary:hover {
-  background-color: #fff;
-  border-color: #93A1F4;
-  color: #1D1D20;
+.form-control {
+  // Mobile styles
+  @media (max-width: 576px) {
+    font-size: 0.9rem;
+    padding: 0.5rem 0.75rem;
+  }
 }
 
-.btn-outline-primary:active,
-.btn-outline-primary:focus {
-  background-color: #e1e1e1; /* subtle gray for click */
-  border-color: #2a48a3;
-  color: #1D1D20;
+// Button responsiveness
+.btn {
+  // Mobile styles
+  @media (max-width: 576px) {
+    font-size: 0.9rem;
+    padding: 0.5rem 1rem;
+  }
 }
 
+// Alert responsiveness
+.alert {
+  // Mobile styles
+  @media (max-width: 576px) {
+    font-size: 0.85rem;
+    padding: 0.5rem !important;
+  }
+}
+
+// Sign up link
+.text-center p {
+  // Mobile styles
+  @media (max-width: 576px) {
+    font-size: 0.9rem;
+  }
+}
+
+// Remember Me & Forgot Password container
+.remember-forgot-container {
+  flex-wrap: nowrap;
+  min-width: 0; // Prevents flex items from growing too large
+  
+  @media (max-width: 400px) {
+    .form-check-label, a {
+      font-size: 0.8rem !important;
+    }
+  }
+}
+
+// Hide browser password toggle buttons
+input[type="password"]::-ms-reveal,
+input[type="password"]::-webkit-password-toggle-button {
+    display: none;
+}
+
+// Additional utility classes for better mobile experience
+@media (max-width: 576px) {
+  .p-8 {
+    padding: 1rem !important;
+  }
+  
+  .mb-3 {
+    margin-bottom: 1rem !important;
+  }
+  
+  .mb-4 {
+    margin-bottom: 1.5rem !important;
+  }
+  
+  .mb-2 {
+    margin-bottom: 0.5rem !important;
+  }
+}
+
+// Font family classes
+.font-family-serif {
+  font-family: serif;
+}
+
+.font-family-sans-serif {
+  font-family: sans-serif;
+}
+
+// Background utilities
+.background-secondary {
+  background-color: #f5f5f5;
+}
+
+// Image container
+.img-container {
+  position: relative;
+}
+
+// Ensure form controls have consistent styling
+.form-control:focus {
+  border-color: #86b7fe;
+  outline: 0;
+  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+// Loading spinner alignment
+.spinner-border-sm {
+  width: 1rem;
+  height: 1rem;
+}
+
+// Google button icon alignment
+.btn img {
+  vertical-align: middle;
+}
+
+// Link styles
+a {
+  text-decoration: none;
+  
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+// Form check alignment
+.form-check-input:checked {
+  background-color: #0d6efd;
+  border-color: #0d6efd;
+}
+
+// Utility classes for text
+.fw-semibold {
+  font-weight: 600;
+}
+
+.fw-lighter {
+  font-weight: 300;
+}
+
+.text-muted {
+  color: #6c757d !important;
+}
+
+// Ensure proper z-index for icons
+.position-relative {
+  position: relative;
+}
+
+// Padding utilities for form
+.pe-5 {
+  padding-right: 3rem !important;
+}
