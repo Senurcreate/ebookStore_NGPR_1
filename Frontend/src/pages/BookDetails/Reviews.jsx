@@ -461,7 +461,7 @@ const CommentSection = () => {
   };
 
   return (
-    <div className="container mt-5 comment-section">
+    <div className="container mt-5 mb-5 pt-5 pb-5 comment-section">
       {/* Flag Popup */}
       {flagPopup.show && (
         <div 
@@ -528,7 +528,7 @@ const CommentSection = () => {
 
       {/* Write Review Section */}
       <div className="review-card mb-4">
-        <h4>Write a Review</h4>
+        <h5>Write a Review</h5>
         <div className="mb-3">
           <label className="form-label">Your Rating</label>
           <StarRating

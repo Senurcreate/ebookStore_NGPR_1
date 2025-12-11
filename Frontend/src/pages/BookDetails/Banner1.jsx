@@ -170,7 +170,7 @@ const BookHeaderSection = () => {
             <div className='body justify-content-center'>
                 {isPremium ? (
                     /* Premium Ebook Card */
-                    <div className="container mt-3">
+                    <div className="book-container container mt-3">
                         {/* Breadcrumb Navigation */}
                         <nav aria-label="breadcrumb">
                             <ol className="breadcrumb">
@@ -262,7 +262,7 @@ const BookHeaderSection = () => {
                     </div>
                 ) : (
                     /* Free Ebook Card */
-                    <div className="container mt-3">
+                    <div className="book-container  container mt-3">
                         {/* Breadcrumb Navigation */}
                         <nav aria-label="breadcrumb">
                             <ol className="breadcrumb">
@@ -361,7 +361,7 @@ const BookHeaderSection = () => {
             
             {isPremium ? (
                 /* Premium Audiobook Card */
-                <div className="container mt-3">
+                <div className="book-container container mt-3">
                     {/* Breadcrumb Navigation */}
                     <nav aria-label="breadcrumb">
                         <ol className="breadcrumb">
@@ -560,7 +560,7 @@ const BookHeaderSection = () => {
                 </div>
             ) : (
                 /* Free Audiobook Card */
-                <div className="container mt-3">
+                <div className="book-container container mt-3">
                     <nav aria-label="breadcrumb">
                         <ol className="breadcrumb">
                             <li className="breadcrumb-item">

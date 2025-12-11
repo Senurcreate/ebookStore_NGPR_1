@@ -1,7 +1,7 @@
 import React from 'react';
 import Hero from './Hero';
 import Navbar from "../../components/Navbar";
-import Categories from "./Categories";
+//import Categories from "./Categories";
 import NewReleases from "./NewReleases";
 import BestSellers from "./BestSellers";
 import Banner from "./Banner";
@@ -14,7 +14,7 @@ const Home = () => {
     <>
         <Hero/>
         <Navbar />
-        <Categories />  {/* next section */}
+        {/*<Categories />   next section */}
         <NewReleases />
         <Banner />
         <NewAudiobooks />

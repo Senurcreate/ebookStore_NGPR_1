@@ -1,6 +1,7 @@
 import React from "react";
 import { Routes, Route, useLocation } from "react-router-dom";
 import Navbar from "./components/Navbar";
+import Footer from "./components/Footer";
 import Home from "./pages/Home/Home";
 import LoginPage from "./pages/LoginPage";
 import SignupPage from "./pages/SignUpPage";
@@ -20,14 +21,20 @@ function MainLayout() {
 
   // Hide navbar on login and signup pages
   const hideNavbarPaths = ["/login", "/signup"];
+  const hideFooterPaths = ["/login", "/signup"];
+  const noPaddingPaths = ["/login", "/signup"];
+
   const showNavbar = !hideNavbarPaths.includes(location.pathname);
+  const showFooter = !hideFooterPaths.includes(location.pathname);
+  const showPadding = !noPaddingPaths.includes(location.pathname);
+  
 
 
   return (
     <AuthProvider>
     <div className="App">
       {showNavbar && <Navbar />}
-      <main className="py-4"> {/*  Added padding */}
+      <main className={showPadding ? "py-4" : ""}> {/*  Added padding */}
       <Routes>
         <Route path="/" element={<Home/>} />
         <Route path="/login" element={<LoginPage />} />
@@ -35,6 +42,7 @@ function MainLayout() {
         <Route path="/bookDetails" element={<BookDetails />} />
       </Routes>
       </main>
+      {showFooter && <Footer />}
     </div>
     </AuthProvider>
   );
