@@ -1,0 +1,112 @@
+
+$font-family-sans-serif: 'Open Sans', system-ui, -apple-system, sans-serif;
+$font-family-serif: 'Merriweather', serif;
+$font-family-base: $font-family-sans-serif;
+$headings-font-family: $font-family-serif; 
+
+
+$font-size-base: 1rem;
+$h1-font-size: $font-size-base * 2.5;
+$h2-font-size: $font-size-base * 2;
+$h3-font-size: $font-size-base * 1.75;
+
+
+$font-weight-light: 300;
+$font-weight-normal: 400;
+$font-weight-medium: 500;
+$font-weight-semibold: 600;
+$font-weight-bold: 700;
+
+$primary: #3B5FD2;
+$light: #F5F5F5;
+$secondary: #93A1F4;
+$dark: #1D1D20;
+
+
+
+* {
+  margin: 0;
+  padding: 0;
+  font-family: $font-family-base; 
+}
+
+
+h3 {
+  font-size: 1.25rem; 
+  font-family: $font-family-base; 
+}
+
+.footer {
+  margin: 0;
+  padding: 40px 55px 0px 55px;
+  height: 260px;
+  background-color: $primary; 
+  color: white; 
+  display: flex;
+  flex-direction: column;
+
+  .footer-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .footer-left {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+  }
+
+  .footer-nav {
+    display: flex;
+    gap: 40px;
+
+    a {
+      color: white;
+      text-decoration: none;
+    }
+  }
+
+  .footer-right {
+    font-size: 0.9375rem;
+  }
+  .contact-info-footer{
+    display: flex;
+    gap: $spacer;
+  }
+
+
+  .footer-bottom {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    margin-top: 50px;
+    margin-bottom: 0;
+    padding: 30px 25px 0px 0px;
+  }
+
+  .social-icons {
+    display: flex;
+    flex-direction: row;
+    gap: 24px;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .footer-links {
+    display: flex;
+    gap: 30px;
+    align-items: center; 
+    font-size: $font-family-base;
+    
+
+
+    a {
+      color: white;
+      text-decoration: none;
+    }
+    
+  }
+}
