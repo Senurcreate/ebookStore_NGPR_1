@@ -170,7 +170,7 @@ const BookHeaderSection = () => {
             <div className='body justify-content-center'>
                 {isPremium ? (
                     /* Premium Ebook Card */
-                    <div className="bd-container mt-3">
+                    <div className="container mt-3">
                         {/* Breadcrumb Navigation */}
                         <nav aria-label="breadcrumb">
                             <ol className="breadcrumb">

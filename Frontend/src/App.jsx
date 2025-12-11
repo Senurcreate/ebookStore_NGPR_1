@@ -23,15 +23,17 @@ function MainLayout() {
   // Hide navbar on login and signup pages
   const hideNavbarPaths = ["/login", "/signup"];
   const hideFooterPaths = ["/login", "/signup"];
+  const noPaddingPaths = ["/login", "/signup"];
   const showNavbar = !hideNavbarPaths.includes(location.pathname);
   const showFooter = !hideFooterPaths.includes(location.pathname);
+  const showPadding = !noPaddingPaths.includes(location.pathname);
 
 
   return (
     <AuthProvider>
     <div className="App">
       {showNavbar && <Navbar />}
-      <main className="py-4"> {/*  Added padding */}
+      <main className={showPadding ? "py-4" : ""}> {/*  Added padding */}
       <Routes>
         <Route path="/" element={<Home/>} />
         <Route path="/login" element={<LoginPage />} />
