@@ -9,7 +9,7 @@ import instagram from '../assets/footer-icons/instagram.svg';
 
 const Footer = () => {
   return (
-    <footer className="footer">
+    <footer className="footer pt-3">
     <div className="footer-container">
         {/* Left Section */}
         <div className="footer-left">
