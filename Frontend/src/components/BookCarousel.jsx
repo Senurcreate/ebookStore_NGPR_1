@@ -35,7 +35,7 @@ const BookCarousel = ({ title, books }) => {
   return (
     <section className="book-carousel-section py-5">
       <div className="container">
-        {title && <h2 className="section-title mb-4">{title}</h2>}
+        {title && <h3 className="section-title mb-4">{title}</h3>}
 
         <div className="book-carousel position-relative">
           

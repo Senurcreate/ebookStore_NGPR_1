@@ -461,7 +461,7 @@ const CommentSection = () => {
   };
 
   return (
-    <div className="container mt-5 comment-section">
+    <div className="container mt-5 comment-section mb-5">
       {/* Flag Popup */}
       {flagPopup.show && (
         <div 

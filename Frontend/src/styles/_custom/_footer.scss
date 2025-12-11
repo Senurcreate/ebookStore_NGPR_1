@@ -1,41 +1,3 @@
-
-$font-family-sans-serif: 'Open Sans', system-ui, -apple-system, sans-serif;
-$font-family-serif: 'Merriweather', serif;
-$font-family-base: $font-family-sans-serif;
-$headings-font-family: $font-family-serif; 
-
-
-$font-size-base: 1rem;
-$h1-font-size: $font-size-base * 2.5;
-$h2-font-size: $font-size-base * 2;
-$h3-font-size: $font-size-base * 1.75;
-
-
-$font-weight-light: 300;
-$font-weight-normal: 400;
-$font-weight-medium: 500;
-$font-weight-semibold: 600;
-$font-weight-bold: 700;
-
-$primary: #3B5FD2;
-$light: #F5F5F5;
-$secondary: #93A1F4;
-$dark: #1D1D20;
-
-
-
-* {
-  margin: 0;
-  padding: 0;
-  font-family: $font-family-base; 
-}
-
-
-h3 {
-  font-size: 1.25rem; 
-  font-family: $font-family-base; 
-}
-
 .footer {
   margin: 0;
   padding: 40px 55px 0px 55px;
@@ -44,6 +6,8 @@ h3 {
   color: white; 
   display: flex;
   flex-direction: column;
+  border-top-left-radius: 20px;
+  border-top-right-radius: 20px;
 
   .footer-container {
     display: flex;

@@ -1,0 +1,405 @@
+// styles/main.scss
+.profile-page {
+  background-color: white;
+  border-radius: 8px;
+  padding-top: px;
+ 
+  .content-container{
+    padding: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    min-width: auto;
+  }
+
+  .profile-container{
+    padding: 1.3rem;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    min-width: auto;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: visible;
+
+    &.editing-mode {
+      min-width: 350px;
+      flex-wrap: wrap;
+    }
+
+  .profile-picture-container-large {
+    position: relative;
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    overflow: hidden;
+    cursor: pointer;
+    border: 4px solid #dee2e6;
+    transition: border-color 0.3s;
+
+    &:hover {
+      border-color: #6c757d;
+      
+      .profile-picture-overlay-large {
+        opacity: 1;
+      }
+    }
+  }
+
+  .profile-picture-large {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .profile-picture-placeholder-large {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #6c757d, #495057);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 4rem;
+  }
+
+  .profile-picture-overlay-large {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s;
+    color: white;
+    font-size: 0.875rem;
+  }
+
+   }
+
+  /* Setting Items */
+  .setting-item {
+    padding: 0.5rem 0;
+    
+    .setting-info {
+      flex: 1;
+      min-width: 0; // Allows text truncation
+    }
+    
+    .setting-actions {
+      flex-shrink: 0;
+      margin-left: 1rem;
+    }
+    
+    h3 {
+      color: #343a40;
+      font-weight: 600;
+    }
+    
+    .text-muted {
+      color: #6c757d !important;
+    }
+  }
+
+  /* Editing Name Container */
+  .editing-name-container {
+    width: 100%;
+    
+    .form-control {
+      min-width: 200px;
+      flex-grow: 1;
+      transition: all 0.3s ease;
+    }
+    
+    .editing-buttons {
+      display: flex;
+      gap: 0.5rem;
+      flex-shrink: 0;
+    }
+  }
+
+  /* Name Edit Icon */
+  .edit-name-icon {
+    color: #6c757d;
+    font-size: 1rem;
+    transition: color 0.3s;
+
+    &:hover {
+      color: #495057;
+    }
+  }
+
+  /* Edit Mode Buttons */
+  .btn-success, .btn-danger {
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+  }
+
+  .btn-success {
+    background-color: #28a745;
+    border-color: #28a745;
+
+    &:hover {
+      background-color: #218838;
+      border-color: #1e7e34;
+    }
+  }
+
+  .btn-danger {
+    background-color: #dc3545;
+    border-color: #dc3545;
+
+    &:hover {
+      background-color: #c82333;
+      border-color: #bd2130;
+    }
+  }
+
+  /* Password Input Group */
+  .input-group {
+    .btn-outline-secondary {
+      border-color: #dee2e6;
+      color: #6c757d;
+      
+      &:hover {
+        background-color: #f8f9fa;
+        border-color: #adb5bd;
+      }
+    }
+  }
+
+  /* Form Switch */
+  .form-check.form-switch {
+    margin-bottom: 0;
+    
+    .form-check-input {
+      cursor: pointer;
+      width: 3rem;
+      height: 1.5rem;
+      
+      &:checked {
+        background-color: #0d6efd;
+        border-color: #0d6efd;
+      }
+    }
+  }
+
+  /* Wishlist Buttons */
+  .wishlist-button {
+    background: #ffffff;
+    border-radius: 8px;
+    padding: 0.6rem;
+    cursor: pointer;
+    transition: all 0.3s;
+    min-height: 140px;
+    min-width: 120px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    
+
+    &:hover {
+      background: #e9ecef;
+      border-color: #adb5bd;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+  }
+
+  .wishlist-button-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .wishlist-button-icon {
+    font-size: 2rem;
+    color: #6c757d;
+    margin-bottom: 0.5rem;
+  }
+
+  .wishlist-button-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 0.5rem;
+  }
+
+  .wishlist-button-count {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #0d6efd;
+  }
+
+  /* Sections */
+  .section {
+    padding: 0.5rem 0;
+
+    h2 {
+      color: #343a40;
+      font-weight: 600;
+    }
+  }
+
+  .section-content {
+    padding-left: 0.5rem;
+  }
+
+  hr {
+    border-top: 2px solid #dee2e6;
+    opacity: 1;
+  }
+
+  /* Font Size Selector */
+  .font-size-selector .btn.active {
+    background-color: #6c757d;
+    color: white;
+    border-color: #6c757d;
+  }
+
+  /* Form Elements */
+  .btn-link {
+    text-decoration: none;
+    padding: 0.25rem 0.5rem;
+    color: #6c757d;
+
+    &:hover {
+      color: #495057;
+      text-decoration: none;
+    }
+  }
+
+  .form-check-input:checked {
+    background-color: #6c757d;
+    border-color: #6c757d;
+  }
+
+  .text-muted {
+    color: #6c757d !important;
+  }
+
+  .h6 {
+    font-weight: 600;
+  }
+
+  /* Bootstrap Icons */
+  .bi {
+    vertical-align: -0.125em;
+  }
+
+  /* Border bottom for settings items */
+  .border-bottom {
+    border-bottom: 1px solid #e9ecef !important;
+  }
+
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    padding: 1rem;
+
+    .profile-container {
+      &.editing-mode {
+        min-width: auto;
+        padding: 1rem;
+      }
+    }
+
+    .setting-item {
+      flex-direction: column;
+      align-items: flex-start;
+      
+      .setting-info {
+        width: 100%;
+        margin-bottom: 1rem;
+      }
+      
+      .setting-actions {
+        width: 100%;
+        margin-left: 0;
+        display: flex;
+        justify-content: flex-end;
+      }
+    }
+
+    .editing-name-container {
+      flex-direction: column;
+      
+      .form-control {
+        width: 100%;
+        margin-bottom: 1rem;
+        margin-right: 0;
+      }
+      
+      .editing-buttons {
+        width: 100%;
+        justify-content: flex-start;
+      }
+    }
+
+    .profile-picture-container-large {
+      width: 120px;
+      height: 120px;
+      margin-bottom: 1rem;
+    }
+
+    .profile-picture-placeholder-large {
+      font-size: 3rem;
+    }
+
+    .wishlist-button {
+      min-height: 120px;
+      padding: 1rem;
+    }
+
+    .wishlist-button-icon {
+      font-size: 1.5rem;
+    }
+
+    .wishlist-button-count {
+      font-size: 1.5rem;
+    }
+
+    .font-size-selector .btn {
+      margin-bottom: 0.5rem;
+      margin-right: 0.5rem !important;
+    }
+
+    .profile-header .d-flex {
+      flex-direction: column;
+      align-items: flex-start !important;
+    }
+
+    .profile-picture-container-large {
+      margin-bottom: 1rem;
+    }
+  }
+
+  @media (max-width: 576px) {
+    .profile-container {
+      flex-direction: column;
+      align-items: flex-start;
+      
+      .profile-picture-container-large {
+        align-self: center;
+        margin-right: 0;
+        margin-bottom: 1rem;
+      }
+    }
+    
+    .setting-item {
+      .setting-actions {
+        .btn {
+          width: 100%;
+          margin-bottom: 0.5rem;
+        }
+      }
+    }
+  }
+}
