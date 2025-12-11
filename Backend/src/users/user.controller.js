@@ -1,0 +1,670 @@
+const User = require('./user.model');
+const Wishlist = require('../wishlist/wishlist.model');
+const Purchase = require('../purchases/purchase.model');
+const DownloadHistory = require('../downloads/download.model');
+const { auth } = require('../config/firebase.config');
+
+/**
+ * @desc    Get current user profile with stats
+ * @route   GET /api/users/me
+ * @access  Private
+ */
+const getCurrentUser = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id)
+      .select('-__v -updatedAt -firebaseUID -disabled')
+      .populate('wishlistCount')
+      .populate('purchaseCount')
+      .lean();
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
+    // Get additional stats
+    const [purchaseStats, downloadStats, wishlistCount] = await Promise.all([
+      Purchase.aggregate([
+        { $match: { user: req.user._id, status: 'completed' } },
+        { $group: { _id: null, count: { $sum: 1 }, total: { $sum: '$amount' } } }
+      ]),
+      DownloadHistory.countDocuments({ user: req.user._id }),
+      Wishlist.countDocuments({ user: req.user._id })
+    ]);
+
+    // Add stats to user object
+    user.stats = {
+      purchases: purchaseStats[0] || { count: 0, total: 0 },
+      downloads: downloadStats,
+      wishlist: wishlistCount,
+      readingHistory: user.readingHistory?.length || 0
+    };
+
+    res.status(200).json({
+      success: true,
+      data: user
+    });
+  } catch (error) {
+    console.error('Error fetching current user:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch user profile',
+      error: error.message
+    });
+  }
+};
+
+/**
+ * @desc    Update user profile
+ * @route   PUT /api/users/me
+ * @access  Private
+ */
+const updateProfile = async (req, res) => {
+  try {
+    const updates = {};
+    const allowedFields = ['displayName', 'photoURL', 'phoneNumber', 'preferences', 'isPremium'];
+    
+    // Only allow specific fields to be updated
+    Object.keys(req.body).forEach(key => {
+      if (allowedFields.includes(key)) {
+        updates[key] = req.body[key];
+      }
+    });
+
+    if (Object.keys(updates).length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'No valid fields to update'
+      });
+    }
+
+    const user = await User.findByIdAndUpdate(
+      req.user._id,
+      { $set: updates },
+      { new: true, runValidators: true }
+    ).select('-firebaseUID -__v -updatedAt -disabled');
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
+    // If displayName was updated, also update in Firebase
+    if (updates.displayName && auth) {
+      try {
+        await auth.updateUser(req.user.firebaseUID, {
+          displayName: updates.displayName
+        });
+      } catch (firebaseError) {
+        console.error('Error updating Firebase user:', firebaseError);
+      }
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Profile updated successfully',
+      data: user
+    });
+  } catch (error) {
+    console.error('Error updating profile:', error);
+    
+    if (error.name === 'ValidationError') {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation error',
+        errors: Object.values(error.errors).map(err => err.message)
+      });
+    }
+
+    res.status(500).json({
+      success: false,
+      message: 'Failed to update profile',
+      error: error.message
+    });
+  }
+};
+
+/**
+ * @desc    Get user's reading history
+ * @route   GET /api/users/me/reading-history
+ * @access  Private
+ */
+const getReadingHistory = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id)
+      .populate('readingHistory.book', 'title author coverImage type pages')
+      .select('readingHistory');
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
+    // Sort by last read date (newest first)
+    const sortedHistory = user.readingHistory.sort(
+      (a, b) => new Date(b.lastReadAt) - new Date(a.lastReadAt)
+    );
+
+    res.status(200).json({
+      success: true,
+      data: sortedHistory
+    });
+  } catch (error) {
+    console.error('Error fetching reading history:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch reading history',
+      error: error.message
+    });
+  }
+};
+
+/**
+ * @desc    Add book to reading history
+ * @route   POST /api/users/me/reading-history
+ * @access  Private
+ */
+const addToReadingHistory = async (req, res) => {
+  try {
+    const { bookId, progress } = req.body;
+
+    if (!bookId) {
+      return res.status(400).json({
+        success: false,
+        message: 'Book ID is required'
+      });
+    }
+
+    const user = await User.findById(req.user._id);
+    
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
+    // Check if book already in reading history
+    const existingIndex = user.readingHistory.findIndex(
+      item => item.book && item.book.toString() === bookId
+    );
+
+    if (existingIndex > -1) {
+      // Update existing entry
+      user.readingHistory[existingIndex].lastReadAt = new Date();
+      user.readingHistory[existingIndex].progress = progress || 
+        user.readingHistory[existingIndex].progress;
+    } else {
+      // Add new entry
+      user.readingHistory.push({
+        book: bookId,
+        progress: progress || 0,
+        lastReadAt: new Date()
+      });
+    }
+
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      message: 'Reading history updated',
+      readingHistory: user.readingHistory
+    });
+  } catch (error) {
+    console.error('Error updating reading history:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to update reading history',
+      error: error.message
+    });
+  }
+};
+
+/**
+ * @desc    Get user's dashboard stats
+ * @route   GET /api/users/me/stats
+ * @access  Private
+ */
+const getUserStats = async (req, res) => {
+    try {
+        const userId = req.user._id;
+
+        const [purchaseStats, downloadStats, wishlistCount, readingHistoryCount] = await Promise.all([
+            // Purchase stats
+            Purchase.aggregate([
+                { $match: { user: userId, status: 'completed' } },
+                {
+                    $lookup: {
+                        from: 'books',
+                        localField: 'book',
+                        foreignField: '_id',
+                        as: 'bookDetails'
+                    }
+                },
+                { $unwind: { path: '$bookDetails', preserveNullAndEmptyArrays: true } },
+                { 
+                    $group: { 
+                        _id: null, 
+                        count: { $sum: 1 }, 
+                        totalSpent: { $sum: '$amount' },
+                        averagePurchase: { $avg: '$amount' },
+                        ebookPurchases: {
+                            $sum: {
+                                $cond: [
+                                    { $and: [
+                                        { $eq: ['$bookDetails.type', 'ebook'] },
+                                        { $ifNull: ['$bookDetails.type', false] }
+                                    ]},
+                                    1,
+                                    0
+                                ]
+                            }
+                        },
+                        audiobookPurchases: {
+                            $sum: {
+                                $cond: [
+                                    { $and: [
+                                        { $eq: ['$bookDetails.type', 'audiobook'] },
+                                        { $ifNull: ['$bookDetails.type', false] }
+                                    ]},
+                                    1,
+                                    0
+                                ]
+                            }
+                        }
+                    } 
+                }
+            ]),
+            // Download stats
+            DownloadHistory.aggregate([
+                { $match: { user: userId } },
+                {
+                    $lookup: {
+                        from: 'books',
+                        localField: 'book',
+                        foreignField: '_id',
+                        as: 'bookDetails'
+                    }
+                },
+                { $unwind: { path: '$bookDetails', preserveNullAndEmptyArrays: true } },
+                { 
+                    $group: { 
+                        _id: null, 
+                        total: { $sum: 1 },
+                        free: { $sum: { $cond: [{ $eq: ['$downloadType', 'free'] }, 1, 0] } },
+                        purchased: { $sum: { $cond: [{ $eq: ['$downloadType', 'purchased'] }, 1, 0] } },
+                        ebookDownloads: {
+                            $sum: {
+                                $cond: [
+                                    { $and: [
+                                        { $eq: ['$bookDetails.type', 'ebook'] },
+                                        { $ifNull: ['$bookDetails.type', false] }
+                                    ]},
+                                    1,
+                                    0
+                                ]
+                            }
+                        },
+                        audiobookDownloads: {
+                            $sum: {
+                                $cond: [
+                                    { $and: [
+                                        { $eq: ['$bookDetails.type', 'audiobook'] },
+                                        { $ifNull: ['$bookDetails.type', false] }
+                                    ]},
+                                    1,
+                                    0
+                                ]
+                            }
+                        }
+                    }
+                }
+            ]),
+            // Wishlist count
+            Wishlist.countDocuments({ user: userId }),
+            // Reading history count
+            User.findById(userId).select('readingHistory').then(user => user ? user.readingHistory.length : 0)
+        ]);
+
+        // Recent downloads (last 5)
+        const recentDownloads = await DownloadHistory.find({ user: userId })
+            .populate('book', 'title author coverImage type pages audioLength')
+            .sort({ downloadedAt: -1 })
+            .limit(5);
+
+        // Recent purchases (last 5)
+        const recentPurchases = await Purchase.find({ user: userId, status: 'completed' })
+            .populate('book', 'title author coverImage price type')
+            .sort({ purchasedAt: -1 })
+            .limit(5);
+
+        res.status(200).json({
+            success: true,
+            data: {
+                purchases: purchaseStats[0] || { 
+                    count: 0, 
+                    totalSpent: 0, 
+                    averagePurchase: 0,
+                    ebookPurchases: 0,
+                    audiobookPurchases: 0 
+                },
+                downloads: downloadStats[0] || { 
+                    total: 0, 
+                    free: 0, 
+                    purchased: 0,
+                    ebookDownloads: 0,
+                    audiobookDownloads: 0 
+                },
+                wishlist: wishlistCount,
+                readingHistory: readingHistoryCount,
+                recentDownloads,
+                recentPurchases
+            }
+        });
+    } catch (error) {
+        console.error('Error fetching user stats:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to fetch user statistics',
+            error: error.message
+        });
+    }
+};
+/**
+ * @desc    Update user preferences
+ * @route   PATCH /api/users/me/preferences
+ * @access  Private
+ */
+const updatePreferences = async (req, res) => {
+  try {
+    const { preferences } = req.body;
+
+    if (!preferences || typeof preferences !== 'object') {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid preferences data'
+      });
+    }
+
+    const user = await User.findByIdAndUpdate(
+      req.user._id,
+      { $set: { preferences } },
+      { new: true, runValidators: true }
+    ).select('preferences');
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Preferences updated successfully',
+      data: user.preferences
+    });
+  } catch (error) {
+    console.error('Error updating preferences:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to update preferences',
+      error: error.message
+    });
+  }
+};
+
+/**
+ * @desc    Get user's purchase history (alternative to dedicated purchase API)
+ * @route   GET /api/users/me/purchases
+ * @access  Private
+ */
+const getUserPurchases = async (req, res) => {
+  try {
+    const { page = 1, limit = 10 } = req.query;
+    const skip = (page - 1) * limit;
+
+    const [purchases, total] = await Promise.all([
+      Purchase.find({ user: req.user._id })
+        .populate('book', 'title author coverImage price type')
+        .sort({ purchasedAt: -1 })
+        .skip(skip)
+        .limit(parseInt(limit)),
+      Purchase.countDocuments({ user: req.user._id })
+    ]);
+
+    res.status(200).json({
+      success: true,
+      data: purchases,
+      pagination: {
+        page: parseInt(page),
+        limit: parseInt(limit),
+        total,
+        pages: Math.ceil(total / limit),
+        hasNext: (skip + limit) < total,
+        hasPrevious: page > 1
+      }
+    });
+  } catch (error) {
+    console.error('Error fetching user purchases:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch purchases',
+      error: error.message
+    });
+  }
+};
+
+/**
+ * @desc    Get user's download history (alternative to dedicated download API)
+ * @route   GET /api/users/me/download-history
+ * @access  Private
+ */
+const getUserDownloadHistory = async (req, res) => {
+  try {
+    const { page = 1, limit = 20 } = req.query;
+    const skip = (page - 1) * limit;
+
+    const [downloads, total] = await Promise.all([
+      DownloadHistory.find({ user: req.user._id })
+        .populate('book', 'title author coverImage type')
+        .populate('purchase', 'amount purchasedAt')
+        .sort({ downloadedAt: -1 })
+        .skip(skip)
+        .limit(parseInt(limit)),
+      DownloadHistory.countDocuments({ user: req.user._id })
+    ]);
+
+    res.status(200).json({
+      success: true,
+      data: downloads,
+      pagination: {
+        page: parseInt(page),
+        limit: parseInt(limit),
+        total,
+        pages: Math.ceil(total / limit),
+        hasNext: (skip + limit) < total,
+        hasPrevious: page > 1
+      }
+    });
+  } catch (error) {
+    console.error('Error fetching download history:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch download history',
+      error: error.message
+    });
+  }
+};
+
+
+/**
+ * @desc    Get all users (Admin only)
+ * @route   GET /api/users
+ * @access  Private/Admin
+ */
+const getAllUsers = async (req, res) => {
+  try {
+    const { page = 1, limit = 20, search = '', role = '' } = req.query;
+    
+    // Build query
+    const query = {};
+    
+    if (search) {
+      query.$or = [
+        { email: { $regex: search, $options: 'i' } },
+        { displayName: { $regex: search, $options: 'i' } }
+      ];
+    }
+    
+    if (role) {
+      query.role = role;
+    }
+
+    // Pagination
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+    
+    // Get users with pagination
+    const users = await User.find(query)
+      .select('-firebaseUID -__v -updatedAt')
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(parseInt(limit))
+      .lean();
+
+    // Get total count
+    const total = await User.countDocuments(query);
+
+    res.status(200).json({
+      success: true,
+      data: users,
+      pagination: {
+        page: parseInt(page),
+        limit: parseInt(limit),
+        total,
+        pages: Math.ceil(total / parseInt(limit)),
+        hasNext: (skip + parseInt(limit)) < total,
+        hasPrevious: parseInt(page) > 1
+      }
+    });
+  } catch (error) {
+    console.error('Error fetching all users:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch users',
+      error: error.message
+    });
+  }
+};
+
+/**
+ * @desc    Get user by ID (Admin only)
+ * @route   GET /api/users/:id
+ * @access  Private/Admin
+ */
+const getUserById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    const user = await User.findById(id)
+      .select('-firebaseUID -__v')
+      .lean();
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: user
+    });
+  } catch (error) {
+    console.error('Error fetching user by ID:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch user',
+      error: error.message
+    });
+  }
+};
+
+/**
+ * @desc    Delete user account (Admin only)
+ * @route   DELETE /api/users/:id
+ * @access  Private/Admin
+ */
+const deleteUser = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Prevent deleting self
+    if (id === req.user._id.toString()) {
+      return res.status(400).json({
+        success: false,
+        message: 'You cannot delete your own account'
+      });
+    }
+
+    const user = await User.findById(id);
+    
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
+    // Delete from Firebase if available
+    if (auth) {
+      try {
+        await auth.deleteUser(user.firebaseUID);
+      } catch (firebaseError) {
+        console.error('Error deleting Firebase user:', firebaseError);
+      }
+    }
+
+    // Delete from MongoDB
+    await User.findByIdAndDelete(id);
+
+    // Clean up user's wishlist
+    await Wishlist.deleteMany({ user: id });
+
+    res.status(200).json({
+      success: true,
+      message: 'User deleted successfully'
+    });
+  } catch (error) {
+    console.error('Error deleting user:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to delete user',
+      error: error.message
+    });
+  }
+};
+
+// Keep the existing admin functions as they are
+// getAllUsers, getUserById, deleteUser remain the same
+
+module.exports = {
+  getCurrentUser,
+  updateProfile,
+  getReadingHistory,
+  addToReadingHistory,
+  getUserStats,
+  updatePreferences,
+  getUserPurchases,
+  getUserDownloadHistory,
+  getAllUsers,
+  getUserById,
+  deleteUser
+};
