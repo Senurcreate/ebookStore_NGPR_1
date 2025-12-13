@@ -20,6 +20,7 @@
     "react-bootstrap": "^2.10.10",
     "react-dom": "^19.1.1",
     "react-hook-form": "7.67.0",
+    "react-icons": "5.5.0",
     "react-redux": "9.2.0",
     "react-router-dom": "^7.9.3"
   },
