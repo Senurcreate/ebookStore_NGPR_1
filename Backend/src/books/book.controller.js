@@ -422,7 +422,7 @@ async function getBookById(req, res) {
                 canDownload: downloadEligibility?.canDownload || book.price === 0,
                 isFree: book.price === 0,
                 requiresPurchase: book.price > 0 && !downloadEligibility?.canDownload,
-                previewAvailable: book.preview.enabled,
+                previewAvailable: book.preview?.enabled || false,
                 downloadEligibility: downloadEligibility,
                 purchaseInfo: purchaseInfo
             },

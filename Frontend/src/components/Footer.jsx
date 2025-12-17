@@ -1,6 +1,7 @@
 import React from "react";
 import "../styles/main.scss";
 import { HiOutlineLocationMarker, HiOutlineMail, HiOutlinePhone } from "react-icons/hi";
+import footerLogo from '../assets/footer-logo.svg';
 import facebook from '../assets/footer-icons/facebook.svg';
 import telegram from '../assets/footer-icons/telegram.svg';
 import twitter from '../assets/footer-icons/twitter.svg';
@@ -9,12 +10,12 @@ import instagram from '../assets/footer-icons/instagram.svg';
 
 const Footer = () => {
   return (
-    <footer className="footer pt-3">
+    <footer className="footer">
     <div className="footer-container">
         {/* Left Section */}
         <div className="footer-left">
           <div className="footer-logo">
-            <img src="/src/assets/footer-logo.svg" alt="Ayod Logo" />
+            <img src={footerLogo} alt="Ayod Logo" />
           </div>
          
         </div>
@@ -30,30 +31,28 @@ const Footer = () => {
         {/* Right Section */}
         <div className="footer-right">
           <h3>Contact Us</h3>
-          <p><HiOutlineLocationMarker /> No. 09 Pepiliyana Rd, Nugegoda</p>
+          <p className="mb-2"><HiOutlineLocationMarker className="me-2"/> No. 09 Pepiliyana Rd, Nugegoda</p>
          <div className="contact-info-footer">
-            <dv><HiOutlineMail /> info@ayod.lk</dv>
-            <dv><HiOutlinePhone /> 071 123 4567</dv>
+            <div><HiOutlineMail className="me-2"/> info@ayod.lk</div>
+            <div><HiOutlinePhone className="me-2"/> 071 123 4567</div>
          </div> 
         </div>
-      
-    </div>
+        </div>
+        
+        <div className="footer-separator"></div>
+
       <div className="footer-bottom">
          <div className="social-icons">
               <a href="#">
-                
                 <img src={facebook} alt="Facebook" />
               </a>
               <a href="#">
-                
                 <img src={twitter} alt="Twitter" />
               </a>
               <a href="#">
-                
                 <img src={telegram} alt="Telegram" />
               </a>
               <a href="#">
-                
                 <img src={instagram} alt="Instagram" />
               </a>
           </div>

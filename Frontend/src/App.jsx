@@ -1,5 +1,6 @@
 import React from "react";
 import { Routes, Route, useLocation } from "react-router-dom";
+import ScrollToTop from "./components/ScrollToTop";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import Home from "./pages/Home/Home";
@@ -33,6 +34,7 @@ function MainLayout() {
   return (
     <AuthProvider>
     <div className="App">
+      <ScrollToTop />
       {showNavbar && <Navbar />}
       <main className={showPadding ? "py-4" : ""}> {/*  Added padding */}
       <Routes>
