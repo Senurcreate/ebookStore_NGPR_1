@@ -47,7 +47,7 @@ const BookCarousel = ({ title, books }) => {
           )}
 
           <div className="carousel-container" ref={scrollRef} onScroll={checkScroll}>
-            <div className="book-row">
+            <div className="book-row py-2">
               {books.map((book) => (
                 <BookCard key={book.id} book={book} />
               ))}

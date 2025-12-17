@@ -1,27 +1,76 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
+import { useParams } from "react-router-dom"; // 1. Import useParams
 import "../../styles/main.scss";
 
-const BookDetails = ({ bookType = "ebook", bookData }) => {
-  const defaultBookData = {
-    title: "The Midnight Library",
-    author: "Matt Haig",
-    publisher: "Canongate Books",
-    publicationDate: "August 13, 2020",
-    edition: "First Edition",
-    genre: "Contemporary Fiction, Fantasy",
-    language: "English",
-    isbn: "978-1786892737",
+// 2. Import your service
+import { fetchBookById } from "../../services/book.service";
 
-    // Audiobook
-    narrator: "Carey Mulligan",
-    duration: "8 hours 50 minutes",
+const BookDetails = () => {
+  // 3. Get ID from URL
+  const { id } = useParams();
 
-    // Ebook
-    fileSize: "2.5 MB",
-    ebookFormat: "EPUB"
-  };
+  // 4. State to hold the book data
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const data = bookData || defaultBookData;
+  // 5. Fetch Data
+  useEffect(() => {
+    const loadBookData = async () => {
+      try {
+        setLoading(true);
+        const response = await fetchBookById(id);
+
+        if (response.success && response.book) {
+          const rawBook = response.book;
+          const formattedInfo = response.book.formattedInfo || {};
+
+          // 6. Map Backend Data to UI Structure
+          // We transform the API response into the format this component expects
+          setData({
+            title: rawBook.title,
+            author: rawBook.author,
+            publisher: rawBook.publisher,
+            // Format the date nicely
+            publicationDate: new Date(rawBook.publication_date).toLocaleDateString('en-US', {
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric'
+            }),
+            edition: "Standard", // Default value (field not in current schema)
+            genre: rawBook.genre,
+            language: rawBook.language,
+            isbn: rawBook.isbn,
+            type: rawBook.type, // 'ebook' or 'audiobook'
+
+            // Audiobook specific mapping
+            narrator: formattedInfo.narratorsList || "Unknown",
+            duration: formattedInfo.audioLength || "Unknown",
+
+            // Ebook specific mapping
+            fileSize: formattedInfo.fileSize || "Unknown", // Backend sends "2.5 MB"
+            ebookFormat: rawBook.fileFormat || "PDF"
+          });
+        }
+      } catch (err) {
+        setError("Failed to load details");
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (id) {
+      loadBookData();
+    }
+  }, [id]);
+
+  // 7. Loading/Error States (Simple text to not break layout)
+  if (loading) return <div className="container mt-5 text-center"><p>Loading details...</p></div>;
+  if (!data) return null;
+
+  // Determine book type from fetched data
+  const bookType = data.type === "audiobook" ? "audiobook" : "ebook";
 
   // Common fields
   const leftFields = [

@@ -2,7 +2,7 @@
   width: 14rem;
   border: none;
   border-radius: 1rem;
-  padding: 0.5rem;
+  padding: 0.7rem;
   text-align: left;
   background-color: #F2F6FF;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
@@ -12,14 +12,18 @@
 
   .card-img-top {
     border-radius: 0.75rem;
-    height: auto;
+    height: 300px;
+    min-height: 300px;
+    min-width: 200px;
     width: 100%;
     object-fit: cover;
     cursor: pointer;
+    background: linear-gradient(135deg, #727272 0%, #9c9c9c 100%);
+  
   }
 
   .card-body {
-    padding: 0.8rem 0.8rem 0.8rem 0.4rem;
+    padding: 0.8rem 0 0.6rem 0 !important;
   }
 
   .card-title {

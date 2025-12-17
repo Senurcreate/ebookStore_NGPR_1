@@ -8,7 +8,7 @@ const BookCard = ({ book }) => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  // Get cart items from Redux store
+  // Get cart items from Redux storek
   const cartItems = useSelector((state) => state.cart.cartItems);
   
   if (book.type !== "ebook") return null;
@@ -50,7 +50,7 @@ const BookCard = ({ book }) => {
             } else if (book.rating >= starValue - 0.5) {
               return <i key={i} className="bi bi-star-half text-warning"></i>;
             } else {
-              return <i key={i} className="bi bi-star text-secondary"></i>;
+              return <i key={i} className="bi bi-star text-warning"></i>;
             }
           })}
           <span className="ms-1">{book.rating}</span>

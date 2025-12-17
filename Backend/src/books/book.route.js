@@ -2,24 +2,27 @@
 const express = require('express');
 const router = express.Router();
 const bookController = require('./book.controller');
+const { verifyFirebaseToken } = require('../middleware/firebase.middleware'); // Assuming you have this imported
+
 
 // frontend => backend server => controller => book schema  => database => send to server => back to the frontend
 
-// Create
-router.post('/create-book', bookController.createBook);
-
-// Read all
+// --- 🔓 PUBLIC ROUTES (No Token Required) ---
+// Anyone should be able to see the list of books
 router.get('/', bookController.getAllBooks);
-
-// Read one
 router.get('/:id', bookController.getBookById);
 
-// Update
-router.put('/:id', bookController.updateBook);    // or router.patch if partial updates
+// --- 🔒 PROTECTED ROUTES (Token Required) ---
+// Apply middleware only to routes below this line
+router.use(verifyFirebaseToken);
 
-// Delete
+router.post('/create-book', bookController.createBook);
+router.put('/:id', bookController.updateBook);
 router.delete('/:id', bookController.deleteBook);
 
+// Note: If you have an upload route, that usually needs protection too
+const multer = require('multer');
+const upload = multer({ dest: 'uploads/' });
+router.post('/upload', upload.single('file'), bookController.uploadFile);
+
 module.exports = router;
-
-
