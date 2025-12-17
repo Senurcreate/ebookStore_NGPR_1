@@ -1,5 +1,5 @@
 // This function takes a raw book from the database and converts it 
-// into the exact format your React components expect.
+
 
 export const formatBookData = (book) => {
     return {

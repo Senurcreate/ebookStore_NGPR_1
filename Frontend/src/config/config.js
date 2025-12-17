@@ -16,9 +16,9 @@ export const BOOK_TYPES = {
     AUDIOBOOK: "audiobook"
 };
 
-// API endpoints - make sure these match your backend routes
+
 export const API_ENDPOINTS = {
-    // Correct: Remove duplicate /api if your backend already includes it in routes
+    
     BOOKS: `${API_BASE_URL}/api/books`,
     BOOK_BY_ID: (id) => `${API_BASE_URL}/api/books/${id}`,
     SEARCH_BOOKS: `${API_BASE_URL}/api/books/search/advanced`,

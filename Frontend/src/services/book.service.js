@@ -25,7 +25,7 @@ export const fetchBookById = async (id) => {
 // Get New Releases (Sorted by creation date)
 export const fetchNewReleases = async () => {
     try {
-        // Based on your backend code, we can use sortBy=createdAt
+        // sortBy=createdAt
         const response = await axios.get('/books?sortBy=createdAt&sortOrder=desc&limit=10');
         return response.data;
     } catch (error) {
@@ -37,7 +37,7 @@ export const fetchNewReleases = async () => {
 // 2. Best Sellers (Sorted by rating or trending flag)
 export const fetchBestSellers = async () => {
     try {
-        // You can sort by rating OR filter by trending=true
+        // sort by rating OR filter by trending=true
         const response = await axios.get('/books?sortBy=ratingStats.average&sortOrder=desc&limit=10');
         return response.data;
     } catch (error) {

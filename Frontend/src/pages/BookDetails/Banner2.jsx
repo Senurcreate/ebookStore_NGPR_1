@@ -69,8 +69,6 @@ const BookDetails = () => {
   if (loading) return <div className="container mt-5 text-center"><p>Loading details...</p></div>;
   if (!data) return null;
 
-  // --- EXISTING LOGIC BELOW (No Style Changes) ---
-
   // Determine book type from fetched data
   const bookType = data.type === "audiobook" ? "audiobook" : "ebook";
 
