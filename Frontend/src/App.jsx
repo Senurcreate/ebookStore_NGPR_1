@@ -40,6 +40,7 @@ function MainLayout() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
         <Route path="/bookDetails" element={<BookDetails />} />
+        <Route path="/books/:id" element={<BookDetails />} />
       </Routes>
       </main>
       {showFooter && <Footer />}

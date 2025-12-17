@@ -49,7 +49,19 @@ const bookSchema = new mongoose.Schema({
     coverImage: {
         type: String,
         required: true,
-        trim: true
+        trim: true,
+        validate: {
+            validator: function(v) {
+                // Allow both Cloudinary URLs and Goodreads URLs
+                if (v.startsWith('https://res.cloudinary.com/') || 
+                    v.startsWith('https://images.gr-assets.com/') ||
+                    v.startsWith('https://i.gr-assets.com/')) {
+                    return true;
+                }
+                return false;
+            },
+            message: 'Cover image must be a valid Cloudinary or Goodreads URL'
+        }
     },
     type: {
         type: String,
@@ -111,33 +123,60 @@ const bookSchema = new mongoose.Schema({
     },
     
     // Audio sample file (separate from main audio file)
-    audioSampleDriveUrl: {
+    audioSampleCloudinaryUrl: {
         type: String,
         trim: true,
         validate: {
             validator: function(v) {
                 if (!v || this.type !== 'audiobook') return true;
-                const SimpleStorageService = require('../services/simpleStorage.service');
-                return SimpleStorageService.isValidDriveUrl(v);
+                return v.startsWith('https://res.cloudinary.com/');
             },
-            message: 'Please provide a valid Google Drive URL for audio sample'
+            message: 'Please provide a valid Cloudinary URL for audio sample'
         }
     },
     
-    // Main file (ebook or audiobook)
-    driveUrl: {
+    // Main file (ebook or audiobook) stored in Cloudinary
+    cloudinaryUrl: {
         type: String,
         required: true,
         trim: true,
         validate: {
             validator: function(v) {
-                const SimpleStorageService = require('../services/simpleStorage.service');
-                return SimpleStorageService.isValidDriveUrl(v);
+                return v.startsWith('https://res.cloudinary.com/');
             },
-            message: 'Please provide a valid Google Drive URL or file ID'
+            message: 'Please provide a valid Cloudinary URL'
         }
     },
     
+    // Cloudinary specific fields
+    cloudinaryInfo: {
+        publicId: {
+            type: String,
+            default: null
+        },
+        resourceType: {
+            type: String,
+            enum: ['image', 'video', 'raw', 'auto'],
+            default: 'auto'
+        },
+        format: {
+            type: String,
+            default: null
+        },
+        secureUrl: {
+            type: String,
+            default: null
+        },
+        bytes: {
+            type: Number,
+            default: 0
+        },
+        duration: {
+            type: Number,
+            default: 0 // For audiobooks/videos
+        }
+    }, 
+
     // Auto-calculated fields (populated by pre-save middleware)
     fileInfo: {
         fileId: {
@@ -244,14 +283,16 @@ const bookSchema = new mongoose.Schema({
     // Additional metadata
     fileSize: {
         type: Number,
-        default: 0 // Size in bytes
+        default: function() {
+            return this.cloudinaryInfo.bytes || 0;
+        }
     },
     fileFormat: {
         type: String,
         default: function() {
             if (this.type === 'ebook') return 'PDF';
             if (this.type === 'audiobook') return 'MP3';
-            return 'Unknown';
+            return this.cloudinaryInfo.format || 'Unknown';
         }
     },
     
@@ -260,6 +301,15 @@ const bookSchema = new mongoose.Schema({
         type: String,
         enum: ['Standard', 'High', 'Lossless'],
         default: 'Standard'
+    },
+    // Cloudinary folder for organization
+    cloudinaryFolder: {
+        type: String,
+        default: function() {
+            if (this.type === 'ebook') return 'ebooks';
+            if (this.type === 'audiobook') return 'audiobooks';
+            return 'books';
+        }
     },
     
     createdAt: {
@@ -350,13 +400,12 @@ bookSchema.virtual('formattedFileSize').get(function() {
     return `${size.toFixed(1)} ${units[unitIndex]}`;
 });
 
-// Virtual for audio sample URL (using separate sample file)
+// Virtual for audio sample URL
 bookSchema.virtual('audioSampleUrl').get(function() {
     if (this.type !== 'audiobook') return null;
     
-    if (this.audioSampleDriveUrl) {
-        const SimpleStorageService = require('../services/simpleStorage.service');
-        return SimpleStorageService.generateDownloadLink(this.audioSampleDriveUrl);
+    if (this.audioSampleCloudinaryUrl) {
+        return this.audioSampleCloudinaryUrl;
     }
     
     // Fallback to main file if no sample provided
@@ -378,21 +427,21 @@ bookSchema.virtual('audioEmbedCode').get(function() {
     `;
 });
 
-// Middleware to auto-populate fileInfo when driveUrl is set
+// Middleware to auto-populate fileInfo when cloudinaryUrl is set
 bookSchema.pre('save', function(next) {
-    const SimpleStorageService = require('../services/simpleStorage.service');
-    
-    // Update file info if driveUrl changed or fileInfo is empty
-    if (this.isModified('driveUrl') || !this.fileInfo?.fileId) {
-        const fileId = SimpleStorageService.extractFileId(this.driveUrl);
+    // Update file info if cloudinaryUrl changed or fileInfo is empty
+    if (this.isModified('cloudinaryUrl') || !this.fileInfo?.downloadUrl) {
+        // For Cloudinary, the URL can be used directly as download URL
+        this.fileInfo = {
+            downloadUrl: this.cloudinaryUrl,
+            previewUrl: this.cloudinaryUrl, // Same URL for preview
+            embedCode: this.generateCloudinaryEmbedCode()
+        };
         
-        if (fileId) {
-            this.fileInfo = {
-                fileId: fileId,
-                downloadUrl: SimpleStorageService.generateDownloadLink(this.driveUrl),
-                previewUrl: SimpleStorageService.generatePreviewLink(this.driveUrl),
-                embedCode: SimpleStorageService.generateEmbedCode(this.driveUrl)
-            };
+        // Extract public ID from Cloudinary URL
+        const urlMatch = this.cloudinaryUrl.match(/res\.cloudinary\.com\/[^\/]+\/(?:video|image|raw)\/upload\/(?:v\d+\/)?(.+?)\.\w+$/);
+        if (urlMatch && !this.cloudinaryInfo.publicId) {
+            this.cloudinaryInfo.publicId = urlMatch[1];
         }
     }
     
@@ -409,13 +458,11 @@ bookSchema.pre('save', function(next) {
     // Clear type-specific fields if type changes
     if (this.isModified('type')) {
         if (this.type === 'ebook') {
-            // Clear audiobook fields
             if (this.audioLength !== undefined) delete this.audioLength;
             if (this.narrators !== undefined) delete this.narrators;
-            if (this.audioSampleDriveUrl !== undefined) delete this.audioSampleDriveUrl;
+            if (this.audioSampleCloudinaryUrl !== undefined) delete this.audioSampleCloudinaryUrl;
             if (this.audioQuality !== undefined) delete this.audioQuality;
         } else if (this.type === 'audiobook') {
-            // Clear ebook fields
             if (this.pages !== undefined) delete this.pages;
         }
     }
@@ -432,139 +479,53 @@ bookSchema.pre('save', function(next) {
     next();
 });
 
-// Static method to update rating stats
-bookSchema.statics.updateRatingStats = async function(bookId) {
-    try {
-        const Review = require('../reviews/review.model');
-        
-        const stats = await Review.aggregate([
-            { $match: { book: mongoose.Types.ObjectId(bookId), isHidden: { $ne: true } } },
-            {
-                $group: {
-                    _id: '$book',
-                    average: { $avg: '$rating' },
-                    count: { $sum: 1 },
-                    distribution: {
-                        $push: '$rating'
-                    }
-                }
-            }
-        ]);
-        
-        if (stats.length > 0) {
-            const stat = stats[0];
-            const distribution = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
-            
-            // Count each rating
-            stat.distribution.forEach(rating => {
-                const intRating = Math.round(rating);
-                if (intRating >= 1 && intRating <= 5) {
-                    distribution[intRating] = (distribution[intRating] || 0) + 1;
-                }
-            });
-            
-            await this.findByIdAndUpdate(bookId, {
-                'ratingStats.average': parseFloat(stat.average.toFixed(1)),
-                'ratingStats.count': stat.count,
-                'ratingStats.distribution': distribution
-            });
-            
-            return {
-                average: parseFloat(stat.average.toFixed(1)),
-                count: stat.count,
-                distribution: distribution
-            };
-        } else {
-            // Reset if no reviews
-            await this.findByIdAndUpdate(bookId, {
-                'ratingStats.average': 0,
-                'ratingStats.count': 0,
-                'ratingStats.distribution': { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 }
-            });
-            
-            return {
-                average: 0,
-                count: 0,
-                distribution: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 }
-            };
-        }
-    } catch (error) {
-        console.error('Error updating rating stats:', error);
-        throw error;
+// Method to generate Cloudinary embed code
+bookSchema.methods.generateCloudinaryEmbedCode = function() {
+    if (this.type === 'audiobook') {
+        return `
+            <audio controls style="width: 100%;">
+                <source src="${this.cloudinaryUrl}" type="audio/mpeg">
+                Your browser does not support the audio element.
+            </audio>
+        `;
+    } else if (this.type === 'ebook') {
+        // For ebooks, we can embed PDF using iframe
+        return `
+            <iframe 
+                src="${this.cloudinaryUrl}#view=fitH" 
+                width="100%" 
+                height="600px" 
+                frameborder="0"
+                style="border: 1px solid #ddd;">
+            </iframe>
+        `;
     }
+    return null;
 };
 
-// Method to check download eligibility
-bookSchema.methods.checkDownloadEligibility = async function(userId) {
-    const Purchase = require('../purchases/purchase.model');
-    const SimpleStorageService = require('../services/simpleStorage.service');
-    
-    // Free books - anyone can download
-    if (this.price === 0) {
-        return {
-            canDownload: true,
-            reason: 'Free book',
-            downloadsRemaining: this.downloadPolicy.maxDownloads,
-            isFree: true,
-            type: this.type
-        };
+
+// Method to generate Cloudinary embed code
+bookSchema.methods.generateCloudinaryEmbedCode = function() {
+    if (this.type === 'audiobook') {
+        return `
+            <audio controls style="width: 100%;">
+                <source src="${this.cloudinaryUrl}" type="audio/mpeg">
+                Your browser does not support the audio element.
+            </audio>
+        `;
+    } else if (this.type === 'ebook') {
+        // For ebooks, we can embed PDF using iframe
+        return `
+            <iframe 
+                src="${this.cloudinaryUrl}#view=fitH" 
+                width="100%" 
+                height="600px" 
+                frameborder="0"
+                style="border: 1px solid #ddd;">
+            </iframe>
+        `;
     }
-    
-    // Premium books - need purchase
-    const purchase = await Purchase.findOne({
-        user: userId,
-        book: this._id,
-        status: 'completed'
-    });
-    
-    if (!purchase) {
-        return {
-            canDownload: false,
-            reason: 'Purchase required',
-            requiresPurchase: true,
-            price: this.price,
-            type: this.type
-        };
-    }
-    
-    // Check download count
-    if (purchase.downloadedCount >= this.downloadPolicy.maxDownloads) {
-        return {
-            canDownload: false,
-            reason: `Maximum downloads reached (${this.downloadPolicy.maxDownloads})`,
-            downloadsUsed: purchase.downloadedCount,
-            maxDownloads: this.downloadPolicy.maxDownloads,
-            type: this.type
-        };
-    }
-    
-    // Check time window
-    const windowCheck = SimpleStorageService.checkDownloadWindow(
-        purchase.purchasedAt,
-        this.downloadPolicy.validityHours
-    );
-    
-    if (!windowCheck.canDownload) {
-        return {
-            canDownload: false,
-            reason: `Download window expired (${this.downloadPolicy.validityHours} hours)`,
-            purchasedAt: purchase.purchasedAt,
-            hoursPassed: windowCheck.hoursPassed,
-            expiresAt: windowCheck.expiresAt,
-            type: this.type
-        };
-    }
-    
-    // All checks passed
-    return {
-        canDownload: true,
-        reason: 'Eligible for download',
-        purchase: purchase._id,
-        downloadsRemaining: this.downloadPolicy.maxDownloads - purchase.downloadedCount,
-        expiresAt: windowCheck.expiresAt,
-        hoursRemaining: windowCheck.hoursRemaining,
-        type: this.type
-    };
+    return null;
 };
 
 // Method to get preview content based on type
@@ -609,15 +570,16 @@ bookSchema.methods.getPreviewContent = function() {
     };
 };
 
-// Method to get download URL (with type-specific naming)
+// Method to get download URL
 bookSchema.methods.getDownloadInfo = function() {
     const baseInfo = {
         url: this.fileInfo?.downloadUrl,
-        fileId: this.fileInfo?.fileId,
+        publicId: this.cloudinaryInfo.publicId,
         fileName: `${this.title.replace(/[^a-z0-9]/gi, '_')}.${this.fileFormat.toLowerCase()}`,
         type: this.type,
         format: this.fileFormat,
-        size: this.formattedFileSize
+        size: this.formattedFileSize,
+        cloudinaryUrl: this.cloudinaryUrl
     };
     
     if (this.type === 'audiobook') {
@@ -629,6 +591,7 @@ bookSchema.methods.getDownloadInfo = function() {
     
     return baseInfo;
 };
+
 
 // Static method to find books by type
 bookSchema.statics.findByType = function(type, query = {}) {

@@ -1,6 +1,6 @@
 const Book = require('./book.model');
 //const Purchase = require('../purchases/purchase.model');
-const SimpleStorageService = require('../services/simpleStorage.service');
+const SimpleStorageService = require('../services/cloudinary.service');
 
 /**
  * Create a new book with Google Drive integration (supports both ebooks and audiobooks)
@@ -50,32 +50,14 @@ async function createBook(req, res) {
             });
         }
 
-        // Validate Google Drive URL
-        if (!SimpleStorageService.isValidDriveUrl(body.driveUrl)) {
+        // Validate Cloudinary URL
+        if (!CloudinaryService.isValidCloudinaryUrl(body.cloudinaryUrl)) {
             return res.status(400).json({
                 success: false,
-                message: 'Invalid Google Drive URL for main file',
-                examples: [
-                    'https://drive.google.com/file/d/YOUR_FILE_ID/view',
-                    'https://drive.google.com/open?id=YOUR_FILE_ID',
-                    'Just the file ID (33 characters)'
-                ]
+                message: 'Invalid Cloudinary URL for main file'
             });
         }
 
-        // Validate audio sample URL if provided for audiobook
-        if (bookType === 'audiobook' && body.audioSampleDriveUrl) {
-            if (!SimpleStorageService.isValidDriveUrl(body.audioSampleDriveUrl)) {
-                return res.status(400).json({
-                    success: false,
-                    message: 'Invalid Google Drive URL for audio sample',
-                    examples: [
-                        'https://drive.google.com/file/d/SAMPLE_FILE_ID/view',
-                        'https://drive.google.com/open?id=SAMPLE_FILE_ID'
-                    ]
-                });
-            }
-        }
 
         // Validate price
         if (isNaN(parseFloat(body.price)) || parseFloat(body.price) < 0) {
@@ -149,24 +131,7 @@ async function createBook(req, res) {
             }
         }
 
-        // Process driveUrl to extract file info (will be done by pre-save middleware)
-        // Just ensure it's set
-        bookData.driveUrl = bookData.driveUrl.trim();
-
-        // Process preview settings if provided
-        if (body.preview) {
-            if (bookType === 'ebook' && body.preview.pages !== undefined) {
-                bookData.preview = {
-                    ...bookData.preview,
-                    pages: parseInt(body.preview.pages)
-                };
-            } else if (bookType === 'audiobook' && body.preview.sampleMinutes !== undefined) {
-                bookData.preview = {
-                    ...bookData.preview,
-                    sampleMinutes: parseInt(body.preview.sampleMinutes)
-                };
-            }
-        }
+        
 
         // Create & save book
         const newBook = new Book(bookData);
@@ -215,6 +180,40 @@ async function createBook(req, res) {
         return res.status(500).json({
             success: false,
             message: 'Failed to create book',
+            error: error.message
+        });
+    }
+}
+
+
+/**
+ * 2. UPLOAD FILE
+ * Wraps the Cloudinary upload service.
+ */
+async function uploadFile(req, res) {
+    try {
+        if (!req.file) {
+            return res.status(400).json({ success: false, message: 'No file uploaded' });
+        }
+
+        const { folder, resourceType } = req.body;
+        
+        const result = await CloudinaryService.uploadFile(req.file, {
+            folder: folder || 'ebookstore',
+            resourceType: resourceType || 'auto'
+        });
+
+        return res.status(200).json({
+            success: true,
+            message: 'File uploaded successfully',
+            data: result
+        });
+
+    } catch (error) {
+        console.error('❌ Error uploading file:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'Failed to upload file',
             error: error.message
         });
     }
@@ -329,44 +328,34 @@ async function getAllBooks(req, res) {
             }
         ]);
 
-        // Convert type stats to object
-        const statsByType = {};
-        typeStats.forEach(stat => {
-            statsByType[stat._id] = {
-                count: stat.count,
-                avgPrice: stat.avgPrice ? parseFloat(stat.avgPrice.toFixed(2)) : 0,
-                avgRating: stat.avgRating ? parseFloat(stat.avgRating.toFixed(1)) : 0
-            };
-        });
+         // Enhance with formatted info for frontend
+        const enhancedBooks = books.map(book => ({
+            ...book,
+            downloadUrl: book.cloudinaryUrl,
+            formattedInfo: {
+                priceDisplay: book.price === 0 ? 'Free' : `$${book.price.toFixed(2)}`,
+                ...(book.type === 'audiobook' && {
+                    audioLength: book.audioLength,
+                    narratorsList: book.narrators?.map(n => n.name).join(', ') || ''
+                })
+            }
+        }));
 
         return res.status(200).json({
             success: true,
             message: 'Books retrieved successfully',
-            data: books,
+            data: enhancedBooks,
             pagination: {
                 page: parseInt(page),
                 limit: parseInt(limit),
                 total,
-                pages: Math.ceil(total / parseInt(limit)),
-                hasNext: (skip + parseInt(limit)) < total,
-                hasPrevious: parseInt(page) > 1
-            },
-            filters: {
-                type: type || 'all',
-                genre: genre || 'all',
-                price: price || 'all',
-                search: search || 'none'
-            },
-            typeStats: statsByType
+                pages: Math.ceil(total / parseInt(limit))
+            }
         });
 
     } catch (error) {
         console.error('❌ Error fetching books:', error);
-        return res.status(500).json({
-            success: false,
-            message: 'Failed to fetch books',
-            error: error.message
-        });
+        return res.status(500).json({ success: false, message: 'Failed to fetch books' });
     }
 }
 
@@ -438,7 +427,8 @@ async function getBookById(req, res) {
                 purchaseInfo: purchaseInfo
             },
             preview: previewContent,
-            similarBooks: similarBooks
+            similarBooks,
+            downloadUrl: book.cloudinaryUrl
         };
 
         return res.status(200).json({
@@ -474,131 +464,40 @@ async function updateBook(req, res) {
             });
         }
 
-        const bookType = updates.type || currentBook.type;
+        
 
-        // Validate Google Drive URL if being updated
-        if (updates.driveUrl && !SimpleStorageService.isValidDriveUrl(updates.driveUrl)) {
-            return res.status(400).json({
-                success: false,
-                message: 'Invalid Google Drive URL for main file'
-            });
-        }
+        // If URL changed, update Cloudinary info
+                if (updates.cloudinaryUrl && updates.cloudinaryUrl !== currentBook.cloudinaryUrl) {
+                    const publicId = CloudinaryService.extractPublicId(updates.cloudinaryUrl);
+                    if (publicId) {
+                        const fileInfo = await CloudinaryService.getFileInfo(publicId);
+                        if (fileInfo) {
+                            updates.cloudinaryInfo = {
+                                publicId,
+                                resourceType: fileInfo.resourceType,
+                                format: fileInfo.format,
+                                secureUrl: fileInfo.url,
+                                bytes: fileInfo.bytes,
+                                duration: fileInfo.duration
+                            };
+                            updates.fileSize = fileInfo.bytes;
+                        }
+                    }
+                }
 
-        // Validate audio sample URL if provided for audiobook
-        if (bookType === 'audiobook' && updates.audioSampleDriveUrl) {
-            if (!SimpleStorageService.isValidDriveUrl(updates.audioSampleDriveUrl)) {
-                return res.status(400).json({
-                    success: false,
-                    message: 'Invalid Google Drive URL for audio sample'
+                const updatedBook = await Book.findByIdAndUpdate(id, updates, { new: true, runValidators: true });
+
+                return res.status(200).json({
+                    success: true,
+                    message: 'Book updated successfully',
+                    book: updatedBook
                 });
+
+            } catch (error) {
+                console.error('❌ Error updating book:', error);
+                return res.status(500).json({ success: false, message: 'Failed to update book' });
             }
         }
-
-        // Validate type-specific fields
-        if (bookType === 'ebook' && updates.pages !== undefined) {
-            if (!Number.isInteger(parseInt(updates.pages)) || parseInt(updates.pages) <= 0) {
-                return res.status(400).json({
-                    success: false,
-                    message: 'Pages must be a positive integer for ebooks'
-                });
-            }
-            updates.pages = parseInt(updates.pages);
-        }
-
-        if (bookType === 'audiobook') {
-            // Validate audio length
-            if (updates.audioLength) {
-                const timePattern = /^([0-9]{1,2}:)?[0-9]{1,2}:[0-9]{2}$/;
-                if (!timePattern.test(updates.audioLength)) {
-                    return res.status(400).json({
-                        success: false,
-                        message: 'Audio length must be in format HH:MM:SS or MM:SS'
-                    });
-                }
-                updates.audioLength = updates.audioLength.trim();
-            }
-
-            // Validate narrators
-            if (updates.narrators) {
-                if (!Array.isArray(updates.narrators) || updates.narrators.length === 0) {
-                    return res.status(400).json({
-                        success: false,
-                        message: 'At least one narrator is required for audiobooks'
-                    });
-                }
-
-                // Validate each narrator has a name
-                const invalidNarrators = updates.narrators.filter(n => !n.name || n.name.trim() === '');
-                if (invalidNarrators.length > 0) {
-                    return res.status(400).json({
-                        success: false,
-                        message: 'All narrators must have a name'
-                    });
-                }
-
-                updates.narrators = updates.narrators.map(n => ({
-                    name: n.name.trim()
-                }));
-            }
-        }
-
-        // Convert string dates to Date objects
-        if (updates.publication_date) {
-            updates.publication_date = new Date(updates.publication_date);
-        }
-
-        // Convert numeric fields
-        if (updates.price !== undefined) {
-            updates.price = parseFloat(updates.price);
-        }
-        if (updates.trending !== undefined) {
-            updates.trending = Boolean(updates.trending);
-        }
-
-        // Handle preview updates
-        if (updates.preview) {
-            if (bookType === 'ebook' && updates.preview.pages !== undefined) {
-                updates.preview.pages = parseInt(updates.preview.pages);
-            } else if (bookType === 'audiobook' && updates.preview.sampleMinutes !== undefined) {
-                updates.preview.sampleMinutes = parseInt(updates.preview.sampleMinutes);
-            }
-        }
-
-        const updatedBook = await Book.findByIdAndUpdate(
-            id,
-            updates,
-            { new: true, runValidators: true }
-        );
-
-        return res.status(200).json({
-            success: true,
-            message: 'Book updated successfully',
-            book: updatedBook,
-            previewInfo: updatedBook.getPreviewContent()
-        });
-
-    } catch (error) {
-        console.error('❌ Error updating book:', error);
-
-        if (error.name === 'ValidationError') {
-            const errors = Object.keys(error.errors || {}).reduce((acc, key) => {
-                acc[key] = error.errors[key].message;
-                return acc;
-            }, {});
-            return res.status(400).json({
-                success: false,
-                message: 'Validation failed',
-                errors
-            });
-        }
-
-        return res.status(500).json({
-            success: false,
-            message: 'Failed to update book',
-            error: error.message
-        });
-    }
-}
 
 /**
  * Delete a book
@@ -616,34 +515,29 @@ async function deleteBook(req, res) {
             });
         }
 
-        // Check if book has any purchases (optional business rule)
-        const purchaseCount = await Purchase.countDocuments({ book: id });
-        if (purchaseCount > 0) {
-            return res.status(400).json({
-                success: false,
-                message: 'Cannot delete book with existing purchases. Consider archiving instead.',
-                purchaseCount,
-                bookType: book.type
-            });
+        // Try deleting from Cloudinary
+        if (book.cloudinaryInfo?.publicId) {
+            try {
+                await CloudinaryService.deleteFile(book.cloudinaryInfo.publicId);
+            } catch (err) {
+                console.error('Cloudinary delete warning:', err.message);
+            }
         }
 
-        const deletedBook = await Book.findByIdAndDelete(id);
+        await Book.findByIdAndDelete(id);
 
         return res.status(200).json({
             success: true,
-            message: `${book.type === 'audiobook' ? 'Audiobook' : 'Book'} deleted successfully`,
-            book: deletedBook
+            message: 'Book deleted successfully',
+            book
         });
 
     } catch (error) {
         console.error('❌ Error deleting book:', error);
-        return res.status(500).json({
-            success: false,
-            message: 'Failed to delete book',
-            error: error.message
-        });
+        return res.status(500).json({ success: false, message: 'Failed to delete book' });
     }
 }
+
 
 /**
  * Check download permission (enhanced - supports both types)
@@ -1080,6 +974,7 @@ module.exports = {
     createBook,
     getAllBooks,
     getBookById,
+    uploadFile,
     updateBook,
     deleteBook,
     checkDownloadPermission,

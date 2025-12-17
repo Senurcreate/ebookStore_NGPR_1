@@ -57,13 +57,13 @@ app.get('/api/test', (req, res) => {
 
 // Defining all routes first
 const bookRoutes = require('./src/books/book.route');
-const userRoutes = require('./src/users/user.route');
-const downloadRoutes = require('.src/downloads/download.route');
-const adminRoutes = require('./src/admin/admin.route');
-const purchaseRoutes = require('./src/purchases/purchase.route');
-const reviewRoutes = require('./src/reviews/review.route');
-const notificationRoutes = require('./src/notifications/notification.route');
-const wishlistRoutes = require('./src/wishlist/wishlist.route');
+const userRoutes = require('./src/users/user.routes');
+const downloadRoutes = require('./src/downloads/download.routes');
+const adminRoutes = require('./src/admin/admin.routes');
+const purchaseRoutes = require('./src/purchases/purchase.routes');
+const reviewRoutes = require('./src/reviews/review.routes');
+const notificationRoutes = require('./src/notifications/notification.routes');
+const wishlistRoutes = require('./src/wishlist/wishlist.routes');
 
 app.use("/api/books", bookRoutes);
 app.use("/api/users", userRoutes);
