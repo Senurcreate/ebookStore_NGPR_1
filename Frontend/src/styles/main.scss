@@ -85,4 +85,5 @@ $theme-colors: map-merge($theme-colors, $ebook-colors);
 @import "./_component/sections";
 @import "./_component/button";
 @import "./_component/btn";
+@import './_component/checkout';
 
