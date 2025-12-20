@@ -1,0 +1,183 @@
+/* --- THE GRID WRAPPER --- */
+.audiobook-grid {
+  display: grid;
+  /* Creates 2 columns that shrink to 1 column on mobile (below 550px) */
+  grid-template-columns: repeat(auto-fit, minmax(550px, 1fr)); 
+  gap: 2rem;
+  padding: 2rem;
+  box-sizing: border-box;
+}
+
+/* --- THE CARD WRAPPER --- */
+/* This forces the existing AudioBookCard to behave differently */
+.audiobookpage-card {
+  width: 100%;
+  height: 100%; /* Ensures all cards in a row are same height */
+}
+
+/* TARGET AudioBookCard ROOT DIV */
+.audiobookpage-card > div {
+  display: flex;       /* This puts Image (left) and Text (right) */
+  flex-direction: row; 
+  align-items: stretch; /* Makes sure the card background stretches fully */
+  gap: 1.5rem;
+  
+  width: 100%;
+  height: 100%;
+  padding: 1.2rem;
+  
+  border: 1px solid #e7e7e7;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.audiobookpage-card > div:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+}
+
+/* --- IMAGE STYLING --- */
+/* We target the img directly inside your component */
+.audiobookpage-card img {
+  /* Fixed width for the 'Big' look, but responsive */
+  width: 200px; 
+  min-width: 200px;
+  height: 100%; 
+  min-height: 280px; /* Ensures it looks tall like the screenshot */
+  
+  object-fit: cover; /* Prevents stretching */
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.15); /* Adds pop to the book cover */
+}
+
+/* --- CONTENT / TEXT AREA --- */
+/* NOTE: This assumes your AudioBookCard structure is roughly:
+   <div> <img /> <div>Text...</div> </div>
+   If the text isn't wrapped in a div, we target elements generally.
+*/
+
+/* This targets the text container next to the image */
+.audiobookpage-card > div > div:last-child {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between; /* Pushes price to the bottom */
+  width: 100%;
+  padding: 0.5rem 0;
+}
+
+/* Typography Overrides */
+.audiobookpage-card h5 {
+  font-size: 1.4rem; /* Larger title */
+  font-weight: 700;
+  margin: 0 0 0.5rem 0;
+  color: #1a1a1a;
+  
+  /* Flex to handle the headphone icon if it's in the h5 */
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.audiobookpage-card .author {
+  font-size: 1rem;
+  color: #6c757d;
+  margin-bottom: 1rem;
+}
+
+/* --- PRICE & CART ROW --- */
+.audiobookpage-card .price-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: auto; /* Crucial: Pushes this row to the absolute bottom */
+  padding-top: 1rem;
+  border-top: 1px dashed #eee; /* Optional: nice divider like in receipts */
+}
+
+.audiobookpage-card .price-row span {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #222;
+}
+
+/* Optional: Style the button if you can target it */
+.audiobookpage-card button {
+  background-color: #4361ee;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 0.6rem 1rem;
+  cursor: pointer;
+}
+
+
+
+
+
+
+/*.audiobook-grid {
+  display: grid;
+  //grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(2, minmax(620px, 1fr)); //520px
+  gap: 2.5rem;
+  padding-bottom: 3rem;
+}
+
+/* Page-level wrapper 
+.audiobookpage-card {
+  width: 100%;
+}
+
+/* TARGET AudioBookCard WITHOUT touching it 
+.audiobookpage-card > div {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem; 
+
+  width: 100%;
+  padding: 1.4rem;
+  border: 1px solid #e7e7e7;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 0 14px rgba(0, 0, 0, 0.06);
+
+  //gap: 1.6rem;
+  //padding: 1.6rem 1.8rem;
+  //min-height: 230px;
+}
+
+/* IMAGE — THIS FIXES “NOT COVERED” ISSUE 
+.audiobookpage-card img {
+  width: 300px; //160px
+  height: 350px; //230px
+  object-fit: cover;
+  border-radius: 10px;
+  flex-shrink: 0;
+  //width: 135px;   
+  //height: 185px;
+}
+
+/* Text spacing 
+.audiobookpage-card h5 {
+  font-size: 1.15rem;  
+  font-weight: 600;
+
+  //margin-bottom: 0.4rem;
+}
+
+.audiobookpage-card .author {
+  font-size: 0.95rem; 
+  color: #6c757d;
+
+  //margin-bottom: 0.6rem;
+}
+
+.audiobookpage-card .price-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 1rem;
+}*/
+
