@@ -44,39 +44,39 @@
   height: 100%; 
   min-height: 280px; 
   
-  object-fit: cover; /* Prevents stretching */
+  object-fit: cover; 
   border-radius: 10px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.15); /* Adds pop to the book cover */
+  box-shadow: 0 4px 10px rgba(0,0,0,0.15); 
 }
 
 .audiobookpage-card > div > div:last-child {
   display: flex;
   flex-direction: column;
-  justify-content: space-between; /* Pushes price to the bottom */
+  justify-content: space-between; 
   width: 100%;
   padding: 0.5rem 0;
 }
 
 /* Typography Overrides */
 .audiobookpage-card h5 {
-  font-size: 1.4rem; /* Larger title */
+  font-size: 1.4rem !important; //1.4rem
   font-weight: 700;
   margin: 0 0 0.5rem 0;
   color: #1a1a1a;
   
-  /* Flex to handle the headphone icon if it's in the h5 */
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 1rem;
 }
 
 .audiobookpage-card .author {
-  font-size: 1rem;
+  font-size: 1.1rem !important;
   color: #6c757d;
   margin-bottom: 1rem;
 }
 
-/* --- PRICE & CART ROW --- */
+/* --- PRICE & CART ROW --- 
 .audiobookpage-card .price-row {
   display: flex;
   justify-content: space-between;
@@ -84,6 +84,17 @@
   margin-top: auto;
   padding-top: 1rem;
   border-top: 1px dashed #eee; 
+  gap: 1.5rem;
+}*/
+
+.audiobookpage-card .price-row {
+  display: flex;
+  justify-content: flex-start !important;
+  align-items: center;
+  margin-top: auto;
+  padding-top: 1rem;
+  border-top: 1px dashed #eee; 
+  gap: 20px;
 }
 
 .audiobookpage-card .price-row span {
@@ -99,6 +110,7 @@
   border-radius: 8px;
   padding: 0.6rem 1rem;
   cursor: pointer;
+  margin-left: 0;
 }
 
 
