@@ -133,7 +133,7 @@ function Navbar() {
             <i className="bi bi-bell custom-icon me-2"></i>
 
             {/* Cart Icon with Counter */}
-              <Link to="/cart" className="position-relative me-2 text-decoration-none">
+              <Link to="/checkout" className="position-relative me-2 text-decoration-none">
                 <i className="bi bi-cart custom-icon"></i>
                 {cartCount > 0 && (
                   <span 
