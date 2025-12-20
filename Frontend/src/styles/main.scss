@@ -88,3 +88,11 @@ $theme-colors: map-merge($theme-colors, $ebook-colors);
 @import "./_component/btn";
 @import './_component/checkout';
 
+@import "./_component/bookgrid";
+@import "./_component/bookpage";
+@import "./_component/dropdownfilter";
+@import "./_component/filtersection";
+@import "./_component/paginationsection";
+@import "./_component/audiobookgrid";
+@import "./_component/audiobookpage";
+

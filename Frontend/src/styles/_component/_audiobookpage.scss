@@ -1,0 +1,34 @@
+.audiobook-page {
+  width: 100%;
+  padding: 2rem 3rem;
+  padding-top: 90px;
+
+  .audiopage-header {
+    margin-bottom: 1.5rem;
+
+    .title {
+      font-size: 1.3rem;
+      font-weight: 600;
+      margin-bottom: 0.2rem;
+    }
+
+    .count {
+      font-size: 0.9rem;
+      color: #6c757d;
+    }
+  }
+
+  .filters-section-wrapper {
+    margin-bottom: 1.5rem;
+  }
+
+  .book-grid-wrapper {
+    margin-top: 1.5rem;
+  }
+
+  .pagination-wrapper {
+    margin-top: 2rem;
+    display: flex;
+    justify-content: center;
+  }
+}

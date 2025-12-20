@@ -1,0 +1,25 @@
+.dropdown-menu-box {
+  width: 160px;
+  height: 38px;
+  border-radius: 8px;
+  border: 1px solid #1a3da8;
+  color: #1a3da8;
+  font-weight: 500;
+  background-color: #fff;
+  padding: 0.4rem 0.6rem;
+  transition: 0.2s ease;
+
+  //display: flex;
+  display: inline-block;
+  //align-items: center;
+  //justify-content: center;
+
+  &:hover {
+    box-shadow: 0 0 5px rgba(26, 61, 168, 0.3);
+  }
+
+  option {
+    color: #000;
+  }
+}
+

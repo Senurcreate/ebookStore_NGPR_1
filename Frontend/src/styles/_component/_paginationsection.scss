@@ -1,0 +1,26 @@
+.pagination-wrapper {
+  display: flex;
+  justify-content: center;
+  margin: 3rem 0 4rem;
+}
+
+.pagination {
+  gap: 0.4rem;
+
+  .page-item {
+    .page-link {
+      border-radius: 8px;
+      border: 1px solid #d0d7ff;
+      color: #1a3da8;
+      font-size: 0.85rem;
+      padding: 0.4rem 0.7rem;
+    }
+
+    &.active .page-link {
+      background-color: #3f5bd9;
+      border-color: #3f5bd9;
+      color: #fff;
+    }
+  }
+}
+
