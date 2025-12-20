@@ -9,17 +9,16 @@
 }
 
 /* --- THE CARD WRAPPER --- */
-/* This forces the existing AudioBookCard to behave differently */
 .audiobookpage-card {
   width: 100%;
-  height: 100%; /* Ensures all cards in a row are same height */
+  height: 100%; 
 }
 
 /* TARGET AudioBookCard ROOT DIV */
 .audiobookpage-card > div {
-  display: flex;       /* This puts Image (left) and Text (right) */
+  display: flex;    
   flex-direction: row; 
-  align-items: stretch; /* Makes sure the card background stretches fully */
+  align-items: stretch; 
   gap: 1.5rem;
   
   width: 100%;
@@ -39,26 +38,17 @@
 }
 
 /* --- IMAGE STYLING --- */
-/* We target the img directly inside your component */
 .audiobookpage-card img {
-  /* Fixed width for the 'Big' look, but responsive */
   width: 200px; 
   min-width: 200px;
   height: 100%; 
-  min-height: 280px; /* Ensures it looks tall like the screenshot */
+  min-height: 280px; 
   
   object-fit: cover; /* Prevents stretching */
   border-radius: 10px;
   box-shadow: 0 4px 10px rgba(0,0,0,0.15); /* Adds pop to the book cover */
 }
 
-/* --- CONTENT / TEXT AREA --- */
-/* NOTE: This assumes your AudioBookCard structure is roughly:
-   <div> <img /> <div>Text...</div> </div>
-   If the text isn't wrapped in a div, we target elements generally.
-*/
-
-/* This targets the text container next to the image */
 .audiobookpage-card > div > div:last-child {
   display: flex;
   flex-direction: column;
@@ -91,9 +81,9 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-top: auto; /* Crucial: Pushes this row to the absolute bottom */
+  margin-top: auto;
   padding-top: 1rem;
-  border-top: 1px dashed #eee; /* Optional: nice divider like in receipts */
+  border-top: 1px dashed #eee; 
 }
 
 .audiobookpage-card .price-row span {
@@ -102,7 +92,6 @@
   color: #222;
 }
 
-/* Optional: Style the button if you can target it */
 .audiobookpage-card button {
   background-color: #4361ee;
   color: white;
@@ -111,7 +100,6 @@
   padding: 0.6rem 1rem;
   cursor: pointer;
 }
-
 
 
 
