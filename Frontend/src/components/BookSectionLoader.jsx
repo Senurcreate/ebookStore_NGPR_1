@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
-import BookCarousel from "./BookCarousel"; // Ensure path is correct
-import { formatBookData } from "../utils/bookFormatter"; // Ensure path is correct
+import BookCarousel from "./BookCarousel"; 
+import { formatBookData } from "../utils/bookFormatter"; 
 
 const BookSectionLoader = ({ title, fetchFunction }) => {
   const [books, setBooks] = useState([]);
