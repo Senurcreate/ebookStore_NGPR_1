@@ -78,12 +78,15 @@ $theme-colors: map-merge($theme-colors, $ebook-colors);
 @import "_custom/profileMenu";
 @import "_custom/bookDetails";
 @import "_custom/login";
+@import "_custom/footer";
+@import "_custom/admin";
 
 @import "./_component/audiobook";
 @import "./_component/bookcard";
 @import "./_component/sections";
 @import "./_component/button";
 @import "./_component/btn";
+@import './_component/checkout';
 
 @import "./_component/bookgrid";
 @import "./_component/bookpage";

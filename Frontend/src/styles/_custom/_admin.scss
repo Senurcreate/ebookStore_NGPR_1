@@ -1,0 +1,64 @@
+/* Custom Admin Overrides */
+.bg-primary-subtle { background-color: #e7f1ff !important; }
+.bg-success-subtle { background-color: #e6fcf5 !important; }
+.bg-info-subtle { background-color: #f0f3ff !important; }
+.bg-warning-subtle { background-color: #fff9db !important; }
+
+.nav-link.active {
+  background-color: #f0f7ff !important;
+  color: #0d6efd !important;
+  font-weight: 600;
+}
+
+.card {
+  border-radius: 12px;
+}
+
+
+/* Admin Dashboard Table Fixes */
+.custom-admin-table {
+  border-collapse: separate;
+  border-spacing: 0;
+
+  thead th {
+    background-color: #f8f9fa;
+    color: #6c757d;
+    font-size: 13px;
+    letter-spacing: 0.5px;
+    padding: 15px 10px;
+    border: none;
+  }
+
+  tbody td {
+    padding: 20px 10px;
+    border-bottom: 1px solid #f2f2f2;
+    font-size: 14px;
+    vertical-align: middle;
+  }
+
+  /* The Status Pill */
+  .status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 16px;
+    border-radius: 50px;
+    color: white;
+    font-size: 13px;
+    font-weight: 500;
+    min-width: 125px; // Keeps all pills the same size
+    justify-content: flex-start;
+    line-height: 1;
+
+    i {
+      font-size: 14px;
+    }
+  }
+}
+
+/* Remove default bootstrap table border-top on tbody */
+.table > :not(caption) > * > * {
+  border-top-width: 0;
+  box-shadow: none;
+}
+

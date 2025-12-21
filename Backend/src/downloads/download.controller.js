@@ -1,7 +1,7 @@
 const DownloadHistory = require('./download.model');
 const Book = require('../books/book.model');
 const Purchase = require('../purchases/purchase.model');
-const SimpleStorageService = require('../services/simpleStorage.service');
+
 
 /**
  * Enhanced download with restrictions (updated for ebooks/audiobooks)

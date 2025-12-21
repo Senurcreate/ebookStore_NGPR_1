@@ -1,0 +1,27 @@
+
+
+/* Light blue border for selected item */
+.border-primary {
+  border-color: #3b82f6 !important; 
+}
+
+/* Checkbox styling tweak */
+.custom-checkbox {
+  background-color: #e9ecef;
+  border-color: #ced4da;
+  border-radius: 4px; /* Slightly squarish */
+}
+.custom-checkbox:checked {
+  background-color: #4355cf;
+  border-color: #4355cf;
+}
+
+/* Image object fit */
+.object-fit-cover {
+  object-fit: cover;
+}
+
+/* Card refinements */
+.card {
+  border-radius: 10px; /* Softer corners */
+}

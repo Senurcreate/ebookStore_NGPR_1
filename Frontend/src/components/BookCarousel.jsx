@@ -35,7 +35,7 @@ const BookCarousel = ({ title, books }) => {
   return (
     <section className="book-carousel-section py-5">
       <div className="container">
-        {title && <h2 className="section-title mb-4">{title}</h2>}
+        {title && <h3 className="section-title mb-4">{title}</h3>}
 
         <div className="book-carousel position-relative">
           
@@ -47,7 +47,7 @@ const BookCarousel = ({ title, books }) => {
           )}
 
           <div className="carousel-container" ref={scrollRef} onScroll={checkScroll}>
-            <div className="book-row">
+            <div className="book-row py-2">
               {books.map((book) => (
                 <BookCard key={book.id} book={book} />
               ))}
