@@ -33,7 +33,7 @@ const BookCard = ({ book }) => {
   return (
     <div className="book-card">
       <img
-        src={book.image}
+        src={book.coverImage || book.image}
         className="card-img-top"
         alt={book.title}
         onClick={handleClick}

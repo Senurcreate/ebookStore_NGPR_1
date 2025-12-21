@@ -5,6 +5,8 @@ import Home from "./pages/Home/Home";
 import LoginPage from "./pages/LoginPage";
 import SignupPage from "./pages/SignUpPage";
 import BookDetails from "./pages/BookDetails/BookDetails";
+import BookPage from "./pages/BookPage/BookPage";
+import AudiobookPage from "./pages/BookPage/AudiobookPage";
 
 
 import { AuthProvider } from "./context/AuthContext";
@@ -33,6 +35,8 @@ function MainLayout() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
         <Route path="/bookDetails" element={<BookDetails />} />
+        <Route path="/bookpage" element={<BookPage />} /> 
+        <Route path="/audiopage" element={<AudiobookPage />}/>
       </Routes>
       </main>
     </div>

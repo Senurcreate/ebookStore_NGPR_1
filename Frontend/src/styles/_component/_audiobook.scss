@@ -11,8 +11,8 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
 
   .audiobook-img {
-    width: 8rem;
-    height: 11rem;
+    width: 8rem; 
+    height: 11rem; 
     border-radius: 0.8rem;
     object-fit: cover;
     flex-shrink: 0;
@@ -23,7 +23,7 @@
   .audiobook-details {
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    justify-content: center; 
     padding-left: 0.1rem;
     flex: 1;
     padding-top: 0.8rem;
@@ -42,7 +42,7 @@
       box-orient: vertical;
       -webkit-line-clamp: 1;
       line-clamp: 1;
-      height: 45px;  
+      height: 45px; 
 
       i {
         font-size: 1.2rem;
