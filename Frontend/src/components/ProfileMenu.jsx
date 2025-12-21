@@ -2,7 +2,8 @@ import React from 'react';
 import "../styles/main.scss";
 import { Link } from 'react-router-dom';
 
-function ProfileMenu() {
+// 1. Accept the prop here
+function ProfileMenu({ onSignOutClick }) {
   return (
     <div className="profile-menu border rounded shadow-sm p-3 bg-white" style={{ width: '250px' }}>
       <ul className="list-unstyled m-0">
@@ -26,8 +27,13 @@ function ProfileMenu() {
           <i className="bi bi-person me-2"></i> Account
           </Link>
         </li>
-        <li className="menu-item py-2 px-3">
-
+        
+        {/* 2. Attach the onClick handler and add cursor style */}
+        <li 
+            className="menu-item py-2 px-3" 
+            onClick={onSignOutClick} 
+            style={{ cursor: 'pointer' }}
+        >
           <i className="bi bi-box-arrow-right me-2"></i> Sign Out
         </li>
       </ul>
