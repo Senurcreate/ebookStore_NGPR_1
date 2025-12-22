@@ -16,6 +16,9 @@ import ReviewOrder from "./pages/Payments/ReviewOrderPage";
 import Help from "./pages/SupportCenter";
 import AdminLayout from "./admin/layouts/AdminLayout";
 import Dashboard from "./admin/pages/Dasboard";
+import BookPage from "./pages/BookPage/BookPage";
+import AudiobookPage from "./pages/BookPage/AudiobookPage";
+import WishlistPage from "./pages/WishlistPage";
 
 
 
@@ -63,6 +66,9 @@ function MainLayout() {
         <Route path="/paymentMethod" element={<PaymentMethod />} />
         <Route path="/reviewOrder" element={<ReviewOrder />} />
         <Route path="/help" element={<Help />} />
+        <Route path="/bookpage" element={<BookPage />} />
+        <Route path="/audiopage" element={<AudiobookPage />} />
+        <Route path="/wishlist" element={<WishlistPage />} />
 
 
         {/* ADMIN ROUTES */}
