@@ -1,17 +1,23 @@
 import React, {useState, useRef, useEffect} from "react";
-import { useSelector } from "react-redux"; 
+import { useSelector, useDispatch } from "react-redux"; // Added useDispatch
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import logo from "../assets/BrandLogo.svg"; 
 import ProfileMenu from "../components/ProfileMenu";
-import { Link } from "react-router-dom";
+import LogoutModal from "../components/LogoutModal"; // Added Import
+import { Link, useNavigate } from "react-router-dom"; // Added useNavigate
 
 function Navbar() {
 
     const [showProfileMenu, setShowProfileMenu] = useState(false);
+    const [showLogoutModal, setShowLogoutModal] = useState(false); // Added State
     const menuRef = useRef(null);
     const profileIconRef = useRef(null);
     const hoverTimeoutRef = useRef(null);
+
+    // Added Hooks
+    const navigate = useNavigate();
+    const dispatch = useDispatch();
 
     // Get cart items and count from Redux store
     const cartItems = useSelector(state => state.cart.cartItems);
@@ -77,8 +83,27 @@ function Navbar() {
       }, 300);
     };
 
+    // --- Added Handlers ---
+    const handleLogoutClick = () => {
+        setShowProfileMenu(false);
+        setShowLogoutModal(true);
+    };
+
+    const handleCloseModal = () => {
+        setShowLogoutModal(false);
+    };
+
+    const handleConfirmLogout = () => {
+        // Add your logout logic here
+        console.log("Logged out");
+        setShowLogoutModal(false);
+        navigate('/login'); 
+    };
+    // ----------------------
+
   
   return (
+    <> 
     <nav className="navbar navbar-expand-lg fixed-top shadow-sm custom-navbar ">
       <div className="container-fluid px-4">
         {/* Logo */}
@@ -170,7 +195,8 @@ function Navbar() {
                   onMouseEnter={handleMenuMouseEnter}
                   onMouseLeave={handleMenuMouseLeave}
                 >
-                  <ProfileMenu />
+                  {/* Updated ProfileMenu prop */}
+                  <ProfileMenu onSignOutClick={handleLogoutClick} />
                 </div>
               )}
             </div>
@@ -185,10 +211,15 @@ function Navbar() {
         </div>
       </div>
     </nav>
-
+    
+    {/* Added LogoutModal */}
+    <LogoutModal 
+        isOpen={showLogoutModal} 
+        onClose={handleCloseModal} 
+        onConfirm={handleConfirmLogout} 
+    />
+    </>
   );
 }
 
 export default Navbar;
-
-
