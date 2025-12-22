@@ -79,6 +79,8 @@ $theme-colors: map-merge($theme-colors, $ebook-colors);
 @import "_custom/bookDetails";
 @import "_custom/login";
 @import "_custom/footer";
+@import "_custom/admin";
+@import "_custom/LogoutModal";
 
 @import "./_component/audiobook";
 @import "./_component/bookcard";
