@@ -8,9 +8,10 @@
   transition: transform 0.3s ease, box-shadow 0.3s ease;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
 
-  
 
-  .card-img-top {
+  
+  .book-card img,
+  .book-card .card-img-top {
     border-radius: 0.75rem;
     height: 300px;
     min-height: 300px;

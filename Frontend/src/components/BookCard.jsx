@@ -4,7 +4,7 @@ import { useDispatch, useSelector} from "react-redux";
 import { addToCart, removeFromCart } from "../redux/features/cart/cartSlice";
 
 
-const BookCard = ({ book }) => {
+const BookCard = ({ book, showDelete = false,onDelete = () => {} }) => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
@@ -58,17 +58,28 @@ const BookCard = ({ book }) => {
 
         <div className="price-cart d-flex justify-content-between align-items-center mt-2">
           <p className="price mb-0 fw-semibold">Rs {book.price}</p>
-          <button className={`cart-btn btn btn-sm border-0 ${isInCart ? 'btn-success' : 'btn-outline-primary'}`}
+          <div className="actions">
+            <button className={`cart-btn btn btn-sm border-0 ${isInCart ? 'btn-success' : 'btn-outline-primary'}`}
             onClick={handleCartAction}
               style={{ 
                 transition: 'all 0.3s',
                 position: 'relative',
                 overflow: 'hidden'
               }}
-          >
+            >
             <i className={`bi ${isInCart ? 'bi-check-lg' : 'bi-cart3'}`}></i>
              
           </button>
+
+          {/* Delete button only for wishlist */}
+          {showDelete && (
+            <button className="action-btn delete" onClick={() => onDelete(book.id)}>
+              <i className="bi bi-trash"></i>
+            </button>
+          )}
+          </div>
+          
+
         </div>
       </div>
     </div>

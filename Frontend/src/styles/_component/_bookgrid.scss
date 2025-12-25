@@ -35,9 +35,9 @@
 }
 
 /* Image control — fixes tall skinny look */
-.book-card img {
+.book-grid .book-card img {
   width: 100%;
-  height: 260px; /* key change */
+  height: 450px; /* key change 260px*/
   object-fit: cover;
   border-radius: 10px;
   display: block;

@@ -1,0 +1,143 @@
+.wishlist-grid {
+  display: grid;
+  //grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.5rem;
+
+  margin-bottom: 3rem;
+}
+
+.wishlist-page {
+  margin-top: 5rem;
+}
+
+.wishlist-header {
+  margin-bottom: 2.5rem; 
+}
+
+.book-card {
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 6px 18px rgba(0,0,0,.08);
+  overflow: hidden;
+}
+
+.wishlist-grid .book-card img {
+  width: 100%;
+  height: 400px; //320px
+  object-fit: cover;
+  border-radius: 10px;
+}
+
+.card-body {
+  padding: 0.8rem;
+}
+
+.title {
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.author {
+  font-size: 0.8rem;
+  color: #6c757d;
+}
+
+.rating {
+  font-size: 0.8rem;
+  color: #f4b400;
+}
+//price-row
+.price-cart {
+  //display: flex;
+  //justify-content: space-between;
+  align-items: center;
+  display: flex;
+  gap: 0.8rem;
+}
+
+.wishlist-grid .actions {
+  display: flex;
+  gap: 0.4rem;
+  margin-left: auto;
+}
+
+.wishlist-grid .action-btn {
+  background: #2563eb;
+  color: white;
+  //border-radius: 6px;
+  //padding: 0.35rem 0.5rem;
+  //border: none;
+
+  width: 36px;
+  height: 36px;
+  border-radius: 6px;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 1rem;
+
+  transition: all 0.3s ease;
+}
+
+.wishlist-grid .action-btn.delete {
+  background: #e5e7eb;
+  color: #444;
+  border: 1px solid #e5e7eb;
+}
+
+.wishlist-grid .action-btn.delete:hover {
+  background-color: #dc3545; 
+  color: white;         
+  border-color: #dc3545;  
+  transform: translateY(-2px); 
+}
+
+.pagination-wrapper {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 2rem;
+}
+
+.pagination-wrapper button {
+  padding: 0.4rem 0.7rem;
+}
+
+.pagination-wrapper .active {
+  background: #2563eb;
+  color: white;
+}
+
+/* responsive section */
+
+/* Tablet */
+@media (max-width: 992px) {
+  .wishlist-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Mobile */
+@media (max-width: 576px) {
+  .wishlist-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .price {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: auto;
+  padding-top: 0.5rem;
+  margin: 0;
+  }
+  
+  .actions {
+  display: flex;
+  gap: 0.4rem;
+  }
+
+}
