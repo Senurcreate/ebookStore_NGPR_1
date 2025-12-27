@@ -30,6 +30,7 @@ const BookPage = () => {
 
   /* filter logic */
   const filteredBooks = books.filter((book) => {
+    if (book.type !== "ebook") return false;
     return (
       (filters.author === "Authors" || book.author === filters.author) &&
       (filters.genre === "Genres" || book.genre === filters.genre) &&
@@ -61,8 +62,9 @@ const BookPage = () => {
           Showing {filteredBooks.length} of {books.length} books
         </p>
 
-        {/* Filters */}
-        <FilterSection
+        <div className="bookpage-section">
+          {/* Filters */}
+          <FilterSection
           filters={filters}
           setFilters={setFilters}
           authors={["Authors", ...new Set(books.map(b => b.author))]}
@@ -71,20 +73,20 @@ const BookPage = () => {
           ratings={["Ratings", "3", "4", "4.5", "5"]}
           languages={["Languages", "English", "Sinhala"]}
           onReset={resetFilters}
-        />
-
-        {/* Grid */}
-        <BookGrid books={paginatedBooks} />
-
-
-        {/* Pagination */}
-        {totalPages > 1 && (
+          />
+          
+          {/* Grid */}
+          <BookGrid books={paginatedBooks} />
+          
+          {/* Pagination */}
+          {totalPages > 1 && (
           <PaginationSection
             currentPage={currentPage}
             totalPages={totalPages}
             changePage={setCurrentPage}
           />
-        )}
+          )}
+        </div>
       </div>
     </div>
   );

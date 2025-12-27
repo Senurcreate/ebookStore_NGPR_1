@@ -58,7 +58,8 @@ const AudiobookPage = () => {
           Showing {filteredBooks.length} of {books.length} audiobooks
         </p>
 
-        <FilterSection
+        <div className="audiobook-section">
+          <FilterSection
           filters={filters}
           setFilters={setFilters}
           authors={["Authors", ...new Set(books.map((b) => b.author))]}
@@ -77,6 +78,7 @@ const AudiobookPage = () => {
             changePage={setCurrentPage}
           />
         )}
+        </div>
       </div>
     </div>
   );

@@ -3,12 +3,14 @@ import BookCard from "../components/BookCard";
 
 const BookGrid = ({ books }) => {
   return (
-    <div className="book-grid">
-      {books.map((book, index) => (
+    <div className="bookpage">
+      <div className="book-grid">
+        {books.map((book, index) => (
           <div className="bookpage-card" key={index}>
             <BookCard book={book} />
           </div>
-      ))}
+        ))}
+      </div>
     </div>
   );
 };
