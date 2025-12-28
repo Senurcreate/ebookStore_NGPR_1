@@ -1,108 +1,87 @@
-import "../../styles/main.scss";
 import React, { useState } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+import { removeFromCart, clearCart } from '../../redux/features/cart/cartSlice';
+import { useAuth } from '../../context/AuthContext';
+import "../../styles/main.scss";
 
 
 
 const Checkout = () => {
   // 1. STATE: New User Status
-  const [isNewUser, setIsNewUser] = useState(true); 
+  const { currentUser } = useAuth();
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
 
-  // 2. STATE: Cart Items 
-  const [cartItems, setCartItems] = useState([
-    {
-      id: 1,
-      title: "The Secret Garden Chronicles",
-      author: "Emma Thompson",
-      format: "Ebook(Epub)",
-      price: 24.99,
-      image: "https://m.media-amazon.com/images/S/compressed.photo.goodreads.com/books/1717596365i/124798505.jpg",
-      selected: false 
-    },
-    {
-      id: 2,
-      title: "Harry Potter and the Philosopher's Stone",
-      author: "J.K. Rowling",
-      format: "Ebook(Epub)",
-      price: 19.99,
-      image: "https://m.media-amazon.com/images/S/compressed.photo.goodreads.com/books/1717596365i/124798505.jpg",
-      selected: false
-    },
-    {
-      id: 3,
-      title: "Four Seasons in Japan",
-      author: "Yuki Tanaka",
-      format: "Ebook(Epub)",
-      price: 28.99,
-      image: "https://m.media-amazon.com/images/S/compressed.photo.goodreads.com/books/1717596365i/124798505.jpg",
-      selected: false
-    }
-  ]);
+
+  // 1. Get Real Data from Redux
+  const cartItems = useSelector((state) => state.cart.cartItems);
+
+  // UI States
+  const [selectedIds, setSelectedIds] = useState(cartItems.map(item => item.id));
 
   // Derived Calculations
-  const selectedItems = cartItems.filter(item => item.selected);
-  const allSelected = cartItems.length > 0 && selectedItems.length === cartItems.length;
+  const selectedItems = cartItems.filter(item => selectedIds.includes(item.id));
   const subtotal = selectedItems.reduce((acc, item) => acc + item.price, 0);
-  const discountAmount = isNewUser ? (subtotal * 0.10) : 0;
-  const total = subtotal - discountAmount;
+  const total = subtotal;
 
   // Handlers
-  const handleSelectAll = () => {
-    const newStatus = !allSelected;
-    setCartItems(cartItems.map(item => ({ ...item, selected: newStatus })));
+  const handleSelectAll = (e) => {
+    if (e.target.checked) {
+      setSelectedIds(cartItems.map(item => item.id));
+    } else {
+      setSelectedIds([]);
+    }
   };
 
   const handleItemSelect = (id) => {
-    setCartItems(cartItems.map(item => 
-      item.id === id ? { ...item, selected: !item.selected } : item
-    ));
+    if (selectedIds.includes(id)) {
+      setSelectedIds(selectedIds.filter(itemId => itemId !== id));
+    } else {
+      setSelectedIds([...selectedIds, id]);
+    }
   };
 
-  const handleRemoveAll = () => {
-    setCartItems([]);
+  const handleRemoveItem = (id) => {
+    dispatch(removeFromCart(id));
+    setSelectedIds(selectedIds.filter(itemId => itemId !== id));
   };
 
+  // NAVIGATE ---
+  const handleProceed = () => {
+    if (!currentUser) {
+      alert("Please login to checkout");
+      return;
+    }
+
+    if (selectedItems.length === 0) {
+      alert("Please select at least one item");
+      return;
+    }
+
+    // 1. Save selected items if needed (optional, or rely on Cart state)
+    // 2. Simply navigate to the next step
+    navigate('/paymentMethod');
+  };
+
+  
   // --- RENDER ---
-
-  return (
-    <div className="container py-5">
-      
-      {/* DEV TOOLS: Buttons to test the UI states */}
-      <div className="d-flex justify-content-end gap-2 mb-4">
-        <button className="btn btn-outline-danger btn-sm" onClick={() => setCartItems([])}>
-          Test Empty State
-        </button>
-        <button className="btn btn-outline-primary btn-sm" onClick={() => window.location.reload()}>
-          Reset Data
+  if (cartItems.length === 0) {
+    return (
+      <div className="container py-5 text-center">
+        <div className="mb-4">
+           <i className="bi bi-cart-x display-1 text-muted opacity-50"></i>
+        </div>
+        <h2 className="fw-bold text-dark mb-3">Your cart is empty</h2>
+        <button onClick={() => navigate('/')} className="btn btn-primary px-5 py-2 rounded-pill">
+          Start Shopping
         </button>
       </div>
+    );
+  }
 
-      {/* CONDITIONAL RENDERING */}
-      {cartItems.length === 0 ? (
-        
-        // ------------------------------------------
-        // EMPTY STATE UI (The "Oops" Screen)
-        // ------------------------------------------
-        <div className="text-center py-5">
-          <div className="mb-4">
-            {/* Big muted icon */}
-            <i className="bi bi-cart-x display-1 text-muted opacity-50"></i>
-          </div>
-          <h2 className="fw-bold text-dark mb-3">Oops! Your cart is empty</h2>
-          <p className="text-muted mb-4 lead">
-            Looks like you haven't added anything to your cart yet.
-          </p>
-          <button className="btn btn-primary px-5 py-2 fw-medium rounded-pill">
-            <i className="bi bi-arrow-left me-2"></i>
-            Start Shopping
-          </button>
-        </div>
-
-      ) : (
-
-        // ------------------------------------------
-        // CHECKOUT UI (When items exist)
-        // ------------------------------------------
-        <>
+      return(
+      <div className="container py-5">
           <h2 className="fw-normal mb-4">Checkout</h2>
           
           <div className="row g-4">
@@ -118,13 +97,13 @@ const Checkout = () => {
                           type="checkbox" 
                           className="form-check-input custom-checkbox me-3 ms-0" 
                           style={{width: '20px', height: '20px'}}
-                          checked={allSelected}
+                          checked={selectedIds.length === cartItems.length && cartItems.length > 0}
                           onChange={handleSelectAll}
                         />
                         <span className="fw-medium">Select All Items ({cartItems.length})</span>
                     </div>
                   </div>
-                  <button onClick={handleRemoveAll} className="btn text-muted p-0">Remove All</button>
+                  <button onClick={() => dispatch(clearCart())} className="btn text-muted p-0">Remove All</button>
                 </div>
               </div>
 
@@ -132,18 +111,18 @@ const Checkout = () => {
               {cartItems.map((item) => (
                 <div 
                   key={item.id} 
-                  className={`card shadow-sm mb-3 item-card ${item.selected ? 'border-primary border-2' : 'border-0'}`}
+                  className={`card shadow-sm mb-3 ${selectedIds.includes(item.id) ? 'border-primary' : ''}`}
                 >
                   <div className="card-body d-flex align-items-center">
                     <input 
                       type="checkbox" 
-                      checked={item.selected}
+                      checked={selectedIds.includes(item.id)}
                       onChange={() => handleItemSelect(item.id)}
                       className="form-check-input custom-checkbox me-3 flex-shrink-0"
                       style={{width: '20px', height: '20px'}}
                     />
                     <img 
-                      src={item.image} 
+                      src={item.coverImage || item.image || "https://via.placeholder.com/150"}
                       alt={item.title} 
                       className="rounded me-3 object-fit-cover"
                       style={{width: '80px', height: '110px'}} 
@@ -159,7 +138,7 @@ const Checkout = () => {
                           <button className="btn btn-light btn-sm text-secondary rounded-circle" style={{width: '32px', height: '32px'}}>
                             <i className="bi bi-heart"></i>
                           </button>
-                          <button className="btn btn-light btn-sm text-secondary rounded-circle" style={{width: '32px', height: '32px'}}>
+                          <button onClick={() => handleRemoveItem(item.id)} className="btn btn-light btn-sm text-secondary rounded-circle" style={{width: '32px', height: '32px'}}>
                             <i className="bi bi-trash"></i>
                           </button>
                         </div>
@@ -185,8 +164,8 @@ const Checkout = () => {
                     <span className="fw-medium">{selectedItems.length}</span>
                   </div>
                   <div className="d-flex justify-content-between mb-3">
-                    <span className="text-muted">Subtotal</span>
-                    <span className="fw-medium">${subtotal.toFixed(2)}</span>
+                    <span className="text-muted">Total</span>
+                    <span className="fw-medium">${total.toFixed(2)}</span>
                   </div>
                   
                   <hr className="my-3 text-muted opacity-25" />
@@ -197,6 +176,7 @@ const Checkout = () => {
                   <button 
                     className="btn btn-primary w-100 py-2 mb-3 fw-medium checkout-btn d-flex align-items-center justify-content-center gap-2"
                     disabled={selectedItems.length === 0}
+                    onClick={handleProceed}
                   >
                     <i className="bi bi-credit-card-2-back"></i>
                     Proceed to Checkout
@@ -214,9 +194,7 @@ const Checkout = () => {
               </div>
             </div>
           </div>
-        </>
-      )}
-    </div>
+        </div>
   );
 };
 

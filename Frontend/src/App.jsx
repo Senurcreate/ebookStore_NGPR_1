@@ -6,6 +6,7 @@ import Footer from "./components/Footer";
 import Home from "./pages/Home/Home";
 import LoginPage from "./pages/LoginPage";
 import SignupPage from "./pages/SignUpPage";
+import ForgotPassword from "./pages/ForgotPassword";
 import BookDetails from "./pages/BookDetails/BookDetails";
 import Profile from "./pages/UserProfilePage";
 import History from "./pages/DownloadHistory";
@@ -17,6 +18,7 @@ import Help from "./pages/SupportCenter";
 import WishlistPage from "./pages/WishlistPage";
 import BookPage from "./pages/BookPage/BookPage";
 import AudiobookPage from "./pages/BookPage/AudiobookPage";
+import PaymentSuccess from "./pages/Payments/PaymentSuccessPage";
 
 
 import AdminLayout from "./admin/layouts/AdminLayout";
@@ -40,8 +42,8 @@ function MainLayout() {
   const isAdminPath = location.pathname.startsWith("/admin");
 
   // Hide navbar on login and signup pages
-  const hideNavbarPaths = ["/login", "/signup", "/cardDetails", "/paymentMethod", "/reviewOrder" ];
-  const hideFooterPaths = ["/login", "/signup", "/cardDetails", "/paymentMethod", "/reviewOrder"];
+  const hideNavbarPaths = ["/login", "/signup", "/cardDetails", "/paymentMethod", "/reviewOrder", "/forgot-password" ];
+  const hideFooterPaths = ["/login", "/signup", "/cardDetails", "/paymentMethod", "/reviewOrder", "/forgot-password"];
 
 
   const showNavbar = !hideNavbarPaths.includes(location.pathname) && !isAdminPath;
@@ -59,6 +61,7 @@ function MainLayout() {
         <Route path="/" element={<Home/>} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/bookDetails" element={<BookDetails />} />
         <Route path="/books/:id" element={<BookDetails />} />
         <Route path="/profile" element={<Profile />} />
@@ -69,8 +72,10 @@ function MainLayout() {
         <Route path="/reviewOrder" element={<ReviewOrder />} />
         <Route path="/help" element={<Help />} />
         <Route path="/wishlist" element={<WishlistPage />} />
-        <Route path="/bookpage" element={<BookPage />} />
-        <Route path="/audiopage" element={<AudiobookPage />} />
+        <Route path="/e-books" element={<BookPage />} />
+        <Route path="/audiobooks" element={<AudiobookPage />} />
+        <Route path="/paymentSuccess" element={<PaymentSuccess/>} />
+        
 
 
         {/* ADMIN ROUTES */}

@@ -1,11 +1,51 @@
 import axios from 'axios';
+import { auth } from '../firebase/firebase.config'; // Ensure path matches your project structure
+import { API_BASE_URL } from '../config/config'; // Ensure you import your base URL
 
 const instance = axios.create({
-    // Change this URL if your backend runs on a different port
-    baseURL: 'http://localhost:3000/api', 
+    baseURL: API_BASE_URL || 'http://localhost:5000/api', // Adjust if your structure is different
     headers: {
         'Content-Type': 'application/json',
-    },
+    }
 });
+
+// 🔒 REQUEST INTERCEPTOR
+// This runs before every API call
+instance.interceptors.request.use(async (config) => {
+    // 1. Check if a user is logged in
+    const user = auth.currentUser;
+
+    if (user) {
+        try {
+            // 2. Get the specific ID token (JWT)
+            // forceRefresh = false means use cached token if valid
+            const token = await user.getIdToken(false);
+            
+            // 3. Attach it to the Authorization header
+            config.headers.Authorization = `Bearer ${token}`;
+            // console.log("Token attached:", token.substring(0, 10) + "..."); // Debugging
+        } catch (error) {
+            console.error("Error getting token:", error);
+        }
+    } else {
+        console.warn("No user logged in, request sent without token");
+    }
+
+    return config;
+}, (error) => {
+    return Promise.reject(error);
+});
+
+// RESPONSE INTERCEPTOR (Optional: Handle 401 globally)
+instance.interceptors.response.use(
+    (response) => response,
+    (error) => {
+        if (error.response && error.response.status === 401) {
+            console.error("Unauthorized! Token might be invalid.");
+            // Optional: Logout user or redirect to login
+        }
+        return Promise.reject(error);
+    }
+);
 
 export default instance;

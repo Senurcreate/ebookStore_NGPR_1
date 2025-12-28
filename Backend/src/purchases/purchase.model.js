@@ -47,12 +47,7 @@ const purchaseSchema = new mongoose.Schema({
             default: 24
         },
         downloadExpiry: {
-            type: Date,
-            default: function() {
-                const expiry = new Date(this.purchasedAt);
-                expiry.setHours(expiry.getHours() + 24);
-                return expiry;
-            }
+            type: Date
         },
         devicesUsed: [{
             deviceId: String,
@@ -71,6 +66,36 @@ const purchaseSchema = new mongoose.Schema({
     }
 }, {
     timestamps: true
+});
+
+// This runs automatically BEFORE saving to the database.
+// It guarantees 'purchasedAt' exists before calculating expiry.
+purchaseSchema.pre('save', function(next) {
+    // 1. Generate Order ID if missing
+    if (!this.simulatedOrderId) {
+        this.simulatedOrderId = `SIM-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    }
+
+    // 2. Set PurchasedAt if missing
+    if (!this.purchasedAt) {
+        this.purchasedAt = new Date();
+    }
+
+    // 3. Calculate Download Expiry
+    // If it's a new record OR expiry hasn't been set yet
+    if (!this.downloadTracking.downloadExpiry) {
+        const hours = this.downloadTracking.downloadWindowHours || 24;
+        
+        // Create a FRESH date object based on purchasedAt
+        const expiryDate = new Date(this.purchasedAt.getTime());
+        
+        // Add hours
+        expiryDate.setHours(expiryDate.getHours() + hours);
+        
+        this.downloadTracking.downloadExpiry = expiryDate;
+    }
+
+    next();
 });
 
 // Method to check if download is allowed

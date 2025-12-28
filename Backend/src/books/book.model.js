@@ -479,29 +479,6 @@ bookSchema.pre('save', function(next) {
     next();
 });
 
-// Method to generate Cloudinary embed code
-bookSchema.methods.generateCloudinaryEmbedCode = function() {
-    if (this.type === 'audiobook') {
-        return `
-            <audio controls style="width: 100%;">
-                <source src="${this.cloudinaryUrl}" type="audio/mpeg">
-                Your browser does not support the audio element.
-            </audio>
-        `;
-    } else if (this.type === 'ebook') {
-        // For ebooks, we can embed PDF using iframe
-        return `
-            <iframe 
-                src="${this.cloudinaryUrl}#view=fitH" 
-                width="100%" 
-                height="600px" 
-                frameborder="0"
-                style="border: 1px solid #ddd;">
-            </iframe>
-        `;
-    }
-    return null;
-};
 
 
 // Method to generate Cloudinary embed code
@@ -641,6 +618,66 @@ bookSchema.statics.getTypeStats = async function() {
         acc[stat._id] = stat;
         return acc;
     }, {});
+};
+
+/**
+ * Check if a user is eligible to download this book
+ * Returns object with canDownload (bool) and purchase details
+ */
+bookSchema.methods.checkDownloadEligibility = async function(userId) {
+    // 1. If the book is free, anyone can download
+    if (this.price === 0) {
+        return { 
+            canDownload: true, 
+            reason: 'free',
+            isFree: true
+        };
+    }
+
+    // 2. If no user ID provided (not logged in) and book is not free
+    if (!userId) {
+        return { 
+            canDownload: false, 
+            reason: 'authentication_required',
+            isFree: false
+        };
+    }
+
+    // 3. Check for a COMPLETED purchase
+    // We use mongoose.model to avoid circular dependency issues
+    const Purchase = mongoose.model('Purchase');
+    const purchase = await Purchase.findOne({
+        user: userId,
+        book: this._id,
+        status: 'completed' // Crucial: Only completed transactions
+    });
+
+    if (purchase) {
+        // 4. Check if the purchase allows downloading (limits/expiry)
+        const downloadStatus = purchase.canDownload(); // Using the method from your Purchase model
+        
+        if (downloadStatus.allowed) {
+            return { 
+                canDownload: true, 
+                reason: 'purchased',
+                purchase: purchase,
+                isFree: false
+            };
+        } else {
+            return {
+                canDownload: false,
+                reason: downloadStatus.reason, // e.g., 'max_downloads_reached'
+                message: downloadStatus.message
+            };
+        }
+    }
+
+    // 5. No purchase found
+    return { 
+        canDownload: false, 
+        reason: 'purchase_required', 
+        isFree: false
+    };
 };
 
 const Book = mongoose.model('Book', bookSchema);
