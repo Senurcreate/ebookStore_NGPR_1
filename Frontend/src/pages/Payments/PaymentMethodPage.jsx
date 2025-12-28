@@ -1,8 +1,15 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 
 const PaymentMethodPage = () => {
   const [selectedMethod, setSelectedMethod] = useState(null);
+  const navigate = useNavigate();
+
+  // Handle navigation to the next step
+  const handleNext = () => {
+    navigate('/cardDetails', { state: { paymentMethod: selectedMethod } });
+  };
 
   const paymentSections = [
     {
@@ -67,7 +74,8 @@ const PaymentMethodPage = () => {
         <div className="card shadow-sm border-0 rounded-4 overflow-hidden">
           <div className="card-body p-4 p-md-5">
             
-            <button className="btn btn-link text-decoration-none text-muted p-0 mb-3 small">
+            <button onClick={() => navigate(-1)}
+            className="btn btn-link text-decoration-none text-muted p-0 mb-3 small">
               <i className="bi bi-chevron-left me-1"></i> Back
             </button>
             
@@ -118,7 +126,7 @@ const PaymentMethodPage = () => {
               </div>
             </div>
 
-            {/* Footer Action */}
+            
             {/* Footer Action */}
             <button 
             disabled={!selectedMethod} 
@@ -132,7 +140,7 @@ const PaymentMethodPage = () => {
                 border: 'none',
                 cursor: selectedMethod ? 'pointer' : 'not-allowed'
             }}
-            onClick={() => alert(`Proceeding with ${selectedMethod}`)}
+            onClick={handleNext}
             >
             Next
             </button>

@@ -1,25 +1,104 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { fetchDownloadHistory, downloadBookFile } from '../services/purchase.service';
+import { useAuth } from '../context/AuthContext';
+import { Link } from 'react-router-dom';
 
 
 const DownloadHistory = () => {
-  const [activeTab, setActiveTab] = useState('Paid');
+  const { currentUser } = useAuth();
+  const [activeTab, setActiveTab] = useState('All Downloads');
   const [sortLabel, setSortLabel] = useState('Date');
 
-  // Mock Data: Using a specific date format to match logic
-  const [books] = useState([
-    { id: 1, title: 'Atomic Habits', author: 'James Clear', type: 'Paid', price: '$24.99', format: 'EPUB', size: '2.4 MB', date: 'Dec 5, 2024' },
-    { id: 2, title: 'Atomic Habits', author: 'James Clear', type: 'Paid', price: '$24.99', format: 'EPUB', size: '2.4 MB', date: 'Dec 5, 2024' },
-    { id: 3, title: 'Deep Work', author: 'Cal Newport', type: 'Free', price: 'Free', format: 'PDF', size: '1.8 MB', date: 'Oct 12, 2024' },
-    { id: 4, title: 'Deep Work', author: 'Cal Newport', type: 'Free', price: 'Free', format: 'PDF', size: '1.8 MB', date: 'Dec 17, 2025' },
-  ]);
+  // Real Data State
+  const [downloads, setDownloads] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [processingId, setProcessingId] = useState(null); // For loading state on buttons
 
-  // Check if "Today" exists in the data to toggle disabled state
-  const todayStr = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-  const hasTodayData = books.some(book => book.date === todayStr);
+  // 1. Fetch Real Data
+  useEffect(() => {
+    if (currentUser) {
+      loadHistory();
+    }
+  }, [currentUser]);
 
-  const filteredBooks = books.filter(book => 
-    activeTab === 'All Downloads' ? true : book.type === activeTab
-  );
+  const loadHistory = async () => {
+    try {
+      setLoading(true);
+      const response = await fetchDownloadHistory();
+      if (response.success) {
+        setDownloads(response.data);
+      }
+    } catch (err) {
+      console.error("Failed to load history", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 2. Handle Re-Download
+  const handleRedownload = async (bookId) => {
+    try {
+      setProcessingId(bookId);
+      const result = await downloadBookFile(bookId);
+      
+      if (result.success && result.data.downloadUrl) {
+        window.open(result.data.downloadUrl, '_blank');
+      }
+    } catch (err) {
+      alert("Download failed. Access might be expired.");
+    } finally {
+      setProcessingId(null);
+    }
+  };
+
+  // 3. Helpers for Formatting
+  const formatFileSize = (bytes) => {
+    if (!bytes) return 'Unknown';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+  };
+
+  const formatDate = (dateString) => {
+    return new Date(dateString).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  };
+
+  // 4. Filtering & Sorting Logic
+  const getFilteredBooks = () => {
+    let filtered = [...downloads];
+
+    // Filter by Tab
+    if (activeTab !== 'All Downloads') {
+      const typeFilter = activeTab === 'Paid' ? 'purchased' : 'free';
+      filtered = filtered.filter(item => item.downloadType === typeFilter);
+    }
+
+    // Sort by Date
+    if (sortLabel === 'Date') {
+      filtered.sort((a, b) => new Date(b.downloadedAt) - new Date(a.downloadedAt));
+    }
+    
+    // Sort by Today (Client side filter)
+    if (sortLabel === 'Today') {
+      const todayStr = new Date().toDateString();
+      filtered = filtered.filter(item => new Date(item.downloadedAt).toDateString() === todayStr);
+    }
+
+    return filtered;
+  };
+
+  const filteredBooks = getFilteredBooks();
+
+  // 5. Calculate Stats
+  const hasTodayData = downloads.some(d => new Date(d.downloadedAt).toDateString() === new Date().toDateString());
+  const stats = {
+    total: downloads.length,
+    paid: downloads.filter(d => d.downloadType === 'purchased').length,
+    free: downloads.filter(d => d.downloadType === 'free').length
+  };
+
+  if (loading) return <div className="container py-5 text-center"><div className="spinner-border text-primary" role="status"></div></div>;
 
   return (
     <div className="container py-6" style={{ backgroundColor: '#fdfdfd', minHeight: '100vh' }}>
@@ -75,7 +154,7 @@ const DownloadHistory = () => {
             >
               {tab} 
               <span className="badge rounded-pill bg-primary-subtle text-primary ms-2 fw-normal">
-                {tab === 'All Downloads' ? books.length : books.filter(b => b.type === tab).length}
+                {tab === 'All Downloads' ? stats.total : (tab === 'Paid' ? stats.paid : stats.free)}
               </span>
             </button>
           </li>
@@ -84,53 +163,73 @@ const DownloadHistory = () => {
 
       {/* Stat Cards */}
       <div className="row g-3 mb-5">
-        <StatCard icon="bi-download" label="Total Downloads" value={books.length} color="#eef2ff" iconColor="#4f46e5" />
-        <StatCard icon="bi-cart3" label="Paid Books" value={books.filter(b => b.type === 'Paid').length} color="#ecfdf5" iconColor="#10b981" />
-        <StatCard icon="bi-book" label="Free Books" value={books.filter(b => b.type === 'Free').length} color="#f5f3ff" iconColor="#8b5cf6" />
+        <StatCard icon="bi-download" label="Total Downloads" value={stats.total} color="#eef2ff" iconColor="#4f46e5" />
+        <StatCard icon="bi-cart3" label="Paid Books" value={stats.paid} color="#ecfdf5" iconColor="#10b981" />
+        <StatCard icon="bi-book" label="Free Books" value={stats.free} color="#f5f3ff" iconColor="#8b5cf6" />
       </div>
 
       {/* Main Content Area */}
+      {/* Main Content Area */}
       {filteredBooks.length > 0 ? (
         <div className="d-flex flex-column gap-3">
-          {filteredBooks.map((book, idx) => (
-            <div key={idx} className="card border-0 shadow-sm p-3">
-              <div className="row align-items-center">
-                <div className="col-auto">
-                  <div className="rounded bg-light d-flex align-items-center justify-content-center" style={{ width: '80px', height: '110px' }}>
-                    <i className="bi bi-image text-secondary opacity-25 fs-1"></i>
+          {filteredBooks.map((item, idx) => {
+            const book = item.book || {};
+            const isPaid = item.downloadType === 'purchased';
+            
+            return (
+              <div key={item._id || idx} className="card border-0 shadow-sm p-3">
+                <div className="row align-items-center">
+                  <div className="col-auto">
+                    <div className="rounded bg-light d-flex align-items-center justify-content-center overflow-hidden" style={{ width: '80px', height: '110px' }}>
+                      {book.coverImage ? (
+                        <img src={book.coverImage} alt={book.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      ) : (
+                        <i className="bi bi-image text-secondary opacity-25 fs-1"></i>
+                      )}
+                    </div>
                   </div>
-                </div>
-                <div className="col">
-                  <div className="d-flex justify-content-between align-items-start">
-                    <h5 className="fw-bold mb-0">{book.title}</h5>
-                    <span className="badge bg-success-subtle text-success border border-success-subtle px-3 py-2 fw-normal">
-                      Paid {book.price}
-                    </span>
-                  </div>
-                  <p className="text-muted small mb-3">{book.author}</p>
-                  <div className="d-flex gap-4 text-muted small mb-3">
-                    <span><i className="bi bi-file-earmark-text me-1"></i>{book.format}</span>
-                    <span><i className="bi bi-hdd me-1"></i>{book.size}</span>
-                    <span><i className="bi bi-calendar3 me-1"></i>{book.date}</span>
-                  </div>
-                  <div className="d-flex gap-2">
-                    <button className="btn btn-primary btn-sm px-4 py-2 fw-medium shadow-sm" style={{ backgroundColor: '#2563eb' }}>
-                      <i className="bi bi-arrow-clockwise me-2"></i>Re-download
-                    </button>
-                    <button className="btn btn-outline-secondary px-4 py-2 fw-medium">
-                      View Details
-                    </button>
+                  <div className="col">
+                    <div className="d-flex justify-content-between align-items-start">
+                      <h5 className="fw-bold mb-0">{book.title || 'Unknown Title'}</h5>
+                      <span className={`badge px-3 py-2 fw-normal border ${isPaid ? 'bg-success-subtle text-success border-success-subtle' : 'bg-secondary-subtle text-secondary border-secondary-subtle'}`}>
+                        {isPaid ? 'Paid' : 'Free'}
+                      </span>
+                    </div>
+                    <p className="text-muted small mb-3">{book.author || 'Unknown Author'}</p>
+                    <div className="d-flex gap-4 text-muted small mb-3">
+                      <span className="text-uppercase"><i className="bi bi-file-earmark-text me-1"></i>{book.type === 'ebook' ? 'PDF' : 'Audio'}</span>
+                      {/* Note: backend controller needs to select 'fileSize' in populate for this to work perfectly, otherwise pass null */}
+                      <span><i className="bi bi-hdd me-1"></i>{formatFileSize(book.fileSize || 0)}</span>
+                      <span><i className="bi bi-calendar3 me-1"></i>{formatDate(item.downloadedAt)}</span>
+                    </div>
+                    <div className="d-flex gap-2">
+                      <button 
+                        className="btn btn-primary btn-sm px-4 py-2 fw-medium shadow-sm" 
+                        style={{ backgroundColor: '#2563eb' }}
+                        onClick={() => handleRedownload(book._id)}
+                        disabled={processingId === book._id}
+                      >
+                        {processingId === book._id ? (
+                            <span>Loading...</span>
+                        ) : (
+                            <><i className="bi bi-arrow-clockwise me-2"></i>Re-download</>
+                        )}
+                      </button>
+                      <Link to={`/books/${book._id}`} className="btn btn-outline-secondary px-4 py-2 fw-medium text-decoration-none">
+                        View Details
+                      </Link>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       ) : (
         <div className="text-center py-5 mt-5">
           <i className="bi bi-cloud-slash display-1 text-muted opacity-25"></i>
           <h4 className="fw-bold mt-3">Oops, nothing here!</h4>
-          <p className="text-muted">There are no {activeTab.toLowerCase()} books in your library yet.</p>
+          <p className="text-muted">There are no {activeTab === 'All Downloads' ? '' : activeTab.toLowerCase()} books in your library yet.</p>
         </div>
       )}
     </div>

@@ -1,7 +1,15 @@
 import React, { useState } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 
 const CardDetailsPage = () => {
+
+  const navigate = useNavigate();
+  const location = useLocation();
+  
+  // Get data from previous page (Payment Method)
+  const previousData = location.state || {}; 
+
   const [formData, setFormData] = useState({
     cardName: '',
     cardNumber: '',
@@ -36,12 +44,24 @@ const CardDetailsPage = () => {
     // Manual Validation Check (stripping spaces for the check)
     const rawCardNumber = formData.cardNumber.replace(/\s/g, '');
     if (!formData.cardName || rawCardNumber.length < 16 || !formData.cvv) {
-      alert("Please enter a valid 16-digit card number and all other details.");
+      alert("Please enter valid card details.");
       return;
     }
 
-    alert(`Success! Processing payment of $24.99 for ${formData.cardName}.`);
+  
+
+  // Pass accumulated data to Review Page
+    navigate('/reviewOrder', { 
+        state: { 
+            paymentMethod: previousData.paymentMethod || 'visa', 
+            cardDetails: {
+                last4: rawCardNumber.slice(-4),
+                name: formData.cardName
+            }
+        } 
+    });
   };
+
 
   return (
     <div className="min-vh-100 bg-white" style={{ fontFamily: 'sans-serif' }}>

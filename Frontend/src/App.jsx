@@ -17,6 +17,7 @@ import Help from "./pages/SupportCenter";
 import WishlistPage from "./pages/WishlistPage";
 import BookPage from "./pages/BookPage/BookPage";
 import AudiobookPage from "./pages/BookPage/AudiobookPage";
+import PaymentSuccess from "./pages/Payments/PaymentSuccessPage";
 
 
 import AdminLayout from "./admin/layouts/AdminLayout";
@@ -69,8 +70,10 @@ function MainLayout() {
         <Route path="/reviewOrder" element={<ReviewOrder />} />
         <Route path="/help" element={<Help />} />
         <Route path="/wishlist" element={<WishlistPage />} />
-        <Route path="/bookpage" element={<BookPage />} />
-        <Route path="/audiopage" element={<AudiobookPage />} />
+        <Route path="/e-books" element={<BookPage />} />
+        <Route path="/audiobooks" element={<AudiobookPage />} />
+        <Route path="/paymentSuccess" element={<PaymentSuccess/>} />
+        
 
 
         {/* ADMIN ROUTES */}

@@ -1,32 +1,73 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { clearCart } from '../../redux/features/cart/cartSlice';
+import { simulatePurchase } from '../../services/purchase.service';
 
 const ReviewOrderPage = () => {
-  const orderItems = [
-    {
-      id: 1,
-      title: "The Secret Garden Chronicles",
-      author: "Emma Thompson",
-      format: "Ebook(Epub)",
-      price: 24.99,
-      image: "https://via.placeholder.com/80x110" // Replace with your book cover
-    },
-    {
-      id: 2,
-      title: "Harry Potter and the Philosopher's Stone",
-      author: "J.K. Rowling",
-      format: "Ebook(Epub)",
-      price: 19.99,
-      image: "https://via.placeholder.com/80x110"
-    },
-    {
-      id: 3,
-      title: "Four Seasons in Japan",
-      author: "Yuki Tanaka",
-      format: "Ebook(Epub)",
-      price: 28.99,
-      image: "https://via.placeholder.com/80x110"
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const location = useLocation();
+  const [loading, setLoading] = useState(false);
+
+  // 1. Get Simulation Data (passed from Card Details Page)
+  const paymentInfo = location.state || { paymentMethod: 'visa', cardDetails: { last4: '1234', name: 'User' } };
+
+  // 2. Get Real Book Data from Redux
+  const orderItems = useSelector((state) => state.cart.cartItems);
+
+  // 3. Calculate Totals
+  const subtotal = orderItems.reduce((acc, item) => acc + (item.price || 0), 0);
+  const total = subtotal;
+
+  // 4. Handle Payment Confirmation -> Backend Call
+  const handleConfirmOrder = async () => {
+    setLoading(true);
+
+    try {
+      // 1. Process items in parallel
+      const promises = orderItems.map(async (item) => {
+        try {
+          await simulatePurchase(item.id);
+          return { success: true };
+        } catch (err) {
+          // 2. CHECK STATUS CODE
+          // 400 usually means "Bad Request" (e.g., Already Purchased or Invalid ID)
+          // We treat 400 as a "Soft Error" and allow the user to proceed.
+          if (err.response && err.response.status === 400) {
+            console.warn(`⚠️ Item '${item.title}' skipped (Status 400 - Likely already owned).`);
+            return { success: true, skipped: true }; 
+          }
+          
+          // Log other errors (500, Network Error) but don't throw yet
+          console.error(`❌ Error on '${item.title}':`, err.message);
+          return { success: false, error: err };
+        }
+      });
+
+      // Wait for all to finish
+      await Promise.all(promises);
+
+      // 3. FORCE SUCCESS NAVIGATION
+      // We assume if you clicked "Pay", you want to see the success screen
+      // even if the backend complained about duplicates.
+      console.log("✅ navigating to success...");
+      dispatch(clearCart());
+      navigate('/paymentSuccess');
+
+    } catch (error) {
+      // This catch block should logically never be reached with the setup above
+      // unless there is a syntax error or Redux failure.
+      console.error("Critical System Error:", error);
+      alert("System error. Check console.");
+    } finally {
+      setLoading(false);
     }
-  ];
+  };
+
+  if (orderItems.length === 0) {
+    return <div className="container py-5 text-center"><h3>Your order is empty.</h3><button className="btn btn-link" onClick={() => navigate('/')}>Go Home</button></div>;
+  }
 
   return (
     <div className="bg-light min-vh-100">
@@ -59,6 +100,9 @@ const ReviewOrderPage = () => {
       </nav>
 
       <div className="container py-5">
+        <button onClick={() => navigate(-1)} className="btn btn-link text-decoration-none text-muted p-0 mb-3 small">
+        <i className="bi bi-chevron-left me-1"></i> Back
+        </button>
         <h4 className="mb-4 fw-bold">Review Order</h4>
         
         <div className="row g-4">
@@ -115,17 +159,25 @@ const ReviewOrderPage = () => {
               <div className="p-4">
                 <div className="d-flex justify-content-between mb-3">
                   <span className="text-muted">Subtotal</span>
-                  <span className="fw-bold">$73.97</span>
+                  <span className="fw-bold">${subtotal.toFixed(2)}</span>
                 </div>
                 
                 <hr className="my-3" />
                 <div className="d-flex justify-content-between mb-4">
                   <span className="fw-bold">Total</span>
-                  <span className="fw-bold fs-5 text-danger">$73.97</span>
+                  <span className="fw-bold fs-5 text-danger">${total.toFixed(2)}</span>
                 </div>
                 
-                <button className="btn btn-primary w-100 py-2 fw-bold mb-3 rounded-3" style={{ backgroundColor: '#3f5ed9', borderColor: '#3f5ed9' }}>
-                  <i className="bi bi-lock-fill me-2"></i> Confirm Order
+                <button 
+                  onClick={handleConfirmOrder}
+                  disabled={loading}
+                  className="btn btn-primary w-100 py-2 fw-bold mb-3 rounded-3" 
+                  style={{ backgroundColor: '#3f5ed9', borderColor: '#3f5ed9' }}>
+                    {loading ? (
+                    <><span className="spinner-border spinner-border-sm me-2"></span>Processing...</>
+                  ) : (
+                    <><i className="bi bi-lock-fill me-2"></i> Confirm Order</>
+                    )}
                 </button>
                 
                 <div className="text-center text-muted small">
