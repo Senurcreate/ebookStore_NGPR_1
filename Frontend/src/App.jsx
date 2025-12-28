@@ -6,6 +6,7 @@ import Footer from "./components/Footer";
 import Home from "./pages/Home/Home";
 import LoginPage from "./pages/LoginPage";
 import SignupPage from "./pages/SignUpPage";
+import ForgotPassword from "./pages/ForgotPassword";
 import BookDetails from "./pages/BookDetails/BookDetails";
 import Profile from "./pages/UserProfilePage";
 import History from "./pages/DownloadHistory";
@@ -41,8 +42,8 @@ function MainLayout() {
   const isAdminPath = location.pathname.startsWith("/admin");
 
   // Hide navbar on login and signup pages
-  const hideNavbarPaths = ["/login", "/signup", "/cardDetails", "/paymentMethod", "/reviewOrder" ];
-  const hideFooterPaths = ["/login", "/signup", "/cardDetails", "/paymentMethod", "/reviewOrder"];
+  const hideNavbarPaths = ["/login", "/signup", "/cardDetails", "/paymentMethod", "/reviewOrder", "/forgot-password" ];
+  const hideFooterPaths = ["/login", "/signup", "/cardDetails", "/paymentMethod", "/reviewOrder", "/forgot-password"];
 
 
   const showNavbar = !hideNavbarPaths.includes(location.pathname) && !isAdminPath;
@@ -60,6 +61,7 @@ function MainLayout() {
         <Route path="/" element={<Home/>} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/bookDetails" element={<BookDetails />} />
         <Route path="/books/:id" element={<BookDetails />} />
         <Route path="/profile" element={<Profile />} />
