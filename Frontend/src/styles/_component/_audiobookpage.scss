@@ -32,3 +32,36 @@
     justify-content: center;
   }
 }
+
+/* responsive page */
+/* Tablets */
+@media (max-width: 1024px) {
+  .audiobook-page {
+    padding: 1.5rem 2rem;
+    padding-top: 80px;
+
+    .audiopage-header .title {
+      font-size: 1.2rem;
+    }
+  }
+}
+
+/* Mobile */
+@media (max-width: 600px) {
+  .audiobook-page {
+    padding: 1.2rem 1rem;
+    padding-top: 70px;
+
+    .audiopage-header {
+      margin-bottom: 1rem;
+
+      .title {
+        font-size: 1.1rem;
+      }
+
+      .count {
+        font-size: 0.85rem;
+      }
+    }
+  }
+}

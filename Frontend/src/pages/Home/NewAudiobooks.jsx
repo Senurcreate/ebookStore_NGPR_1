@@ -11,7 +11,7 @@ const NewAudiobooks = () => {
     price: book.price,
     rating: book.rating, 
     type: book.type, 
-    image: book.coverImage
+    coverImage: book.coverImage
   }));
 
   return <AudioBookCarousel title="New Audiobooks" audiobooks={audiobooks} />;
