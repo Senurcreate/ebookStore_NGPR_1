@@ -32,3 +32,32 @@
     justify-content: center;
   }
 }
+
+/* responsive book page*/
+@media (max-width: 992px) {
+  .book-page {
+    padding: 1.5rem 2rem;
+    padding-top: 80px;
+  }
+}
+
+@media (max-width: 576px) {
+  .book-page {
+    padding: 1rem 1.25rem;
+    padding-top: 70px;
+  }
+
+  .page-header {
+    .title {
+      font-size: 1.15rem;
+    }
+
+    .count {
+      font-size: 0.85rem;
+    }
+  }
+
+  .bookpage-section .pagination-wrapper {
+    margin-top: 1.5rem;
+  }
+}

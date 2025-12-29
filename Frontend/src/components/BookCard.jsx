@@ -33,7 +33,7 @@ const BookCard = ({ book, showDelete = false,onDelete = () => {} }) => {
   return (
     <div className="book-card">
       <img
-        src={book.image}
+        src={book.coverImage}
         className="card-img-top"
         alt={book.title}
         onClick={handleClick}

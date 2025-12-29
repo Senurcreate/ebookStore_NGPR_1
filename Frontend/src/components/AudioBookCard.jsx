@@ -38,7 +38,7 @@ const AudioBookCard = ({ book }) => {
   return (
     <div className="audiobook-card d-flex align-items-center shadow-sm p-2 rounded-4">
       <img
-        src={book.image}
+        src={book.coverImage}
         alt={book.title}
         className="audiobook-img rounded-3 me-3"
         onClick={handleClick}
