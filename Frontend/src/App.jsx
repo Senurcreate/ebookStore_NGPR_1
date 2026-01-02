@@ -8,6 +8,7 @@ import LoginPage from "./pages/LoginPage";
 import SignupPage from "./pages/SignUpPage";
 import ForgotPassword from "./pages/ForgotPassword";
 import BookDetails from "./pages/BookDetails/BookDetails";
+import Preview from "./pages/BookDetails/Preview";
 import Profile from "./pages/UserProfilePage";
 import History from "./pages/DownloadHistory";
 import Checkout from "./pages/Payments/Checkout";
@@ -45,9 +46,11 @@ function MainLayout() {
   const hideNavbarPaths = ["/login", "/signup", "/cardDetails", "/paymentMethod", "/reviewOrder", "/forgot-password" ];
   const hideFooterPaths = ["/login", "/signup", "/cardDetails", "/paymentMethod", "/reviewOrder", "/forgot-password"];
 
+ const isPreviewPage = location.pathname.startsWith("/preview/");
 
-  const showNavbar = !hideNavbarPaths.includes(location.pathname) && !isAdminPath;
-  const showFooter = !hideFooterPaths.includes(location.pathname) && !isAdminPath;
+
+  const showNavbar = !hideNavbarPaths.includes(location.pathname) && !isAdminPath && !isPreviewPage;
+  const showFooter = !hideFooterPaths.includes(location.pathname) && !isAdminPath && !isPreviewPage;
  
   
 
@@ -56,7 +59,7 @@ function MainLayout() {
     <div className="App">
       <ScrollToTop />
       {showNavbar && <Navbar />}
-      <main className={!isAdminPath && !hideNavbarPaths.includes(location.pathname) ? "py-4" : ""}> {/*  Added padding */}
+      <main className={!isAdminPath && !isPreviewPage && !hideNavbarPaths.includes(location.pathname) ? "py-4" : ""}> {/*  Added padding */}
       <Routes>
         <Route path="/" element={<Home/>} />
         <Route path="/login" element={<LoginPage />} />
@@ -64,6 +67,7 @@ function MainLayout() {
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/bookDetails" element={<BookDetails />} />
         <Route path="/books/:id" element={<BookDetails />} />
+        <Route path="/preview/:id" element={<Preview />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/history" element={<History />} />
         <Route path="/checkout" element={<Checkout />} />

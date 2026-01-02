@@ -21,7 +21,7 @@ const AudioBookCard = ({ book }) => {
   const isInCart = cartItems.some(item => item.id === book.id);
 
   const handleClick = () => {
-    navigate(`/audiobooks/${book.id}`);
+    navigate(`/books/${book.id}`);
 
     };
 
@@ -44,7 +44,9 @@ const AudioBookCard = ({ book }) => {
         onClick={handleClick}
       />
       <div className="audiobook-details">
-        <h5 className="fw-bold mb-1 d-flex align-items-center gap-2">{book.title}<i className="bi bi-headphones text-primary"></i></h5>
+        <h5 className="fw-bold mb-1 d-flex align-items-center gap-2">
+        <span className="title-text">{book.title}</span>
+        <i className="bi bi-headphones text-primary"></i></h5>
         <p className="text-muted mb-2">{book.author}</p>
         <div className="rating mb-2">
           <i className="bi bi-star-fill text-warning me-1"></i>

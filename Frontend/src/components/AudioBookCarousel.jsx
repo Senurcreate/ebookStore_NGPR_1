@@ -1,8 +1,12 @@
 import React, { useState, useRef, useEffect } from "react";
 import AudioBookCard from "../components/AudioBookCard";
 
-const AudioBookCarousel = ({ title, audiobooks }) => {
+const AudioBookCarousel = ({ title, books  }) => {
   const scrollRef = useRef(null);
+
+  if (!books || books.length === 0) {
+      return null;
+  }
 
   const [showLeft, setShowLeft] = useState(false);
   const [showRight, setShowRight] = useState(true);
@@ -58,7 +62,7 @@ const AudioBookCarousel = ({ title, audiobooks }) => {
             onScroll={checkScroll}
           >
             <div className="audiobook-row">
-              {audiobooks.map((book) => (
+              {books.map((book) => (
                 <AudioBookCard key={book.id} book={book} />
               ))}
             </div>

@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
 import BookCarousel from "./BookCarousel"; 
+import AudioBookCarousel from "./AudioBookCarousel";
 import { formatBookData } from "../utils/bookFormatter"; 
 
-const BookSectionLoader = ({ title, fetchFunction }) => {
+const BookSectionLoader = ({ title, fetchFunction, type = "ebook" }) => {
   const [books, setBooks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -46,6 +47,10 @@ const BookSectionLoader = ({ title, fetchFunction }) => {
   // Error or Empty State (Return null to hide section completely)
   if (error || books.length === 0) {
     return null; 
+  }
+
+  if (type === "audiobook") {
+    return <AudioBookCarousel title={title} books={books} />;
   }
 
   // Success State

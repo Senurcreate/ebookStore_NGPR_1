@@ -9,13 +9,13 @@ import { addToCart, removeFromCart } from "../../redux/features/cart/cartSlice";
 import { fetchBookById } from "../../services/book.service";
 import { downloadBookFile } from "../../services/purchase.service";
 import { formatBookData } from "../../utils/bookFormatter";
-import { useAuth } from "../../context/AuthContext"; 
+import { useAuth } from "../../context/AuthContext";
 
 const BookHeaderSection = () => {
     const { id } = useParams();
     const navigate = useNavigate();
-    const { currentUser } = useAuth(); // Get logged-in user
-    
+    const { currentUser } = useAuth();
+
     // State
     const [book, setBook] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -37,16 +37,16 @@ const BookHeaderSection = () => {
     const dispatch = useDispatch();
     const cartItems = useSelector((state) => state.cart.cartItems);
 
+    const isInCart = book ? cartItems.some((item) => item.id === book.id) : false;
+
     useEffect(() => {
         const loadBookDetails = async () => {
             try {
                 setLoading(true);
                 const response = await fetchBookById(id);
-                
+
                 if (response.success || response.book) {
                     const rawBook = response.book || response.data;
-                    
-                    // Access info from backend (Controller logic we updated earlier)
                     const canDownload = rawBook.accessInfo?.canDownload || false;
                     const previewLink = rawBook.previewUrl || rawBook.cloudinaryUrl;
 
@@ -58,7 +58,7 @@ const BookHeaderSection = () => {
                         format: rawBook.type === 'ebook' ? 'PDF' : 'MP3',
                         narrator: rawBook.narrators?.[0]?.name || "Unknown",
                         audioUrl: rawBook.cloudinaryUrl,
-                        previewUrl: previewLink, 
+                        previewUrl: previewLink,
                         canDownload: canDownload
                     };
                     setBook(formatted);
@@ -74,22 +74,18 @@ const BookHeaderSection = () => {
         if (id) {
             loadBookDetails();
         }
-    }, [id, currentUser]); 
+    }, [id, currentUser]);
 
     // --- HANDLERS ---
-
     const handleDownload = async () => {
         try {
             setDownloading(true);
-            // This calls the backend download endpoint
             const result = await downloadBookFile(id);
-            
+
             if (result.success && result.data.downloadUrl) {
-                // Open secure download link
                 window.open(result.data.downloadUrl, '_blank');
             }
         } catch (err) {
-            // Backend sends 401 if guest tries to download premium
             if (err.requiresLogin || err.status === 401) {
                 alert("You need to login to access this.");
                 navigate('/login');
@@ -102,11 +98,7 @@ const BookHeaderSection = () => {
     };
 
     const handlePreview = () => {
-        if (book.previewUrl) {
-            window.open(book.previewUrl, '_blank');
-        } else {
-            alert("No preview available for this book.");
-        }
+        navigate(`/preview/${id}`);
     };
 
     const handleCartAction = () => {
@@ -117,62 +109,7 @@ const BookHeaderSection = () => {
         }
     };
 
-    // --- BUTTON RENDER LOGIC ---
-    const renderActionButtons = () => {
-        const isPremium = book.price > 0;
-
-        // 1. Free Book (Guest or User) -> "Download Free"
-        if (!isPremium) {
-            return (
-                <button 
-                    className="btn btn-primary px-3 small-btn" 
-                    onClick={handleDownload}
-                    disabled={downloading}
-                >
-                    <i className="bi bi-download me-1"></i> {downloading ? 'Downloading...' : 'Download Free'}
-                </button>
-            );
-        }
-
-        // 2. Premium Book & Guest (Not Logged In) -> "Login to Buy"
-        if (isPremium && !currentUser) {
-            return (
-                <button className="btn btn-primary px-3 small-btn" onClick={() => navigate('/login')}>
-                    <i className="bi bi-box-arrow-in-right me-1"></i> Login to Buy
-                </button>
-            );
-        }
-
-        // 3. Premium Book & User & Owned -> "Download"
-        // (book.canDownload is calculated by the backend based on purchase history)
-        if (isPremium && currentUser && book.canDownload) {
-            return (
-                <button 
-                    className="btn btn-success px-3 small-btn" 
-                    onClick={handleDownload}
-                    disabled={downloading}
-                >
-                    <i className="bi bi-download me-1"></i> {downloading ? 'Processing...' : 'Download'}
-                </button>
-            );
-        }
-
-        // 4. Premium Book & User & Not Owned -> "Add to Cart"
-        return (
-            <div className="d-flex gap-2">
-                <button 
-                    className={`btn px-3 small-btn ${isInCart ? 'btn-success' : 'btn-outline-primary'}`}
-                    onClick={handleCartAction}
-                    style={{ transition:'all 0.3s', position: 'relative', overflow: 'hidden' }}
-                >
-                    <i className={`bi ${isInCart ? 'bi-check-lg' : 'bi-cart-plus me-1'}`}></i> 
-                    {isInCart ? "In Cart" : "Add to Cart"}
-                </button>
-            </div>
-        );
-    };
-
-    // --- AUDIO FUNCTIONS (Standard) ---
+    // --- AUDIO FUNCTIONS ---
     const togglePlayPause = () => { if (audioRef.current) { if (isPlaying) { audioRef.current.pause(); cancelAnimationFrame(animationRef.current); } else { audioRef.current.play(); animationRef.current = requestAnimationFrame(whilePlaying); } setIsPlaying(!isPlaying); } };
     const whilePlaying = () => { if (audioRef.current) { setCurrentTime(audioRef.current.currentTime); if (progressRef.current) { const progressPercentage = (audioRef.current.currentTime / audioRef.current.duration) * 100; progressRef.current.style.width = `${progressPercentage}%`; } animationRef.current = requestAnimationFrame(whilePlaying); } };
     const handleProgressClick = (e) => { if (audioRef.current && progressRef.current && e.currentTarget) { const progressBar = e.currentTarget; const clickPosition = e.clientX - progressBar.getBoundingClientRect().left; const progressBarWidth = progressBar.clientWidth; const currentDuration = audioRef.current.duration || duration; const newTime = (clickPosition / progressBarWidth) * currentDuration; audioRef.current.currentTime = newTime; setCurrentTime(newTime); progressRef.current.style.width = `${(newTime / currentDuration) * 100}%`; } };
@@ -188,47 +125,184 @@ const BookHeaderSection = () => {
     if (!book) return <div className="container py-5 text-center">Book not found.</div>;
 
     const isEbook = book.type === "ebook";
+    const isPremium = book.price > 0;
+    const canDownload = book.canDownload; // Calculated in useEffect based on purchase status
 
-    // --- RENDER ---
+    // --- RENDER LOGIC ---
+
+    // 1. EBOOK RENDERING
+    if (isEbook) {
+        return (
+            <div className='body justify-content-center'>
+                {isPremium ? (
+                    /* Premium Ebook Card */
+                    <div className="book-container container mt-3">
+                        <nav aria-label="breadcrumb">
+                            <ol className="breadcrumb">
+                                <li className="breadcrumb-item"><a href="/" className="text-decoration-none">Home</a></li>
+                                <li className="breadcrumb-item"><a href="/fiction" className="text-decoration-none">Book</a></li>
+                                <li className="breadcrumb-item active" aria-current="page">{book.title}</li>
+                            </ol>
+                        </nav>
+
+                        <div className="row">
+                            <div className="col-md-4">
+                                <div className="card shadow-sm border-0">
+                                    <div className="card-body text-center">
+                                        <div>
+                                            <img src={book.image || bCover} alt="book cover" className='book-cover-img' />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="col-md-8">
+                                <div className="card shadow-sm border-0 h-100">
+                                    <div className="card-body p-3">
+                                        <div className="mb-5">
+                                            <h2 className="book-title-right">{book.title}</h2>
+                                            <h4 className="book-author-right text-mb-3">{book.author}</h4>
+                                        </div>
+
+                                        <div className="mb-5">
+                                            <span className="rating-badge me-2">
+                                                <i className="bi bi-star-fill text-warning small"></i>
+                                                <span className="ms-1 fw-bold small">{book.rating}</span>
+                                                <span className="text-muted ms-1 small">Ratings</span>
+                                            </span>
+                                            <button className={`wishlist-btn ${isWishlisted ? 'wishlisted' : ''}`} onClick={toggleWishlist}>
+                                                <i className={`bi ${isWishlisted ? 'bi-heart-fill' : 'bi-heart'} wishlist-icon`}></i>
+                                                <span className="wishlist-text ms-1">{isWishlisted ? 'Added to Wishlist' : 'Add to Wishlist'}</span>
+                                            </button>
+                                        </div>
+
+                                        <div className="mb-5">
+                                            <h5 className="mb-2 fw-bold book-description-heading ">Description</h5>
+                                            <p className="book-description text-justify">{book.description}</p>
+                                        </div>
+
+                                        <div className="pt-1 mt-1 mb-1 pb-1">
+                                            <div>
+                                                <span className="h5 fw-bold text-secondary">{book.currency} {book.price.toLocaleString()}</span>
+                                            </div>
+                                        </div>
+
+                                        <div className="d-flex justify-content-between pt-1 mt-1 mb-1 pb-1">
+                                            <div className="d-flex gap-2">
+                                                {/* Logic: If purchased (canDownload), show Download. If not, show Cart. */}
+                                                {!canDownload ? (
+                                                    <button className={`btn px-3 small-btn ${isInCart ? 'btn-success' : 'btn-primary'}`}
+                                                        onClick={handleCartAction}>
+                                                        <i className={`bi ${isInCart ? 'bi-check-lg' : 'bi-cart-plus me-1'}`}></i> {isInCart ? "In Cart" : "Add to Cart"}
+                                                    </button>
+                                                ) : null}
+
+                                                <button className="btn btn-outline-primary px-3 small-btn" onClick={handlePreview}>
+                                                    <i className="bi bi-eye me-1"></i> Preview
+                                                </button>
+
+                                                <button 
+                                                    className={`btn px-3 small-btn ${canDownload ? 'btn-success' : 'btn-secondary'}`} 
+                                                    disabled={!canDownload || downloading}
+                                                    onClick={handleDownload}
+                                                >
+                                                    <i className="bi bi-download me-1"></i> {downloading ? 'Downloading...' : 'Download'}
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                ) : (
+                    /* Free Ebook Card */
+                    <div className="book-container container mt-3">
+                        <div className="row">
+                            <div className="col-md-4">
+                                <div className="card shadow-sm border-0">
+                                    <div className="card-body text-center">
+                                        <img src={book.image || bCover} alt="book cover" className='book-cover-img' />
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="col-md-8">
+                                <div className="card shadow-sm border-0 h-100">
+                                    <div className="card-body p-3">
+                                        <div className="mb-5">
+                                            <h2 className="book-title-right">{book.title}</h2>
+                                            <h4 className="book-author-right text-mb-3">{book.author}</h4>
+                                        </div>
+                                        <div className="mb-5">
+                                            <h5 className="mb-2 fw-bold book-description-heading ">Description</h5>
+                                            <p className="book-description text-justify">{book.description}</p>
+                                        </div>
+                                        <div className="d-flex justify-content-between pt-2 mt-3 mb-1 pb-1">
+                                            <div className="d-flex gap-2">
+                                                <button className="btn btn-outline-primary px-3 small-btn" onClick={handlePreview}>
+                                                    <i className="bi bi-eye me-1"></i> Preview
+                                                </button>
+                                                <button className="btn btn-primary px-3 small-btn" onClick={handleDownload} disabled={downloading}>
+                                                    <i className="bi bi-download me-1"></i> {downloading ? 'Downloading...' : 'Download'}
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
+            </div>
+        );
+    }
+
+    // 2. AUDIOBOOK RENDERING
     return (
         <div className='body justify-content-center'>
-            {/* Audio Element (Hidden for eBooks, used for Audiobooks) */}
-            <audio ref={audioRef} src={book.audioUrl} preload="metadata" onLoadedMetadata={handleLoadedMetadata} onEnded={handleAudioEnd} />
+            {/* Audio Element */}
+            <audio
+                ref={audioRef}
+                src={book.audioUrl}
+                preload="metadata"
+                onLoadedMetadata={handleLoadedMetadata}
+                onEnded={handleAudioEnd}
+            />
 
-            <div className="book-container container mt-3">
-                <nav aria-label="breadcrumb">
-                    <ol className="breadcrumb">
-                        <li className="breadcrumb-item"><a href="/" className="text-decoration-none">Home</a></li>
-                        <li className="breadcrumb-item"><a href={isEbook ? "/fiction" : "/audiobooks"} className="text-decoration-none">{isEbook ? "Book" : "Audiobook"}</a></li>
-                        <li className="breadcrumb-item active" aria-current="page">{book.title}</li>
-                    </ol>
-                </nav>
+            {isPremium ? (
+                /* Premium Audiobook Card */
+                <div className="book-container container mt-3">
+                    <nav aria-label="breadcrumb">
+                        <ol className="breadcrumb">
+                            <li className="breadcrumb-item"><a href="/" className="text-decoration-none">Home</a></li>
+                            <li className="breadcrumb-item"><a href="/audiobooks" className="text-decoration-none">Audiobooks</a></li>
+                            <li className="breadcrumb-item active" aria-current="page">{book.title}</li>
+                        </ol>
+                    </nav>
 
-                <div className="row">
-                    <div className="col-md-4">
-                        <div className="card shadow-sm border-0">
-                            <div className="card-body text-center p-4">
-                                <div className={!isEbook ? "mb-4 position-relative" : ""}>
-                                    <div className="position-relative">
-                                        <img src={book.image || bCover} alt="cover" className={isEbook ? 'book-cover-img' : 'abook-cover-img'} />
-                                        {!isEbook && (
+                    <div className="row">
+                        <div className="col-md-4">
+                            <div className="card shadow-sm border-0">
+                                <div className="card-body text-center p-4">
+                                    <div className="mb-4 position-relative">
+                                        <div className="position-relative">
+                                            <img src={book.image || bCover} alt="audiobook cover" className='abook-cover-img' />
                                             <div className="position-absolute" style={{ top: '10px', left: '10px', zIndex: 1 }}>
                                                 <span className="badge bg-info text-white px-3 py-2 shadow-sm">
                                                     <i className="bi bi-headphones me-1"></i> Audiobook
                                                 </span>
                                             </div>
-                                        )}
+                                        </div>
                                     </div>
-                                </div>
 
-                                {/* Audio Player Controls (Only for Audiobooks) */}
-                                {!isEbook && (
+                                    {/* Audio Player Controls */}
                                     <div className="mt-4">
                                         <div className="audio-player-container mb-3">
                                             <div className="d-flex justify-content-between align-items-center mb-2">
                                                 <h6 className="fw-bold mb-0">Listen to Sample</h6>
                                                 <small className="text-muted">{formatTime(duration)}</small>
                                             </div>
+
                                             <div className="progress-container mb-2" onClick={handleProgressClick} style={{ cursor: 'pointer', position: 'relative' }}>
                                                 <div className="progress" style={{ height: '6px', backgroundColor: '#e9ecef' }}>
                                                     <div ref={progressRef} className="progress-bar bg-primary" role="progressbar" style={{ width: '0%', transition: 'none' }}></div>
@@ -237,77 +311,156 @@ const BookHeaderSection = () => {
                                                     <small className="text-muted">{formatTime(currentTime)}</small>
                                                 </div>
                                             </div>
+
                                             <div className="d-flex justify-content-between align-items-center">
                                                 <div className="d-flex align-items-center">
-                                                    <button className="btn btn-outline-primary btn-sm me-2" onClick={togglePlayPause}><i className={`bi ${isPlaying ? 'bi-pause' : 'bi-play'}`}></i></button>
-                                                    <button className="btn btn-outline-secondary btn-sm me-3" onClick={toggleMute}><i className={`bi ${isMuted ? 'bi-volume-mute' : 'bi-volume-up'}`}></i></button>
+                                                    <button className="btn btn-outline-primary btn-sm me-2" onClick={togglePlayPause}>
+                                                        <i className={`bi ${isPlaying ? 'bi-pause' : 'bi-play'}`}></i>
+                                                    </button>
+                                                    <button className="btn btn-outline-secondary btn-sm me-3" onClick={toggleMute}>
+                                                        <i className={`bi ${isMuted ? 'bi-volume-mute' : 'bi-volume-up'}`}></i>
+                                                    </button>
                                                     <div className="volume-control" style={{ width: '80px' }}>
                                                         <input type="range" min="0" max="1" step="0.01" value={volume} onChange={handleVolumeChange} className="form-range volume-slider" style={{ height: '5px', background: `linear-gradient(to right, #4a6bdf 0%, #4a6bdf ${volume * 100}%, #e9ecef ${volume * 100}%, #e9ecef 100%)` }} />
                                                     </div>
                                                 </div>
-                                                <button className="btn btn-outline-secondary btn-sm" onClick={() => { if (audioRef.current) { audioRef.current.currentTime = 0; setCurrentTime(0); if (progressRef.current) progressRef.current.style.width = '0%'; } }}><i className="bi bi-arrow-clockwise"></i></button>
+                                                <button className="btn btn-outline-secondary btn-sm" onClick={() => { if (audioRef.current) { audioRef.current.currentTime = 0; setCurrentTime(0); if (progressRef.current) progressRef.current.style.width = '0%'; } }}>
+                                                    <i className="bi bi-arrow-clockwise"></i>
+                                                </button>
                                             </div>
                                         </div>
                                     </div>
-                                )}
+                                </div>
                             </div>
                         </div>
-                    </div>
 
-                    <div className="col-md-8">
-                        <div className="card shadow-sm border-0 h-100">
-                            <div className="card-body p-3">
-                                <div className="mb-5">
-                                    <h2 className="book-title-right">{book.title}</h2>
-                                    <h4 className="book-author-right text-mb-3">{book.author}</h4>
-                                </div>
-
-                                <div className="mb-4">
-                                    <span className="rating-badge me-2">
-                                        <i className="bi bi-star-fill text-warning small"></i>
-                                        <span className="ms-1 fw-bold small">{book.rating}</span>
-                                        <span className="text-muted ms-1 small">Ratings</span>
-                                    </span>
-                                    <button className={`wishlist-btn ${isWishlisted ? 'wishlisted' : ''}`} onClick={toggleWishlist}>
-                                        <i className={`bi ${isWishlisted ? 'bi-heart-fill' : 'bi-heart'} wishlist-icon`}></i>
-                                        <span className="wishlist-text ms-1">{isWishlisted ? 'Added to Wishlist' : 'Add to Wishlist'}</span>
-                                    </button>
-                                </div>
-
-                                <div className="mb-4">
-                                    <div className="d-flex gap-3 mb-3">
-                                        <span className="text-secondary"><i className="bi bi-clock me-1"></i> {book.duration}</span>
-                                        <span className="text-secondary"><i className="bi bi-file-earmark-text me-1"></i> {book.format}</span>
+                        <div className="col-md-8">
+                            <div className="card shadow-sm border-0 h-100">
+                                <div className="card-body p-3">
+                                    <div className="mb-5">
+                                        <h2 className="book-title-right">{book.title}</h2>
+                                        <h4 className="book-author-right text-mb-3">{book.author}</h4>
                                     </div>
-                                </div>
 
-                                <div className="mb-4">
-                                    <h5 className="mb-2 fw-bold book-description-heading">Description</h5>
-                                    <p className="book-description text-justify">{book.description}</p>
-                                </div>
-
-                                <div className="pt-1 mt-1 mb-1 pb-1">
-                                    <div>
-                                        <span className="h5 fw-bold text-secondary">{book.currency} {book.price.toLocaleString()}</span>
-                                    </div>
-                                </div>
-
-                                <div className="d-flex justify-content-between pt-2 mt-3 mb-1 pb-1">
-                                    <div className="d-flex gap-2 w-100">
-                                        {/* INJECTED LOGIC FOR BUTTONS */}
-                                        {renderActionButtons()}
-                                        
-                                        {/* PREVIEW BUTTON */}
-                                        <button className="btn btn-outline-primary px-3 small-btn" onClick={handlePreview}>
-                                            <i className="bi bi-eye me-1"></i> Preview
+                                    <div className="mb-4">
+                                        <span className="rating-badge me-2">
+                                            <i className="bi bi-star-fill text-warning small"></i>
+                                            <span className="ms-1 fw-bold small">{book.rating}</span>
+                                            <span className="text-muted ms-1 small">Ratings</span>
+                                        </span>
+                                        <button className={`wishlist-btn ${isWishlisted ? 'wishlisted' : ''}`} onClick={toggleWishlist}>
+                                            <i className={`bi ${isWishlisted ? 'bi-heart-fill' : 'bi-heart'} wishlist-icon`}></i>
+                                            <span className="wishlist-text ms-1">{isWishlisted ? 'Added to Wishlist' : 'Add to Wishlist'}</span>
                                         </button>
+                                    </div>
+
+                                    <div className="mb-4">
+                                        <div className="d-flex gap-3 mb-3">
+                                            <span className="text-secondary"><i className="bi bi-clock me-1"></i> {book.duration}</span>
+                                            <span className="text-secondary"><i className="bi bi-file-earmark-text me-1"></i> {book.format}</span>
+                                        </div>
+                                    </div>
+
+                                    <div className="mb-4">
+                                        <h5 className="mb-2 fw-bold book-description-heading">Description</h5>
+                                        <p className="book-description text-justify">{book.description}</p>
+                                    </div>
+
+                                    <div className="pt-1 mt-1 mb-1 pb-1">
+                                        <div>
+                                            <span className="h5 fw-bold text-secondary">{book.currency} {book.price.toLocaleString()}</span>
+                                        </div>
+                                    </div>
+
+                                    <div className="d-flex justify-content-between pt-1 mt-1 mb-1 pb-1">
+                                        <div className="d-flex gap-2">
+                                            {/* Logic: If purchased (canDownload), don't show cart. */}
+                                            {!canDownload ? (
+                                                <button className={`btn px-3 small-btn ${isInCart ? 'btn-success' : 'btn-primary'}`}
+                                                    onClick={handleCartAction}>
+                                                    <i className={`bi ${isInCart ? 'bi-check-lg' : 'bi-cart-plus me-1'}`}></i> {isInCart ? "In Cart" : "Add to Cart"}
+                                                </button>
+                                            ) : null}
+
+                                            <button className="btn btn-secondary px-3 small-btn" disabled={!canDownload || downloading} onClick={handleDownload}>
+                                                <i className="bi bi-download me-1"></i> {downloading ? 'Downloading...' : 'Download'}
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
+            ) : (
+                /* Free Audiobook Card */
+                <div className="book-container container mt-3">
+                    <div className="row">
+                        <div className="col-md-4">
+                            <div className="card shadow-sm border-0">
+                                <div className="card-body text-center p-4">
+                                    <div className="mb-4 position-relative">
+                                        <div className="position-relative">
+                                            <img src={book.image || bCover} alt="audiobook cover" className='abook-cover-img' />
+                                            <div className="position-absolute" style={{ top: '10px', left: '10px', zIndex: 1 }}>
+                                                <span className="badge bg-info text-white px-3 py-2 shadow-sm">
+                                                    <i className="bi bi-headphones me-1"></i> Audiobook
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {/* Free Audio Player Controls */}
+                                    <div className="mt-4">
+                                        <div className="audio-player-container mb-3">
+                                            <div className="d-flex justify-content-between align-items-center mb-2">
+                                                <h6 className="fw-bold mb-0">Listen</h6>
+                                                <small className="text-muted">{formatTime(duration)}</small>
+                                            </div>
+                                            <div className="progress-container mb-2" onClick={handleProgressClick} style={{ cursor: 'pointer', position: 'relative' }}>
+                                                <div className="progress" style={{ height: '6px', backgroundColor: '#e9ecef' }}>
+                                                    <div ref={progressRef} className="progress-bar bg-primary" role="progressbar" style={{ width: '0%', transition: 'none' }}></div>
+                                                </div>
+                                            </div>
+                                            <div className="d-flex justify-content-between align-items-center">
+                                                <button className="btn btn-outline-primary btn-sm me-2" onClick={togglePlayPause}>
+                                                    <i className={`bi ${isPlaying ? 'bi-pause' : 'bi-play'}`}></i>
+                                                </button>
+                                                {/* Volume controls for free version */}
+                                                <div className="d-flex align-items-center">
+                                                    <div className="volume-control" style={{ width: '60px' }}>
+                                                        <input type="range" min="0" max="1" step="0.01" value={volume} onChange={handleVolumeChange} className="form-range volume-slider" style={{ height: '5px', background: `linear-gradient(to right, #4a6bdf 0%, #4a6bdf ${volume * 100}%, #e9ecef ${volume * 100}%, #e9ecef 100%)` }} />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="col-md-8">
+                            <div className="card shadow-sm border-0 h-100">
+                                <div className="card-body p-3">
+                                    <div className="mb-5">
+                                        <h2 className="book-title-right">{book.title}</h2>
+                                        <h4 className="book-author-right text-mb-3">{book.author}</h4>
+                                    </div>
+                                    <div className="mb-4">
+                                        <h5 className="mb-2 fw-bold book-description-heading">Description</h5>
+                                        <p className="book-description text-justify">{book.description}</p>
+                                    </div>
+                                    <div className="d-flex justify-content-between pt-2 mt-3 mb-1 pb-1">
+                                        <div className="d-flex gap-2">
+                                            <button className="btn btn-primary px-3 small-btn" onClick={handleDownload} disabled={downloading}>
+                                                <i className="bi bi-download me-1"></i> {downloading ? 'Downloading...' : 'Download'}
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

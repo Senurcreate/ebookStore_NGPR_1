@@ -408,10 +408,10 @@ h6 { font-size: 1rem; }
 
 /* aBook Cover */
 .abook-cover-img {
-    max-height: 300px;
+    max-height: 450px;
     height: 100%;
-    width: 100%;
-    position: relative;
+    width: 300px;
+    position: center;
     overflow: hidden; /* Hide any image overflow */
     object-fit: fit;
     object-position: center;

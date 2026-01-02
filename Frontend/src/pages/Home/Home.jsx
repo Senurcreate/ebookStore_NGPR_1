@@ -1,8 +1,6 @@
 import React from 'react';
 import Hero from './Hero';
-//import Categories from "./Categories";
 import Banner from "./Banner";
-import NewAudiobooks from "./NewAudiobooks";
 import BookSectionLoader from "../../components/BookSectionLoader";
 {/*import Carousel from './Categories'*/}
 import { 
@@ -25,8 +23,13 @@ const Home = () => {
             fetchFunction={fetchNewReleases} 
         />
         <Banner />
-        <NewAudiobooks />
-        {/* REUSABLE SECTION 3: Best Sellers */}
+
+        <BookSectionLoader 
+            title="New Audiobooks" 
+            fetchFunction={fetchNewAudiobooks} 
+            type="audiobook" 
+        />
+
         <BookSectionLoader 
             title="Best Sellers" 
             fetchFunction={fetchBestSellers} 
