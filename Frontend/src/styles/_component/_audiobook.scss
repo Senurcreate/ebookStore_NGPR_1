@@ -4,15 +4,17 @@
   background-color: #f2f6ff; 
   border: 1px solid rgba(0, 0, 0, 0.05);
   border-radius: 1rem;
-  padding: 0.8rem;
-  width: 30rem;
-  height: 12rem;
+  padding: 1rem;
+  width: 25rem;      
+  height: 13rem;     
+  flex-shrink: 0;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  overflow: hidden;
 
   .audiobook-img {
     width: 8rem;
-    height: 11rem;
+    height: 12rem;
     border-radius: 0.8rem;
     object-fit: cover;
     flex-shrink: 0;
@@ -35,14 +37,19 @@
       margin: 0 0 0.25rem 0; 
       //margin-bottom: 0.3rem;
       font-size: 1.0rem;
-      overflow: hidden;
-      display: -webkit-box;
-      display: box;
-      -webkit-box-orient: vertical;
-      box-orient: vertical;
-      -webkit-line-clamp: 1;
-      line-clamp: 1;
-      height: 45px;  
+      .title-text {
+        // EXACT CODE FROM YOUR EBOOK EXAMPLE:
+        overflow: hidden;
+        display: -webkit-box;
+        display: box;
+        -webkit-box-orient: vertical;
+        box-orient: vertical;
+        -webkit-line-clamp: 1;
+        line-clamp: 1;
+        
+        // Ensures it breaks words if a single word is too long
+        word-break: break-all; 
+      } 
 
       i {
         font-size: 1.2rem;
@@ -86,7 +93,6 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
-
         margin-top: auto; 
     }
 
