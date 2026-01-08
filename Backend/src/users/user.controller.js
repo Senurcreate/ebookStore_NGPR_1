@@ -3,6 +3,7 @@ const Wishlist = require('../wishlist/wishlist.model');
 const Purchase = require('../purchases/purchase.model');
 const DownloadHistory = require('../downloads/download.model');
 const { auth } = require('../config/firebase.config');
+const mongoose = require('mongoose');
 
 /**
  * @desc    Get current user profile with stats
@@ -64,7 +65,7 @@ const getCurrentUser = async (req, res) => {
 const updateProfile = async (req, res) => {
   try {
     const updates = {};
-    const allowedFields = ['displayName', 'photoURL', 'phoneNumber', 'preferences', 'isPremium'];
+    const allowedFields = ['displayName', 'photoURL', 'phoneNumber', 'preferences', 'isPremium', 'email'];
     
     // Only allow specific fields to be updated
     Object.keys(req.body).forEach(key => {
@@ -74,12 +75,36 @@ const updateProfile = async (req, res) => {
     });
 
     if (Object.keys(updates).length === 0) {
-      return res.status(400).json({
-        success: false,
-        message: 'No valid fields to update'
-      });
+      return res.status(400).json({ success: false, message: 'No valid fields to update' });
     }
 
+    // 2. Handle Sensitive Updates in Firebase (Email & Name)
+    if (auth) {
+      const firebaseUpdates = {};
+      
+      if (updates.email && updates.email !== req.user.email) {
+        firebaseUpdates.email = updates.email;
+        // Note: Changing email might require re-verification depending on your Firebase settings
+        updates.emailVerified = false; 
+      }
+      
+      if (updates.displayName) {
+        firebaseUpdates.displayName = updates.displayName;
+      }
+
+      if (Object.keys(firebaseUpdates).length > 0) {
+        try {
+          await auth.updateUser(req.user.firebaseUID, firebaseUpdates);
+        } catch (firebaseError) {
+          console.error('Firebase Update Error:', firebaseError);
+          // If email is taken in Firebase, stop here
+          if (firebaseError.code === 'auth/email-already-exists') {
+            return res.status(400).json({ success: false, message: 'Email is already in use.' });
+          }
+          throw firebaseError;
+        }
+      }
+    }
     const user = await User.findByIdAndUpdate(
       req.user._id,
       { $set: updates },
@@ -111,20 +136,7 @@ const updateProfile = async (req, res) => {
     });
   } catch (error) {
     console.error('Error updating profile:', error);
-    
-    if (error.name === 'ValidationError') {
-      return res.status(400).json({
-        success: false,
-        message: 'Validation error',
-        errors: Object.values(error.errors).map(err => err.message)
-      });
-    }
-
-    res.status(500).json({
-      success: false,
-      message: 'Failed to update profile',
-      error: error.message
-    });
+    res.status(500).json({ success: false, message: 'Failed to update profile', error: error.message });
   }
 };
 
@@ -376,6 +388,7 @@ const getUserStats = async (req, res) => {
         });
     }
 };
+
 /**
  * @desc    Update user preferences
  * @route   PATCH /api/users/me/preferences
@@ -531,12 +544,24 @@ const getAllUsers = async (req, res) => {
     const skip = (parseInt(page) - 1) * parseInt(limit);
     
     // Get users with pagination
-    const users = await User.find(query)
+    const usersRaw = await User.find(query)
       .select('-firebaseUID -__v -updatedAt')
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(parseInt(limit))
       .lean();
+
+    
+    // 2. NEW STEP: Calculate Total Spent for each user
+    const users = await Promise.all(usersRaw.map(async (user) => {
+        const purchases = await Purchase.find({ user: user._id });
+        const totalSpent = purchases.reduce((acc, purchase) => {
+            return acc + (purchase.totalAmount || 0);
+        }, 0);
+
+        return { ...user, totalSpent };
+    }));
+    
 
     // Get total count
     const total = await User.countDocuments(query);
@@ -652,8 +677,56 @@ const deleteUser = async (req, res) => {
   }
 };
 
-// Keep the existing admin functions as they are
-// getAllUsers, getUserById, deleteUser remain the same
+/**
+ * @desc    Change User Password
+ * @route   PATCH /api/users/me/password
+ * @access  Private
+ */
+const changePassword = async (req, res) => {
+  try {
+    const { newPassword } = req.body;
+    const userId = req.user._id;
+    const firebaseUid = req.user.firebaseUID;
+
+    if (!newPassword || newPassword.length < 6) {
+      return res.status(400).json({
+        success: false,
+        message: 'Password must be at least 6 characters long'
+      });
+    }
+
+    // 1. Update Password in Firebase (This handles the actual login auth)
+    if (auth) {
+      await auth.updateUser(firebaseUid, {
+        password: newPassword
+      });
+    } else {
+      throw new Error("Firebase Auth service not initialized");
+    }
+
+    // 2. Update User in MongoDB (Update timestamp/metadata)
+    // We do NOT store the password text in Mongo if using Firebase
+    await User.findByIdAndUpdate(userId, {
+      $set: { 
+        // You could add a field like 'passwordLastChangedAt' to your schema if you wanted
+        updatedAt: new Date() 
+      }
+    });
+
+    res.status(200).json({
+      success: true,
+      message: 'Password updated successfully'
+    });
+
+  } catch (error) {
+    console.error('Error changing password:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to update password',
+      error: error.message
+    });
+  }
+};
 
 module.exports = {
   getCurrentUser,
@@ -666,5 +739,6 @@ module.exports = {
   getUserDownloadHistory,
   getAllUsers,
   getUserById,
-  deleteUser
+  deleteUser,
+  changePassword
 };

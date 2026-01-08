@@ -10,6 +10,7 @@ import ForgotPassword from "./pages/ForgotPassword";
 import BookDetails from "./pages/BookDetails/BookDetails";
 import Preview from "./pages/BookDetails/Preview";
 import Profile from "./pages/UserProfilePage";
+import OrderHistory from './pages/OrderHistory';
 import History from "./pages/DownloadHistory";
 import Checkout from "./pages/Payments/Checkout";
 import CardDetails from "./pages/Payments/CardDetailsPage";
@@ -22,6 +23,7 @@ import AudiobookPage from "./pages/BookPage/AudiobookPage";
 import PaymentSuccess from "./pages/Payments/PaymentSuccessPage";
 
 
+import AdminRoute from "./routes/AdminRoute";
 import AdminLayout from "./admin/layouts/AdminLayout";
 import Dashboard from "./admin/pages/Dasboard";
 
@@ -69,7 +71,8 @@ function MainLayout() {
         <Route path="/books/:id" element={<BookDetails />} />
         <Route path="/preview/:id" element={<Preview />} />
         <Route path="/profile" element={<Profile />} />
-        <Route path="/history" element={<History />} />
+        <Route path="/downloads" element={<History />} />
+        <Route path="/orders" element={<OrderHistory />} />
         <Route path="/checkout" element={<Checkout />} />
         <Route path="/cardDetails" element={<CardDetails />} />
         <Route path="/paymentMethod" element={<PaymentMethod />} />
@@ -83,6 +86,7 @@ function MainLayout() {
 
 
         {/* ADMIN ROUTES */}
+        <Route element={<AdminRoute />}>
           <Route path="/admin/*" element={
             <AdminLayout>
               <Routes>
@@ -90,6 +94,7 @@ function MainLayout() {
               </Routes>
             </AdminLayout>
           } />
+          </Route>
 
       </Routes>
       </main>

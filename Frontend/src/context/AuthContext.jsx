@@ -10,6 +10,9 @@ import {
   updateProfile 
 } from "firebase/auth";
 
+// FIX 1: Import axios to fetch the role
+import axios from '../utils/axios'; 
+
 const AuthContext = createContext();
 
 export const useAuth = () => {
@@ -18,60 +21,72 @@ export const useAuth = () => {
 
 const googleProvider = new GoogleAuthProvider();
 
-// authProvider
 export const AuthProvider = ({children}) => {
     const [currentUser, setCurrentUser] = useState(null);
+    // Default to null so we know when it's not loaded yet
+    const [userRole, setUserRole] = useState(null); 
     const [loading, setLoading] = useState(true);
 
-    // register a user with email/password (SIGN UP)
     const signUpUser = async (email, password, username) => {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-        
-        // Update profile with username
         if (username) {
             await updateProfile(userCredential.user, {
                 displayName: username
             });
         }
-        
         return userCredential;
     }
 
-    // Alternative name for consistency (same as above)
     const registerUser = async (email, password, username) => {
         return signUpUser(email, password, username);
     }
 
-    // login the user (SIGN IN)
     const loginUser = async (email, password) => {
         return await signInWithEmailAndPassword(auth, email, password)
     }
 
-    // sign up with google (GOOGLE SIGN UP)
     const signInWithGoogle = async () => {
         return await signInWithPopup(auth, googleProvider)
     }
 
-    // logout the user
     const logout = () => {
         return signOut(auth)
     }
 
-    // manage user
+    // FIX 2: Fetch Role Logic inside useEffect
     useEffect(() => {
-        const unsubscribe = onAuthStateChanged(auth, (user) => {
+        const unsubscribe = onAuthStateChanged(auth, async (user) => {
             setCurrentUser(user);
-            setLoading(false);
-
+            
             if(user) {
-                const {email, displayName, photoURL} = user;
-                const userData = {
-                    email, 
-                    username: displayName, 
-                    photo: photoURL
-                } 
-                
+                try {
+                    // 1. Get the token (ensures backend accepts request)
+                    const token = await user.getIdToken();
+                    
+                    // 2. Fetch the user details from YOUR backend
+                    // Note: Ensure axios is configured with the token interceptor 
+                    // or pass headers here if needed.
+                    const response = await axios.get('/users/me');
+                    
+                    // 3. Extract Role (Handle different response structures)
+                    const role = response.data.role || response.data.data?.role || "user";
+                    
+                    console.log("AuthContext: User Role set to ->", role);
+                    setUserRole(role);
+
+                    // Optional: Merge role into currentUser object for easy access
+                    user.role = role; 
+                    setCurrentUser({...user}); 
+
+                } catch (error) {
+                    console.error("AuthContext: Failed to fetch user role", error);
+                    setUserRole("user"); // Fallback
+                }
+            } else {
+                setUserRole(null);
             }
+
+            setLoading(false);
         })
 
         return () => unsubscribe();
@@ -80,8 +95,9 @@ export const AuthProvider = ({children}) => {
     const value = {
         currentUser,
         loading,
+        userRole, // Keep this for backward compatibility
         signUpUser, 
-        registerUser, // Keep this for backward compatibility
+        registerUser,
         loginUser,
         signInWithGoogle,
         logout

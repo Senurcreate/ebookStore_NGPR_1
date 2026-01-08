@@ -7,6 +7,22 @@ const Wishlist = require('../wishlist/wishlist.model');
 const Notification = require('../notifications/notification.model');
 const mongoose = require('mongoose');
 
+// Helper function for date formatting
+function getDateFormat(granularity) {
+    switch (granularity) {
+        case 'hourly':
+            return '%Y-%m-%d %H:00';
+        case 'daily':
+            return '%Y-%m-%d';
+        case 'weekly':
+            return '%Y-%U'; // Year-Week number
+        case 'monthly':
+            return '%Y-%m';
+        default:
+            return '%Y-%m-%d';
+    }
+}
+
 /**
  * Get comprehensive dashboard statistics
  */
@@ -94,13 +110,13 @@ async function getDashboardStats(req, res) {
         const recentActivity = await Promise.all([
             Purchase.find({ status: 'completed' })
                 .populate('user', 'displayName email')
-                .populate('book', 'title')
+                .populate('book', 'title author coverImage type price')
                 .sort({ purchasedAt: -1 })
                 .limit(5)
                 .lean(),
             Review.find({ isHidden: false })
                 .populate('user', 'displayName')
-                .populate('book', 'title')
+                .populate('book', 'title coverImage')
                 .sort({ createdAt: -1 })
                 .limit(5)
                 .lean(),
@@ -321,23 +337,6 @@ async function getAnalytics(req, res) {
     }
 }
 
-/**
- * Helper function for date formatting based on granularity
- */
-function getDateFormat(granularity) {
-    switch (granularity) {
-        case 'hourly':
-            return '%Y-%m-%d %H:00';
-        case 'daily':
-            return '%Y-%m-%d';
-        case 'weekly':
-            return '%Y-%U'; // Year-Week number
-        case 'monthly':
-            return '%Y-%m';
-        default:
-            return '%Y-%m-%d';
-    }
-}
 
 /**
  * Get sales analytics with detailed breakdown
