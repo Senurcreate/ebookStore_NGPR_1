@@ -1,4 +1,4 @@
-import axios from '../utils/axios'; // Import the instance we just configured above
+import axios from '../utils/axios'; 
 
 // 1. Simulate a Purchase
 export const simulatePurchase = async (bookId) => {
@@ -25,9 +25,10 @@ export const fetchDownloadHistory = async () => {
 // 3. Get My Purchases (Library)
 export const fetchMyPurchases = async () => {
     try {
-        const response = await axios.get('/purchases/history');
+        const response = await axios.get('/users/me/purchases');
         return response.data;
     } catch (error) {
+        console.error("Error fetching purchases:", error);
         throw error.response?.data || error.message;
     }
 };

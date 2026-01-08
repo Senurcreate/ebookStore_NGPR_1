@@ -1,17 +1,19 @@
 import React, { useState } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 
 const Sidebar = () => {
-  const [activeTab, setActiveTab] = useState('Dashboard');
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const navItems = [
-    { name: 'Dashboard', icon: 'bi-grid' },
-    { name: 'Books', icon: 'bi-book' },
-    { name: 'Orders', icon: 'bi-cart' },
-    { name: 'Users', icon: 'bi-people' },
-    { name: 'Analytics', icon: 'bi-bar-chart-line' },
-    { name: 'Reviews', icon: 'bi-chat-left' },
-    { name: 'Settings', icon: 'bi-gear' },
+    { name: 'Dashboard', icon: 'bi-grid' , path: '/admin/dashboard'},
+    { name: 'Books', icon: 'bi-book' , path: '/admin/books'},
+    { name: 'Orders', icon: 'bi-cart' , path: '/admin/orders'},
+    { name: 'Users', icon: 'bi-people', path: '/admin/users' },
+    { name: 'Analytics', icon: 'bi-bar-chart-line', path: '/admin/analytics' },
+    { name: 'Reviews', icon: 'bi-chat-left', path: '/admin/reviews' },
+    { name: 'Settings', icon: 'bi-gear', path: '/admin/settings' },
   ];
 
   return (
@@ -45,11 +47,11 @@ const Sidebar = () => {
         <div className="flex-grow-1 p-3">
           <ul className="nav nav-pills flex-column gap-1">
             {navItems.map((item) => {
-              const isActive = activeTab === item.name;
+              const isActive = location.pathname.includes(item.path);
               return (
                 <li className="nav-item" key={item.name}>
                   <button
-                    onClick={() => setActiveTab(item.name)}
+                    onClick={() => navigate(item.name)}
                     className={`nav-link w-100 d-flex align-items-center py-3 px-3 border-0 rounded-3 text-start custom-nav-link ${
                       isActive ? 'active-tab fw-medium' : ''
                     }`}

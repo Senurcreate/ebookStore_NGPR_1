@@ -2,73 +2,22 @@ const express = require('express');
 const router = express.Router();
 const adminController = require('./admin.controller');
 const { verifyFirebaseToken, requireAdmin } = require('../middleware/firebase.middleware');
+const User = require('../users/user.model');
 
 // Apply admin authentication to all routes
 router.use(verifyFirebaseToken, requireAdmin);
 
 // ====================
 // DASHBOARD & OVERVIEW
-// ====================
 
-// @route   GET /api/admin/dashboard
-// @desc    Get comprehensive dashboard statistics
-// @access  Private/Admin
 router.get('/dashboard', adminController.getDashboardStats);
-
-// @route   GET /api/admin/analytics
-// @desc    Get detailed analytics with date ranges
-// @access  Private/Admin
 router.get('/analytics', adminController.getAnalytics);
-
-// ====================
-// SALES ANALYTICS
-// ====================
-
-// @route   GET /api/admin/analytics/sales
-// @desc    Get sales analytics and trends
-// @access  Private/Admin
 router.get('/analytics/sales', adminController.getSalesAnalytics);
-
-// ====================
-// USER ANALYTICS
-// ====================
-
-// @route   GET /api/admin/analytics/users
-// @desc    Get user analytics and growth
-// @access  Private/Admin
 router.get('/analytics/users', adminController.getUserAnalytics);
-
-// ====================
-// CONTENT MODERATION
-// ====================
-
-// @route   GET /api/admin/moderation
-// @desc    Get content moderation dashboard
-// @access  Private/Admin
 router.get('/moderation', adminController.getModerationDashboard);
-
-// @route   PUT /api/admin/moderation/reviews/:id
-// @desc    Moderate a review (hide/show)
-// @access  Private/Admin
 router.put('/moderation/reviews/:id', adminController.moderateReview);
-
-// @route   DELETE /api/admin/moderation/reviews/:id/reports
-// @desc    Clear all reports from a review
-// @access  Private/Admin
 router.delete('/moderation/reviews/:id/reports', adminController.clearReviewReports);
-
-// ====================
-// SYSTEM MANAGEMENT
-// ====================
-
-// @route   GET /api/admin/system/health
-// @desc    Get system health and performance metrics
-// @access  Private/Admin
 router.get('/system/health', adminController.getSystemHealth);
-
-// @route   DELETE /api/admin/system/cache
-// @desc    Clear system cache
-// @access  Private/Admin
 router.delete('/system/cache', adminController.clearCache);
 
 // ====================

@@ -75,6 +75,38 @@
   outline: none;
 }
 
+
+.custom-navbar .btn {
+  padding: 8px 24px; /* Increased top/bottom and left/right padding */
+  font-size: 15px;   /* Slightly larger text */
+  border-radius: 8px; /* Softer, modern corners */
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+.custom-navbar .btn-dark {
+  background-color: #3B5FD2;
+  border-color: #3B5FD2;
+  color: #ffffff;
+  transition: all 0.3s ease;
+}
+
+.custom-navbar .btn-dark:hover {
+  background-color: #2c4ab0; /* Darker blue on hover */
+  border-color: #2c4ab0;
+}
+
+/* The "Sign In" button (Outline) */
+.custom-navbar .btn-outline-dark {
+  color: #3B5FD2;
+  border-color: #3B5FD2;
+}
+
+.custom-navbar .btn-outline-dark:hover {
+  background-color: #3B5FD2;
+  color: #ffffff;
+  border-color: #3B5FD2;}
+
+  
 /* Cart Badge Animation */
 @keyframes cartBounce {
   0%, 100% { 

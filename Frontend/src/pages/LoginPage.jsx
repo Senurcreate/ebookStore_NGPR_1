@@ -8,6 +8,8 @@ import Blogo from "../assets/BrandLogo.svg";
 import "../styles/main.scss";
 import 'bootstrap-icons/font/bootstrap-icons.css';
 
+import axios from '../utils/axios';
+
 const LoginPage = () => {
   const [message, setMessage] = useState("");
   const [emailLoading, setEmailLoading] = useState(false);
@@ -23,12 +25,42 @@ const LoginPage = () => {
     formState: { errors },
   } = useForm();
 
+  const handleRoleBasedRedirect = async () => {
+  try {
+    console.log("1. Auth successful, fetching user profile...");
+    
+    // CHANGE 1: Use the correct endpoint '/users/me' to match your controller
+    const response = await axios.get('/users/me'); 
+    
+    console.log("2. Full Backend Response:", response.data); 
+
+    // CHANGE 2: Extract role correctly based on your controller structure
+    // The controller sends: { success: true, data: { role: "admin", ... } }
+    const userData = response.data.data; 
+    const role = userData?.role;
+
+    console.log("3. Detected Role:", role);
+
+    if (role === 'admin') {
+      console.log(">> Redirecting to Admin Dashboard");
+      navigate("/admin/dashboard", { replace: true });
+    } else {
+      console.log(">> Redirecting to Home (User)");
+      navigate("/", { replace: true });
+    }
+
+  } catch (error) {
+    console.error("REDIRECT ERROR:", error);
+    navigate("/");
+  }
+};
+
   const onSubmit = async (data) => {
     try {
       setEmailLoading(true);
       await loginUser(data.email, data.password);
       setMessage("");
-      navigate("/");
+      await handleRoleBasedRedirect();
     } catch (error) {
       console.error("Login error:", error.code);
       if (error.code === "auth/invalid-email")
@@ -49,7 +81,7 @@ const LoginPage = () => {
     try {
       setGoogleLoading(true);
       await signInWithGoogle();
-      navigate("/");
+      await handleRoleBasedRedirect();
     } catch (error) {
       console.error("Google Sign-in error:", error);
       setMessage("Google sign-in failed! Please try again.");

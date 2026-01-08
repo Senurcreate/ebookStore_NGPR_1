@@ -333,7 +333,11 @@ bookSchema.index({ narrators: 1 });
 
 // Virtual for formatted publication date
 bookSchema.virtual('formattedPublicationDate').get(function() {
-    return this.publication_date.toLocaleDateString('en-US', {
+    if (!this.publication_date) return 'Unknown';
+    const date = new Date(this.publication_date);
+    if (isNaN(date.getTime())) return 'Invalid Date';
+
+    return date.toLocaleDateString('en-US', {
         year: 'numeric',
         month: 'long',
         day: 'numeric'
@@ -342,18 +346,19 @@ bookSchema.virtual('formattedPublicationDate').get(function() {
 
 // Virtual for price display
 bookSchema.virtual('priceDisplay').get(function() {
+    if (this.price === undefined || this.price === null) return '$0.00';
     if (this.price === 0) return 'Free';
     return `$${this.price.toFixed(2)}`;
 });
 
 // Virtual for isPremium
 bookSchema.virtual('isPremium').get(function() {
-    return this.price > 0;
+    return (this.price || 0) > 0;
 });
 
 // Virtual for narrators list as string
 bookSchema.virtual('narratorsList').get(function() {
-    if (!this.narrators || this.narrators.length === 0) return '';
+    if (!this.narrators || !Array.isArray(this.narrators) || this.narrators.length === 0) return '';
     return this.narrators.map(n => n.name).join(', ');
 });
 
@@ -362,34 +367,27 @@ bookSchema.virtual('formattedAudioLength').get(function() {
     if (this.type !== 'audiobook' || !this.audioLength) return '';
     
     const parts = this.audioLength.split(':').map(Number);
+     if (parts.some(isNaN)) return this.audioLength;
+    
     let hours = 0, minutes = 0, seconds = 0;
+    if (parts.length === 3) [hours, minutes, seconds] = parts;
+    else if (parts.length === 2) [minutes, seconds] = parts;
     
-    if (parts.length === 3) {
-        [hours, minutes, seconds] = parts;
-    } else if (parts.length === 2) {
-        [minutes, seconds] = parts;
-    }
+    const res = [];
+    if (hours > 0) res.push(`${hours} hr`);
+    if (minutes > 0) res.push(`${minutes} min`);
+    if (res.length === 0) return `${seconds} sec`;
     
-    const partsArray = [];
-    if (hours > 0) {
-        partsArray.push(`${hours} hour${hours !== 1 ? 's' : ''}`);
-    }
-    if (minutes > 0) {
-        partsArray.push(`${minutes} minute${minutes !== 1 ? 's' : ''}`);
-    }
-    if (seconds > 0 && hours === 0 && minutes === 0) {
-        partsArray.push(`${seconds} second${seconds !== 1 ? 's' : ''}`);
-    }
-    
-    return partsArray.join(' ');
+    return res.join(' ');
 });
 
 // Virtual for formatted file size
 bookSchema.virtual('formattedFileSize').get(function() {
-    if (!this.fileSize) return 'Unknown size';
+    const bytes = this.fileSize || this.cloudinaryInfo?.bytes || 0;
+    if (!bytes) return '0 B';
     
     const units = ['bytes', 'KB', 'MB', 'GB'];
-    let size = this.fileSize;
+    let size = bytes;
     let unitIndex = 0;
     
     while (size >= 1024 && unitIndex < units.length - 1) {
@@ -403,28 +401,16 @@ bookSchema.virtual('formattedFileSize').get(function() {
 // Virtual for audio sample URL
 bookSchema.virtual('audioSampleUrl').get(function() {
     if (this.type !== 'audiobook') return null;
-    
-    if (this.audioSampleCloudinaryUrl) {
-        return this.audioSampleCloudinaryUrl;
-    }
-    
-    // Fallback to main file if no sample provided
-    return this.fileInfo?.downloadUrl || null;
+    return this.audioSampleCloudinaryUrl || this.fileInfo?.downloadUrl || this.cloudinaryUrl || null;
 });
 
 // Virtual for audio embed code (for inline playback)
 bookSchema.virtual('audioEmbedCode').get(function() {
     if (this.type !== 'audiobook') return null;
+    const url = this.audioSampleUrl || this.cloudinaryUrl;
+    if (!url) return null;
     
-    const audioUrl = this.audioSampleUrl || this.fileInfo?.downloadUrl;
-    if (!audioUrl) return null;
-    
-    return `
-        <audio controls style="width: 100%;">
-            <source src="${audioUrl}" type="audio/mpeg">
-            Your browser does not support the audio element.
-        </audio>
-    `;
+    return `<audio controls src="${url}" style="width:100%"></audio>`;
 });
 
 // Middleware to auto-populate fileInfo when cloudinaryUrl is set

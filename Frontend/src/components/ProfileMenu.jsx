@@ -7,19 +7,24 @@ function ProfileMenu({ onSignOutClick }) {
   return (
     <div className="profile-menu border rounded shadow-sm p-3 bg-white" style={{ width: '250px' }}>
       <ul className="list-unstyled m-0">
-        <li className="menu-item py-2 px-3">
+        {/*<li className="menu-item py-2 px-3">
           <Link to="/catogeries" className="d-flex align-items-center text-decoration-none text-dark">
           <i className="bi bi-book me-2"></i> Categories
           </Link>
-        </li>
+        </li>*/}
         <li className="menu-item py-2 px-3">
           <Link to="/wishlist" className="d-flex align-items-center text-decoration-none text-dark">
           <i className="bi bi-heart me-2"></i> Wishlist
           </Link>
         </li>
         <li className="menu-item py-2 px-3">
-          <Link to="/history" className="d-flex align-items-center text-decoration-none text-dark">
-          <i className="bi bi-clock-history me-2"></i> History
+          <Link to="/orders" className="d-flex align-items-center text-decoration-none text-dark">
+          <i className="bi bi-bag-check me-2"></i> My Orders
+          </Link>
+        </li>
+        <li className="menu-item py-2 px-3">
+          <Link to="/downloads" className="d-flex align-items-center text-decoration-none text-dark">
+          <i className="bi bi-clock-history me-2"></i> Download History
           </Link>
         </li>
         <li className="menu-item py-2 px-3">
