@@ -56,3 +56,15 @@ export const fetchNewAudiobooks = async () => {
         throw error;
     }
 };
+
+// 4. Filter Options (ebook & audiobook)
+
+export const fetchFilterOptions = async () => {
+    try {
+        const response = await axios.get('/books/filters');
+        return response.data.data;
+    } catch (error) {
+        console.error("Error fetching filter options:", error);
+        return null; 
+    }
+};

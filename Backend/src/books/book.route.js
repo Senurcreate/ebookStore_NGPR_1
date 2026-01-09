@@ -7,6 +7,7 @@ const { verifyFirebaseToken } = require('../middleware/firebase.middleware'); //
 
 // frontend => backend server => controller => book schema  => database => send to server => back to the frontend
 
+router.get('/filters', bookController.getFilterOptions);
 // --- 🔓 PUBLIC ROUTES (No Token Required) ---
 // Anyone should be able to see the list of books
 router.get('/', bookController.getAllBooks);

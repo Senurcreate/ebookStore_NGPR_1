@@ -359,6 +359,34 @@ async function getAllBooks(req, res) {
     }
 }
 
+/* filter options */
+
+async function getFilterOptions(req, res) {
+    try {
+        const [authors, genres, languages, prices, ratings] = await Promise.all([
+            Book.distinct('author', { type: 'ebook' }),  
+            Book.distinct('genre', { type: 'ebook' }), 
+            Book.distinct('language', { type: 'ebook' }),  
+            Book.distinct('price', { type: 'ebook' }),
+            Book.distinct('rating', { type: 'ebook' })  
+        ]);
+
+        return res.status(200).json({
+            success: true,
+            data: {
+                authors: authors.sort(),
+                genres: genres.sort(),
+                languages: languages.sort(),
+                price: prices.sort(),
+                rating: ratings.sort()
+            }
+        });
+    } catch (error) {
+        console.error('Error fetching filter options:', error);
+        return res.status(500).json({ success: false, message: 'Failed to fetch filters' });
+    }
+}
+
 /**
  * Get a single book by ID with enhanced info (supports both types)
  */
@@ -981,5 +1009,6 @@ module.exports = {
     getBookStats,
     searchBooks,
     getAudiobooksByNarrator,
-    getBooksByType
+    getBooksByType,
+    getFilterOptions
 };

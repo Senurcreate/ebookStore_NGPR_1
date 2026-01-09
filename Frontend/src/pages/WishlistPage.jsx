@@ -1,29 +1,111 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import WishlistGrid from "../components/WishlistGrid";
 import PaginationSection from "../components/PaginationSection";
-import booksData from "../data/books.json";
+import { useAuth } from '../context/AuthContext'; 
+import { fetchWishlist, removeByBookId } from "../services/wishlist.service";
 
 const ITEMS_PER_PAGE = 4;
 
 const WishlistPage = () => {
-  const [wishlist, setWishlist] = useState(booksData);
+  // Call the hook to get the user
+  const { currentUser } = useAuth(); 
+
+  const [wishlist, setWishlist] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(0);
+  
+  // Add state for total items (to fix the scope error)
+  const [totalItems, setTotalItems] = useState(0); 
+  
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const totalPages = Math.ceil(wishlist.length / ITEMS_PER_PAGE);
+  const formatWishlistData = (item) => {
+    const book = item.book;
+    // Check if book exists to prevent errors if book was deleted from DB but remains in wishlist
+    if (!book) return null; 
+    
+    return {
+      id: book._id,
+      title: book.title,
+      author: book.author,
+      image: book.coverImage || book.cloudinaryUrl || "https://via.placeholder.com/150",
+      price: book.price,
+      rating: book.ratingStats?.average || 0,
+      type: book.type
+    };
+  };
 
-  const paginatedBooks = wishlist.slice(
-    (currentPage - 1) * ITEMS_PER_PAGE,
-    currentPage * ITEMS_PER_PAGE
-  );
+  const loadWishlist = async () => {
+    // 4. Don't fetch if no user
+    if (!currentUser) return; 
 
-  const handleDelete = (id) => {
-    const updated = wishlist.filter((b) => b.id !== id);
-    setWishlist(updated);
-
-    if ((currentPage - 1) * ITEMS_PER_PAGE >= updated.length) {
-      setCurrentPage((p) => Math.max(p - 1, 1));
+    setLoading(true);
+    try {
+      const response = await fetchWishlist(currentPage, ITEMS_PER_PAGE);
+      
+      if (response.data) {
+        // Filter out nulls in case of corrupted data
+        const formattedBooks = response.data.map(formatWishlistData).filter(item => item !== null);
+        setWishlist(formattedBooks);
+        
+        if (response.pagination) {
+          setTotalPages(response.pagination.totalPages);
+          setTotalItems(response.pagination.totalItems); // Store total items in state
+        }
+      }
+    } catch (err) {
+      console.error(err);
+      setError("Failed to load wishlist.");
+    } finally {
+      setLoading(false);
     }
   };
+
+  // Add currentUser to dependency array
+  // This ensures data refreshes if user logs in/out
+  useEffect(() => {
+    if (currentUser) {
+        loadWishlist();
+    } else {
+        // Clear data if user logs out
+        setWishlist([]);
+        setTotalItems(0);
+        setLoading(false);
+    }
+    window.scrollTo(0, 0);
+  }, [currentPage, currentUser]); 
+
+  const handleDelete = async (bookId) => {
+    const originalList = [...wishlist];
+    setWishlist(wishlist.filter((b) => b.id !== bookId));
+    
+    // Optimistically update count
+    setTotalItems(prev => prev - 1); 
+
+    try {
+      await removeByBookId(bookId);
+      
+      if (wishlist.length === 1 && currentPage > 1) {
+        setCurrentPage((prev) => prev - 1);
+      } else {
+        loadWishlist();
+      }
+    } catch (err) {
+      alert("Failed to remove book.");
+      setWishlist(originalList); 
+      setTotalItems(prev => prev + 1); // Revert count
+    }
+  };
+
+  // Show login message if not authenticated
+  if (!loading && !currentUser) {
+      return (
+          <div className="container py-5 text-center">
+              <h4>Please log in to view your wishlist.</h4>
+          </div>
+      );
+  }
 
   return (
     <div className="wishlist-page container">
@@ -31,12 +113,22 @@ const WishlistPage = () => {
         <h4>
           <i className="bi bi-heart-fill text-danger"></i> My Wishlist
         </h4>
-        <p>{wishlist.length} books saved for later</p>
+        {!loading && <p>{totalItems} books saved for later</p>}
       </div>
 
-      <WishlistGrid books={paginatedBooks} onDelete={handleDelete} />
+      {loading ? (
+        <div className="text-center py-5">Loading...</div>
+      ) : error ? (
+        <div className="text-center py-5 text-danger">{error}</div>
+      ) : wishlist.length === 0 ? (
+        <div className="text-center py-5">
+            <h5>Your wishlist is empty.</h5>
+        </div>
+      ) : (
+        <WishlistGrid books={wishlist} onDelete={handleDelete} />
+      )}
 
-      {totalPages > 1 && (
+      {!loading && !error && totalPages > 1 && (
         <PaginationSection
           currentPage={currentPage}
           totalPages={totalPages}
