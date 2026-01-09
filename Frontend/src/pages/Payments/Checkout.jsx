@@ -144,7 +144,7 @@ const Checkout = () => {
                         </div>
                       </div>
                       <div className="text-end mt-2">
-                        <span className="fw-bold text-danger fs-5">${item.price}</span>
+                        <span className="fw-bold text-danger fs-5">Rs {item.price}</span>
                       </div>
                     </div>
                   </div>
@@ -165,13 +165,13 @@ const Checkout = () => {
                   </div>
                   <div className="d-flex justify-content-between mb-3">
                     <span className="text-muted">Total</span>
-                    <span className="fw-medium">${total.toFixed(2)}</span>
+                    <span className="fw-medium">Rs {total.toFixed(2)}</span>
                   </div>
                   
                   <hr className="my-3 text-muted opacity-25" />
                   <div className="d-flex justify-content-between align-items-center mb-4">
                     <span className="fw-medium">Total ({selectedItems.length} items)</span>
-                    <span className="fw-bold text-danger fs-5">${total.toFixed(2)}</span>
+                    <span className="fw-bold text-danger fs-5">Rs {total.toFixed(2)}</span>
                   </div>
                   <button 
                     className="btn btn-primary w-100 py-2 mb-3 fw-medium checkout-btn d-flex align-items-center justify-content-center gap-2"

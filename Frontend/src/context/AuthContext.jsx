@@ -10,7 +10,7 @@ import {
   updateProfile 
 } from "firebase/auth";
 
-// FIX 1: Import axios to fetch the role
+// Import axios to fetch the role
 import axios from '../utils/axios'; 
 
 const AuthContext = createContext();
@@ -23,17 +23,29 @@ const googleProvider = new GoogleAuthProvider();
 
 export const AuthProvider = ({children}) => {
     const [currentUser, setCurrentUser] = useState(null);
-    // Default to null so we know when it's not loaded yet
     const [userRole, setUserRole] = useState(null); 
     const [loading, setLoading] = useState(true);
 
+    // --- UPDATED SIGN UP FUNCTION (The Fix) ---
     const signUpUser = async (email, password, username) => {
+        // 1. Create the user in Firebase
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        
         if (username) {
+            // 2. Update the profile on Firebase immediately
             await updateProfile(userCredential.user, {
                 displayName: username
             });
+
+            // 3. CRITICAL: Reload the user instance to update local state
+            await userCredential.user.reload();
+
+            // 4. CRITICAL: Force Token Refresh
+            // This destroys the old "nameless" token and gets a NEW one 
+            // that includes the 'displayName'. The backend will now see the name.
+            await userCredential.user.getIdToken(true);
         }
+        
         return userCredential;
     }
 
@@ -53,7 +65,7 @@ export const AuthProvider = ({children}) => {
         return signOut(auth)
     }
 
-    // FIX 2: Fetch Role Logic inside useEffect
+    // --- EXISTING ROLE FETCHING LOGIC ---
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, async (user) => {
             setCurrentUser(user);
@@ -64,17 +76,15 @@ export const AuthProvider = ({children}) => {
                     const token = await user.getIdToken();
                     
                     // 2. Fetch the user details from YOUR backend
-                    // Note: Ensure axios is configured with the token interceptor 
-                    // or pass headers here if needed.
                     const response = await axios.get('/users/me');
                     
-                    // 3. Extract Role (Handle different response structures)
+                    // 3. Extract Role
                     const role = response.data.role || response.data.data?.role || "user";
                     
                     console.log("AuthContext: User Role set to ->", role);
                     setUserRole(role);
 
-                    // Optional: Merge role into currentUser object for easy access
+                    // Merge role into currentUser object
                     user.role = role; 
                     setCurrentUser({...user}); 
 
@@ -94,8 +104,9 @@ export const AuthProvider = ({children}) => {
 
     const value = {
         currentUser,
+        setCurrentUser,
         loading,
-        userRole, // Keep this for backward compatibility
+        userRole,
         signUpUser, 
         registerUser,
         loginUser,

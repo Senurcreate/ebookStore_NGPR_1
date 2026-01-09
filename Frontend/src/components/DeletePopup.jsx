@@ -1,5 +1,5 @@
 import React from "react";
-import "./DeletePopup.scss";
+import "../styles/main.scss";
 
 const DeletePopup = ({ isOpen, onClose, onDelete }) => {
   if (!isOpen) return null;

@@ -127,7 +127,7 @@ function Navbar() {
             
             {currentUser ? (
                 <>
-              <i className="bi bi-bell custom-icon me-2"></i>
+              {/*<i className="bi bi-bell custom-icon me-2"></i>*/}
 
               {/* Cart Icon with Counter */}
                 <Link to="/checkout" className="position-relative me-2 text-decoration-none text-dark">
