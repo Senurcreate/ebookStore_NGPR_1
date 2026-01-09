@@ -1,12 +1,12 @@
 const express = require('express');
 const router = express.Router();
 const reviewController = require('./review.controller');
-const { verifyFirebaseToken, requireAdmin, requireAdminOrModerator } = require('../middleware/firebase.middleware');
+const { verifyFirebaseToken, requireAdminOrModerator } = require('../middleware/firebase.middleware');
 
 const Review = require('./review.model');
 
 // Apply authentication middleware to all routes
-router.use(verifyFirebaseToken);
+
 
 // ====================
 // PUBLIC REVIEW ROUTES (No auth needed for reading)
@@ -15,8 +15,10 @@ router.use(verifyFirebaseToken);
 // Get reviews for a book (public - no auth required)
 router.get('/books/:bookId', reviewController.getBookReviews);
 
+router.use(verifyFirebaseToken);
+
 // Get a specific review (public - no auth required)
-router.get('/:id', reviewController.getReviewById);
+//router.get('/:id', reviewController.getReviewById);
 
 // ====================
 // USER REVIEW ROUTES (Require auth)
@@ -28,23 +30,20 @@ router.post('/books/:bookId', reviewController.createReview);
 // Update a review
 router.put('/:id', reviewController.updateReview);
 
+//Add reply
+router.post('/:id/reply', reviewController.addReply);
+
 // Delete a review
-router.delete('/:id', reviewController.deleteReview);
+router.delete('/:id', reviewController.deleteContent);
 
 // Vote on a review (helpful/not helpful)
 router.post('/:id/vote', reviewController.voteOnReview);
 
-// Remove vote from review
-router.delete('/:id/vote', reviewController.removeVote);
 
 // Report a review
 router.post('/:id/report', reviewController.reportReview);
 
-// Get user's own reviews
-router.get('/user/me', reviewController.getMyReviews);
 
-// Check if user has reviewed a book
-router.get('/check/:bookId', reviewController.checkUserReview);
 
 // ====================
 // ADMIN/MODERATOR ROUTES

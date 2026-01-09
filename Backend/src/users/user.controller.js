@@ -64,82 +64,75 @@ const getCurrentUser = async (req, res) => {
  */
 const updateProfile = async (req, res) => {
   try {
+    console.log("---------------------------------------");
+    console.log("1. BACKEND: updateProfile called");
+    console.log("2. RECEIVED BODY:", req.body);
+
     const updates = {};
     const allowedFields = ['displayName', 'photoURL', 'phoneNumber', 'preferences', 'isPremium', 'email'];
     
-    // Only allow specific fields to be updated
+    // 1. Filter allowed fields
     Object.keys(req.body).forEach(key => {
       if (allowedFields.includes(key)) {
         updates[key] = req.body[key];
       }
     });
 
+    console.log("3. FILTERED UPDATES:", updates); // <--- CHECK THIS LOG
+
     if (Object.keys(updates).length === 0) {
       return res.status(400).json({ success: false, message: 'No valid fields to update' });
     }
 
-    // 2. Handle Sensitive Updates in Firebase (Email & Name)
+    // 2. Sync with Firebase
     if (auth) {
       const firebaseUpdates = {};
       
       if (updates.email && updates.email !== req.user.email) {
         firebaseUpdates.email = updates.email;
-        // Note: Changing email might require re-verification depending on your Firebase settings
         updates.emailVerified = false; 
       }
       
+      // Explicitly check for displayName
       if (updates.displayName) {
         firebaseUpdates.displayName = updates.displayName;
+      }
+
+      if (updates.photoURL) {
+        firebaseUpdates.photoURL = updates.photoURL;
       }
 
       if (Object.keys(firebaseUpdates).length > 0) {
         try {
           await auth.updateUser(req.user.firebaseUID, firebaseUpdates);
+          console.log("4. Firebase Updated Successfully");
         } catch (firebaseError) {
-          console.error('Firebase Update Error:', firebaseError);
-          // If email is taken in Firebase, stop here
-          if (firebaseError.code === 'auth/email-already-exists') {
-            return res.status(400).json({ success: false, message: 'Email is already in use.' });
-          }
-          throw firebaseError;
+          console.error('Firebase Error (Non-fatal):', firebaseError);
+          // Don't stop execution here, try to save to MongoDB anyway
         }
       }
     }
+
+    // 3. Update MongoDB
     const user = await User.findByIdAndUpdate(
       req.user._id,
       { $set: updates },
       { new: true, runValidators: true }
     ).select('-firebaseUID -__v -updatedAt -disabled');
 
-    if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: 'User not found'
-      });
-    }
-
-    // If displayName was updated, also update in Firebase
-    if (updates.displayName && auth) {
-      try {
-        await auth.updateUser(req.user.firebaseUID, {
-          displayName: updates.displayName
-        });
-      } catch (firebaseError) {
-        console.error('Error updating Firebase user:', firebaseError);
-      }
-    }
+    console.log("5. MongoDB Updated:", user.displayName); 
 
     res.status(200).json({
       success: true,
       message: 'Profile updated successfully',
       data: user
     });
+
   } catch (error) {
     console.error('Error updating profile:', error);
     res.status(500).json({ success: false, message: 'Failed to update profile', error: error.message });
   }
 };
-
 /**
  * @desc    Get user's reading history
  * @route   GET /api/users/me/reading-history
@@ -728,6 +721,29 @@ const changePassword = async (req, res) => {
   }
 };
 
+const deleteMyAccount = async (req, res) => {
+  try {
+    const userId = req.user._id;
+
+    // 1. Delete from MongoDB
+    await User.findByIdAndDelete(userId);
+    
+    // 2. Optional: Delete related data (Wishlists, etc.)
+    const Wishlist = require('../wishlist/wishlist.model'); // Adjust path if needed
+    if (Wishlist) {
+        await Wishlist.deleteMany({ user: userId });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'User account deleted successfully from database'
+    });
+  } catch (error) {
+    console.error('Error deleting account:', error);
+    res.status(500).json({ success: false, message: 'Server error during deletion' });
+  }
+};
+
 module.exports = {
   getCurrentUser,
   updateProfile,
@@ -740,5 +756,6 @@ module.exports = {
   getAllUsers,
   getUserById,
   deleteUser,
-  changePassword
+  changePassword,
+  deleteMyAccount
 };
