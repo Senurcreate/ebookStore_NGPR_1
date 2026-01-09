@@ -38,7 +38,16 @@ export const fetchNewReleases = async () => {
 export const fetchBestSellers = async () => {
     try {
         // sort by rating OR filter by trending=true
-        const response = await axios.get('/books?sortBy=ratingStats.average&sortOrder=desc&limit=10');
+        const response = await axios.get('/books', {
+            params: {
+                sortBy: 'ratingStats.average',
+                sortOrder: 'desc',
+                limit: 10,
+                minRating: 4, 
+                maxRating: 5,
+                type: 'ebook'
+            }
+        });
         return response.data;
     } catch (error) {
         console.error("Error fetching best sellers:", error);
@@ -53,6 +62,42 @@ export const fetchNewAudiobooks = async () => {
         return response.data;
     } catch (error) {
         console.error("Error fetching audiobooks:", error);
+        throw error;
+    }
+};
+
+export const fetchSinhalaBooks = async () => {
+    try {
+
+        const response = await axios.get('/books?language=none&type=ebook&sortBy=createdAt&sortOrder=desc&limit=10');
+        return response.data;
+    } catch (error) {
+        console.error("Error fetching sinhala books:", error);
+        throw error;
+    }
+};
+
+
+export const fetchEmergingAuthors = async () => {
+    try {
+        // Filter by:
+        // 1. language=none (Sinhala)
+        // 2. price=0 (Free)
+        // 3. Sorted by newest first
+        const response = await axios.get('/books?language=none&price=0&sortBy=createdAt&sortOrder=desc&limit=10');
+        return response.data;
+    } catch (error) {
+        console.error("Error fetching emerging authors:", error);
+        throw error;
+    }
+};
+
+export const fetchSinhalaAudiobooks = async () => {
+    try {
+        const response = await axios.get('/books?language=none&type=audiobook&sortBy=createdAt&sortOrder=desc&limit=10');
+        return response.data;
+    } catch (error) {
+        console.error("Error fetching sinhala books:", error);
         throw error;
     }
 };

@@ -606,6 +606,67 @@ bookSchema.statics.getTypeStats = async function() {
     }, {});
 };
 
+bookSchema.statics.updateRatingStats = async function(bookId) {
+    // Require Review here to avoid circular dependency
+    const Review = require('../reviews/review.model'); 
+
+    try {
+        // Convert to String first to ensure safety, then to ObjectId
+        const objectId = new mongoose.Types.ObjectId(String(bookId));
+
+        const stats = await Review.aggregate([
+            {
+                $match: {
+                    book: objectId, // Use the clean ObjectId
+                    isHidden: { $ne: true }
+                }
+            },
+            {
+                $group: {
+                    _id: '$book',
+                    average: { $avg: '$rating' },
+                    count: { $sum: 1 },
+                    oneStar: { $sum: { $cond: [{ $eq: ['$rating', 1] }, 1, 0] } },
+                    twoStar: { $sum: { $cond: [{ $eq: ['$rating', 2] }, 1, 0] } },
+                    threeStar: { $sum: { $cond: [{ $eq: ['$rating', 3] }, 1, 0] } },
+                    fourStar: { $sum: { $cond: [{ $eq: ['$rating', 4] }, 1, 0] } },
+                    fiveStar: { $sum: { $cond: [{ $eq: ['$rating', 5] }, 1, 0] } }
+                }
+            }
+        ]);
+
+        let update = {};
+
+        if (stats.length > 0) {
+            update = {
+                'ratingStats.average': Math.round(stats[0].average * 10) / 10,
+                'ratingStats.count': stats[0].count,
+                'ratingStats.distribution': {
+                    1: stats[0].oneStar,
+                    2: stats[0].twoStar,
+                    3: stats[0].threeStar,
+                    4: stats[0].fourStar,
+                    5: stats[0].fiveStar
+                }
+            };
+        } else {
+            update = {
+                'ratingStats.average': 0,
+                'ratingStats.count': 0,
+                'ratingStats.distribution': { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 }
+            };
+        }
+
+        // Use findByIdAndUpdate to apply changes
+        await this.findByIdAndUpdate(objectId, { $set: update });
+        console.log(`✅ Rating updated for book ${objectId}: ${update['ratingStats.average']}`);
+
+    } catch (error) {
+        console.error("❌ Error updating rating stats:", error);
+    }
+};
+
+
 /**
  * Check if a user is eligible to download this book
  * Returns object with canDownload (bool) and purchase details

@@ -122,7 +122,7 @@ const ReviewOrderPage = () => {
                   <div className="flex-grow-1">
                     <div className="d-flex justify-content-between">
                       <h6 className="fw-bold mb-1">{item.title}</h6>
-                      <span className="fw-bold text-danger">${item.price}</span>
+                      <span className="fw-bold text-danger">Rs {item.price}</span>
                     </div>
                     <p className="text-muted small mb-1">{item.author}</p>
                     <p className="text-muted small mb-0">{item.format}</p>
@@ -159,13 +159,13 @@ const ReviewOrderPage = () => {
               <div className="p-4">
                 <div className="d-flex justify-content-between mb-3">
                   <span className="text-muted">Subtotal</span>
-                  <span className="fw-bold">${subtotal.toFixed(2)}</span>
+                  <span className="fw-bold">Rs {subtotal.toFixed(2)}</span>
                 </div>
                 
                 <hr className="my-3" />
                 <div className="d-flex justify-content-between mb-4">
                   <span className="fw-bold">Total</span>
-                  <span className="fw-bold fs-5 text-danger">${total.toFixed(2)}</span>
+                  <span className="fw-bold fs-5 text-danger">Rs {total.toFixed(2)}</span>
                 </div>
                 
                 <button 

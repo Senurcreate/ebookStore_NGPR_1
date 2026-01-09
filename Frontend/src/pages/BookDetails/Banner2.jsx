@@ -39,7 +39,7 @@ const BookDetails = () => {
             }),
             edition: "Standard", // Default value (field not in current schema)
             genre: rawBook.genre,
-            language: rawBook.language,
+            language: rawBook.language === 'none' ? 'Sinhala' : rawBook.language,
             isbn: rawBook.isbn,
             type: rawBook.type, // 'ebook' or 'audiobook'
 

@@ -78,7 +78,7 @@ const OrderHistory = () => {
       {/* Header */}
       <div className="d-flex justify-content-between align-items-center mb-4">
         <div>
-          <h2 className="fw-bold mb-1 mt-4">My Library</h2>
+          <h2 className="fw-bold mb-1 mt-4">My Orders</h2>
           <p className="text-muted small">Manage your purchased books</p>
         </div>
       </div>

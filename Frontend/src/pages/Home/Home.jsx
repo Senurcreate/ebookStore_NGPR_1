@@ -6,7 +6,10 @@ import BookSectionLoader from "../../components/BookSectionLoader";
 import { 
     fetchNewReleases, 
     fetchBestSellers, 
-    fetchNewAudiobooks 
+    fetchNewAudiobooks,
+    fetchSinhalaBooks,
+    //fetchEmergingAuthors,
+    fetchSinhalaAudiobooks
 } from "../../services/book.service";
 
 
@@ -22,7 +25,20 @@ const Home = () => {
             title="New Releases" 
             fetchFunction={fetchNewReleases} 
         />
+
+        <BookSectionLoader 
+            title="Sinhala Books" 
+            fetchFunction={fetchSinhalaBooks} 
+        />
+
         <Banner />
+
+        {/*<BookSectionLoader 
+            title="New Emerging Authors" 
+            fetchFunction={fetchEmergingAuthors} 
+        />*/}
+
+        
 
         <BookSectionLoader 
             title="New Audiobooks" 
@@ -30,11 +46,19 @@ const Home = () => {
             type="audiobook" 
         />
 
+        
+
         <BookSectionLoader 
             title="Best Sellers" 
             fetchFunction={fetchBestSellers} 
         />
        {/*} <Carousel/>*/}
+
+       <BookSectionLoader 
+            title="Sinhala Audiobooks" 
+            fetchFunction={fetchSinhalaAudiobooks}
+            type="audiobook" 
+        />
         
     </>
   );

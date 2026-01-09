@@ -6,11 +6,11 @@ const verifyFirebaseToken = async (req, res, next) => {
   try {
     const authHeader = req.headers.authorization;
     
-    // Mock token logic for dev
+    // --- MOCK LOGIC (Keep existing logic for Dev) ---
     if (process.env.NODE_ENV === 'development' && 
         (!authHeader || authHeader === 'Bearer mock-token-admin')) {
+      // ... (Keep your existing mock logic exactly as is) ...
       console.log('🔐 Development: Using mock admin token');
-      
       let user = await User.findOne({ email: 'admin@ebookstore.com' });
       if (!user) {
         user = new User({
@@ -26,7 +26,6 @@ const verifyFirebaseToken = async (req, res, next) => {
         user.lastLoginAt = new Date();
         await user.save();
       }
-      
       req.user = user;
       req.firebaseUser = { uid: 'mock-admin-uid', email: 'admin@ebookstore.com' };
       return next();
@@ -51,32 +50,61 @@ const verifyFirebaseToken = async (req, res, next) => {
       phoneNumber: decodedToken.phone_number || ''
     };
 
-    // Find or create user in our database
+    // ---------------------------------------------------------
+    //  AUTO-HEAL LOGIC STARTS HERE
+    // ---------------------------------------------------------
+
+    // 1. Try to find user by Firebase UID (The standard check)
     let user = await User.findOne({ firebaseUID: firebaseUser.uid });
     
-    if (!user) {
-      user = new User({
-        firebaseUID: firebaseUser.uid,
-        email: firebaseUser.email,
-        displayName: firebaseUser.displayName,
-        photoURL: firebaseUser.photoURL,
-        phoneNumber: firebaseUser.phoneNumber,
-        emailVerified: firebaseUser.emailVerified,
-        role: firebaseUser.email === 'admin@ebookstore.com' ? 'admin' : 'user',
-        lastLoginAt: new Date()
-      });
-      
-      await user.save();
-      console.log(`👤 New user created: ${user.email}`);
-    } else {
+    if (user) {
+      // SCENARIO A: Normal Login
+      // User exists and UIDs match. Just update metadata.
       user.lastLoginAt = new Date();
-      // Sync basic fields if changed
       if (user.displayName !== firebaseUser.displayName || user.photoURL !== firebaseUser.photoURL) {
           user.displayName = firebaseUser.displayName;
           user.photoURL = firebaseUser.photoURL;
       }
       await user.save();
+
+    } else {
+      // User NOT found by UID. This is either a New User OR a Zombie.
+
+      // 2. Check if a user exists with this EMAIL
+      const existingUserByEmail = await User.findOne({ email: firebaseUser.email });
+
+      if (existingUserByEmail) {
+        // SCENARIO B: The "Zombie" Account (Auto-Heal)
+        console.log(`🩹 Auto-healing account for ${firebaseUser.email}. Updating UID.`);
+        
+        // We adopt the old MongoDB record but update it with the NEW Firebase UID
+        existingUserByEmail.firebaseUID = firebaseUser.uid;
+        existingUserByEmail.lastLoginAt = new Date();
+        existingUserByEmail.photoURL = firebaseUser.photoURL || existingUserByEmail.photoURL;
+        
+        user = await existingUserByEmail.save();
+
+      } else {
+        // SCENARIO C: Brand New User
+        user = new User({
+          firebaseUID: firebaseUser.uid,
+          email: firebaseUser.email,
+          displayName: firebaseUser.displayName,
+          photoURL: firebaseUser.photoURL,
+          phoneNumber: firebaseUser.phoneNumber,
+          emailVerified: firebaseUser.emailVerified,
+          role: firebaseUser.email === 'admin@ebookstore.com' ? 'admin' : 'user',
+          lastLoginAt: new Date()
+        });
+        
+        await user.save();
+        console.log(`👤 New user created: ${user.email}`);
+      }
     }
+
+    // ---------------------------------------------------------
+    //  LOGIC ENDS
+    // ---------------------------------------------------------
 
     req.user = user;
     req.firebaseUser = firebaseUser;
