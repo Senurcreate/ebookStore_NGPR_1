@@ -8,35 +8,52 @@ const BookCard = ({ book, showDelete = false,onDelete = () => {} }) => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  // Get cart items from Redux storek
+  // Get cart items from Redux store
   const cartItems = useSelector((state) => state.cart.cartItems);
   
+  if (!book) return null;
   if (book.type !== "ebook") return null;
   
+  const bookId = book.id || book._id;
   // Check if current book is in cart
-  const isInCart = cartItems.some(item => item.id === book.id);
+  const isInCart = cartItems.some(item => item.id === bookId);
 
   const handleClick = () => {
-    navigate(`/books/${book.id}`);
+    navigate(`/books/${bookId}`);
   };
 
-  const handleCartAction = () => {
+  const handleCartAction = (e) => {
+  e.stopPropagation();
   if (isInCart) {
-    dispatch(removeFromCart(book.id));
-    
-  } else {
-    dispatch(addToCart(book));
+      dispatch(removeFromCart(bookId));
+    } else {
+      // Create a clean object for the cart to avoid storing too much data
+      const cartItem = {
+        id: bookId,
+        title: book.title,
+        author: book.author,
+        price: book.price,
+        image: book.image || book.coverImage,
+        type: book.type
+      };
+      dispatch(addToCart(cartItem));
     
   }
 };
 
+// Safe property access for backend data vs static data
+  const imageUrl = book.image || book.coverImage || "https://via.placeholder.com/150";
+  // Backend returns ratingStats.average, Frontend expects rating
+  const ratingValue = book.rating || (book.ratingStats?.average) || 0;
+
   return (
     <div className="book-card">
       <img
-        src={book.image}
+        src={imageUrl}
         className="card-img-top"
         alt={book.title}
         onClick={handleClick}
+        onError={(e) => { e.target.src = "https://via.placeholder.com/150"; }} 
       />
       <div className="card-body">
         <h5 className="card-title">{book.title}</h5>
@@ -45,19 +62,21 @@ const BookCard = ({ book, showDelete = false,onDelete = () => {} }) => {
         <div className="rating">
           {Array.from({ length: 5 }, (_, i) => {
             const starValue = i + 1;
-            if (book.rating >= starValue) {
+            if (ratingValue >= starValue) {
               return <i key={i} className="bi bi-star-fill text-warning"></i>;
-            } else if (book.rating >= starValue - 0.5) {
+            } else if (ratingValue >= starValue - 0.5) {
               return <i key={i} className="bi bi-star-half text-warning"></i>;
             } else {
               return <i key={i} className="bi bi-star text-warning"></i>;
             }
           })}
-          <span className="ms-1">{book.rating}</span>
+          <span className="ms-1">{ratingValue}</span>
         </div>
 
         <div className="price-cart d-flex justify-content-between align-items-center mt-2">
-          <p className="price mb-0 fw-semibold">Rs {book.price}</p>
+          <p className="price mb-0 fw-semibold">
+            {book.price === 0 ? "Free" : `Rs ${book.price}`}
+          </p>
           <div className="actions">
             <button className={`cart-btn btn btn-sm border-0 ${isInCart ? 'btn-success' : 'btn-outline-primary'}`}
             onClick={handleCartAction}
@@ -69,14 +88,20 @@ const BookCard = ({ book, showDelete = false,onDelete = () => {} }) => {
             >
             <i className={`bi ${isInCart ? 'bi-check-lg' : 'bi-cart3'}`}></i>
              
-          </button>
-
-          {/* Delete button only for wishlist */}
-          {showDelete && (
-            <button className="action-btn delete" onClick={() => onDelete(book.id)}>
-              <i className="bi bi-trash"></i>
             </button>
-          )}
+            
+            {/* Delete button only for wishlist */}
+            {showDelete && (
+              <button
+                className="action-btn delete"
+                onClick={(e) => {
+                    e.stopPropagation();
+                    onDelete(bookId);
+                }}
+              >
+                <i className="bi bi-trash"></i>
+              </button>
+            )}
           </div>
           
 

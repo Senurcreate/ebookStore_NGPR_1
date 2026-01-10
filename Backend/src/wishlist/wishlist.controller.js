@@ -85,7 +85,7 @@ async function getWishlist(req, res) {
 
         // Execute query with pagination
         const wishlistItems = await Wishlist.find(query)
-            .populate('book', 'title author publisher coverImage price type trending')
+            .populate('book', 'title author price coverImage type ratingStats cloudinaryUrl')
             .sort(sortOptions)
             .limit(parseInt(limit))
             .skip((parseInt(page) - 1) * parseInt(limit));
