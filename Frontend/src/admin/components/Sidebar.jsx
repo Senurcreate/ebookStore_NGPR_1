@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import 'bootstrap-icons/font/bootstrap-icons.css';
+import Blogo from "../../assets/BrandLogo.svg";
 
 const Sidebar = () => {
   const navigate = useNavigate();
@@ -9,11 +10,11 @@ const Sidebar = () => {
   const navItems = [
     { name: 'Dashboard', icon: 'bi-grid' , path: '/admin/dashboard'},
     { name: 'Books', icon: 'bi-book' , path: '/admin/books'},
-    { name: 'Orders', icon: 'bi-cart' , path: '/admin/orders'},
+    { name: 'Purchases', icon: 'bi-cart' , path: '/admin/purchases'},
     { name: 'Users', icon: 'bi-people', path: '/admin/users' },
     { name: 'Analytics', icon: 'bi-bar-chart-line', path: '/admin/analytics' },
     { name: 'Reviews', icon: 'bi-chat-left', path: '/admin/reviews' },
-    { name: 'Settings', icon: 'bi-gear', path: '/admin/settings' },
+    
   ];
 
   return (
@@ -35,23 +36,36 @@ const Sidebar = () => {
       <div className="d-flex flex-column h-100 bg-white border-end">
         
         {/* --- Logo Section --- */}
-        <div className="p-4 border-bottom d-flex align-items-center">
-          <i className="bi bi-book text-primary fs-3 me-3"></i>
-          <div>
-            <h5 className="mb-0 fw-semibold" style={{ letterSpacing: '-0.5px' }}>BookStore</h5>
-            <div className="text-secondary small">Admin Panel</div>
+        <div className="p-4 border-bottom d-flex align-items-center bg-white">
+  {/* 1. Logo: Set height, let width adjust automatically */}
+          <img
+            src={Blogo}
+            alt="brand logo"
+            className="me-3"
+            style={{ height: '40px', width: 'auto', objectFit: 'contain' }}
+          />
+
+          {/* 2. Vertical Divider (Optional) */}
+          <div className="vr me-3 text-secondary" style={{ height: '25px' }}></div>
+
+          {/* 3. Admin Text */}
+          <div className="d-flex flex-column justify-content-center">
+            
+            <span className="text-muted small text-uppercase" style={{ fontSize: '0.7rem', letterSpacing: '1px' }}>
+              Admin Panel
+            </span>
           </div>
         </div>
-
         {/* --- Navigation Links --- */}
         <div className="flex-grow-1 p-3">
           <ul className="nav nav-pills flex-column gap-1">
             {navItems.map((item) => {
               const isActive = location.pathname.includes(item.path);
+
               return (
                 <li className="nav-item" key={item.name}>
                   <button
-                    onClick={() => navigate(item.name)}
+                    onClick={() => navigate(item.path)}
                     className={`nav-link w-100 d-flex align-items-center py-3 px-3 border-0 rounded-3 text-start custom-nav-link ${
                       isActive ? 'active-tab fw-medium' : ''
                     }`}

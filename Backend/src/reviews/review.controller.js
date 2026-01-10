@@ -67,7 +67,8 @@ async function createReview(req, res) {
 }
 
 // Get Reviews for a Book
-// Get Reviews for a Book
+// src/reviews/review.controller.js
+
 async function getBookReviews(req, res) {
     try {
         const { bookId } = req.params;
@@ -78,16 +79,21 @@ async function getBookReviews(req, res) {
             .populate('replies.user', 'displayName photoURL')
             .sort({ createdAt: -1 });
 
-        // Transform data to match Frontend State structure perfectly
-        const formattedReviews = reviews
-            // FIX 1: Filter out reviews where the user account was deleted
-            .filter(review => review.user !== null) 
-            .map(review => ({
+        // Transform data
+        const formattedReviews = reviews.map(review => {
+            // HANDLE NULL USER (Deleted Account)
+            const reviewUser = review.user || { 
+                _id: 'deleted', 
+                displayName: 'Deleted User', 
+                photoURL: null 
+            };
+
+            return {
                 id: review._id,
-                userId: review.user._id,
-                name: review.user.displayName,
+                userId: reviewUser._id,
+                name: reviewUser.displayName,
                 time: formatTime(review.createdAt),
-                photo: review.user.photoURL,
+                photo: reviewUser.photoURL,
                 rating: review.rating,
                 comment: review.comment,
                 likes: review.likes.length,
@@ -97,15 +103,20 @@ async function getBookReviews(req, res) {
                 flaggedBy: review.reports.map(r => r.user.toString()),
                 flagged: currentUserId ? review.reports.some(r => r.user.toString() === currentUserId) : false,
                 showReplies: false,
-                replies: review.replies
-                    // FIX 2: Filter out replies where the replier account was deleted
-                    .filter(reply => reply.user !== null)
-                    .map(reply => ({
+                replies: review.replies.map(reply => {
+                    // HANDLE NULL REPLY USER
+                    const replyUser = reply.user || { 
+                        _id: 'deleted', 
+                        displayName: 'Deleted User', 
+                        photoURL: null 
+                    };
+                    
+                    return {
                         id: reply._id,
-                        userId: reply.user._id,
-                        name: reply.user.displayName,
+                        userId: replyUser._id,
+                        name: replyUser.displayName,
                         time: formatTime(reply.createdAt),
-                        photo: review.user.photoURL,
+                        photo: replyUser.photoURL,
                         comment: reply.comment,
                         likes: reply.likes.length,
                         dislikes: reply.dislikes.length,
@@ -113,13 +124,15 @@ async function getBookReviews(req, res) {
                         userDisliked: currentUserId ? reply.dislikes.includes(currentUserId) : false,
                         flaggedBy: reply.reports.map(r => r.user.toString()),
                         flagged: currentUserId ? reply.reports.some(r => r.user.toString() === currentUserId) : false,
-                    }))
-            }));
+                    };
+                })
+            };
+        });
 
         return res.status(200).json({ success: true, data: formattedReviews });
 
     } catch (error) {
-        console.error("Get Reviews Error:", error); // Log the real error to terminal
+        console.error("Get Reviews Error:", error);
         return res.status(500).json({ success: false, error: error.message });
     }
 }
@@ -354,6 +367,35 @@ async function deleteContent(req, res) {
     }
 }
 
+// src/reviews/review.controller.js
+
+// src/reviews/review.controller.js
+
+async function getAllReviewsAdmin(req, res) {
+    try {
+        const { page = 1, limit = 20 } = req.query;
+        
+        const reviews = await Review.find()
+            // 👇 FIX: Add 'createdAt' here so the User model virtual doesn't crash
+            .populate('user', 'displayName email photoURL createdAt') 
+            .populate('book', 'title')
+            .sort({ createdAt: -1 })
+            .limit(parseInt(limit))
+            .skip((parseInt(page) - 1) * parseInt(limit));
+
+        const total = await Review.countDocuments();
+
+        return res.status(200).json({ 
+            success: true, 
+            data: reviews,
+            pagination: { total, page, limit }
+        });
+    } catch (error) {
+        console.error("Error in getAllReviewsAdmin:", error);
+        return res.status(500).json({ success: false, error: error.message });
+    }
+}
+
 module.exports = {
     createReview,
     getBookReviews,
@@ -361,5 +403,6 @@ module.exports = {
     voteOnReview,
     reportReview,
     updateReview,
+    getAllReviewsAdmin,
     deleteContent
 };

@@ -53,9 +53,7 @@ const bookSchema = new mongoose.Schema({
         validate: {
             validator: function(v) {
                 // Allow both Cloudinary URLs and Goodreads URLs
-                if (v.startsWith('https://res.cloudinary.com/') || 
-                    v.startsWith('https://images.gr-assets.com/') ||
-                    v.startsWith('https://i.gr-assets.com/')) {
+                if (v.startsWith('http')) { 
                     return true;
                 }
                 return false;

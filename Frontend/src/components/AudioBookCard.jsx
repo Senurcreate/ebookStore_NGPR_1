@@ -81,11 +81,11 @@ const AudioBookCard = ({ book, showDelete = false, onDelete = () => {} }) => {
              {book.price === 0 ? "Free" : `Rs ${book.price}`}
           </p>
 
-          {/* UPDATED BUTTON SECTION */}
+          
           <div className="d-flex gap-2">
              <button
                // Use 'action-btn' to match eBook style (36x36px)
-               className={`action-btn ${isInCart ? "btn-success" : ""}`}
+               className={`audiocart-btn ${isInCart ? "btn-success" : ""}`}
                onClick={handleCartAction}
              >
                <i className={`bi ${isInCart ? 'bi-check-lg' : 'bi-cart3'}`}></i>

@@ -519,45 +519,82 @@ const getAllUsers = async (req, res) => {
   try {
     const { page = 1, limit = 20, search = '', role = '' } = req.query;
     
-    // Build query
-    const query = {};
+    // 1. Build the Match Query
+    const matchStage = {};
     
     if (search) {
-      query.$or = [
+      matchStage.$or = [
         { email: { $regex: search, $options: 'i' } },
         { displayName: { $regex: search, $options: 'i' } }
       ];
     }
     
     if (role) {
-      query.role = role;
+      matchStage.role = role;
     }
 
-    // Pagination
     const skip = (parseInt(page) - 1) * parseInt(limit);
-    
-    // Get users with pagination
-    const usersRaw = await User.find(query)
-      .select('-firebaseUID -__v -updatedAt')
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(parseInt(limit))
-      .lean();
 
-    
-    // 2. NEW STEP: Calculate Total Spent for each user
-    const users = await Promise.all(usersRaw.map(async (user) => {
-        const purchases = await Purchase.find({ user: user._id });
-        const totalSpent = purchases.reduce((acc, purchase) => {
-            return acc + (purchase.totalAmount || 0);
-        }, 0);
+    // 2. Run Aggregation Pipeline (The "Nuclear" Option)
+    const users = await User.aggregate([
+      // A. Filter Users
+      { $match: matchStage },
+      
+      // B. Sort & Paginate
+      { $sort: { createdAt: -1 } },
+      { $skip: skip },
+      { $limit: parseInt(limit) },
 
-        return { ...user, totalSpent };
-    }));
-    
+      // C. Lookup Purchases (Join 'users' with 'purchases')
+      {
+        $lookup: {
+          from: 'purchases',       // Ensure this matches your MongoDB collection name (usually lowercase plural)
+          localField: '_id',       // Field in User table
+          foreignField: 'user',    // Field in Purchase table
+          as: 'purchaseHistory'    // Result array name
+        }
+      },
 
-    // Get total count
-    const total = await User.countDocuments(query);
+      // D. Calculate Total Spent (Sum 'amount' where status is 'completed')
+      {
+        $addFields: {
+          totalSpent: {
+            $reduce: {
+              input: '$purchaseHistory',
+              initialValue: 0,
+              in: {
+                $add: [
+                  '$$value',
+                  {
+                    $cond: [
+                      // Condition: status == 'completed' (Case insensitive check isn't easy here, assuming lowercase)
+                      { $eq: ['$$this.status', 'completed'] }, 
+                      // If true, add amount (handle string/number conversion if needed, assuming number here)
+                      '$$this.amount', 
+                      // If false, add 0
+                      0 
+                    ]
+                  }
+                ]
+              }
+            }
+          }
+        }
+      },
+
+      // E. Clean up (Remove the heavy purchaseHistory array and sensitive fields)
+      { 
+        $project: { 
+          purchaseHistory: 0, 
+          firebaseUID: 0, 
+          __v: 0,
+          password: 0 
+        } 
+      }
+    ]);
+
+    // 3. Get total count for pagination
+    const total = await User.countDocuments(matchStage);
 
     res.status(200).json({
       success: true,
@@ -571,8 +608,9 @@ const getAllUsers = async (req, res) => {
         hasPrevious: parseInt(page) > 1
       }
     });
+
   } catch (error) {
-    console.error('Error fetching all users:', error);
+    console.error('Error fetching users:', error);
     res.status(500).json({
       success: false,
       message: 'Failed to fetch users',
@@ -580,7 +618,6 @@ const getAllUsers = async (req, res) => {
     });
   }
 };
-
 /**
  * @desc    Get user by ID (Admin only)
  * @route   GET /api/users/:id

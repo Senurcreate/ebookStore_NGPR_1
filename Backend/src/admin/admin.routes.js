@@ -1,8 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const adminController = require('./admin.controller');
-const { verifyFirebaseToken, requireAdmin } = require('../middleware/firebase.middleware');
+const { verifyFirebaseToken, requireAdmin, requireAdminOrModerator } = require('../middleware/firebase.middleware');
 const User = require('../users/user.model');
+const Purchase = require('../purchases/purchase.model');
+const reviewController = require('../reviews/review.controller');
 
 // Apply admin authentication to all routes
 router.use(verifyFirebaseToken, requireAdmin);
@@ -15,6 +17,7 @@ router.get('/analytics', adminController.getAnalytics);
 router.get('/analytics/sales', adminController.getSalesAnalytics);
 router.get('/analytics/users', adminController.getUserAnalytics);
 router.get('/moderation', adminController.getModerationDashboard);
+router.get('/reviews/all', requireAdminOrModerator, reviewController.getAllReviewsAdmin);
 router.put('/moderation/reviews/:id', adminController.moderateReview);
 router.delete('/moderation/reviews/:id/reports', adminController.clearReviewReports);
 router.get('/system/health', adminController.getSystemHealth);

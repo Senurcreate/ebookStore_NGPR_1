@@ -1,6 +1,6 @@
 const Book = require('./book.model');
 //const Purchase = require('../purchases/purchase.model');
-const SimpleStorageService = require('../services/cloudinary.service');
+const CloudinaryService = require('../services/cloudinary.service');
 
 /**
  * Create a new book with Google Drive integration (supports both ebooks and audiobooks)
@@ -222,6 +222,7 @@ async function uploadFile(req, res) {
 /**
  * Get all books with advanced filtering (supports both ebooks and audiobooks)
  */
+
 async function getAllBooks(req, res) {
     try {
         const {
@@ -239,14 +240,30 @@ async function getAllBooks(req, res) {
             sortOrder = 'desc'
         } = req.query;
 
-        // Build filter
+        // 1. Initialize Filter Object
         let filter = {};
 
-        // Text search (searches title, author, description)
+        // --- 🔍 SMART SEARCH LOGIC ---
+        // Matches books that contain ALL the typed words (in any order, across multiple fields)
         if (search) {
-            filter.$text = { $search: search };
+            const searchKeywords = search.split(" ").filter(word => word.trim() !== "");
+
+            const keywordConditions = searchKeywords.map(word => ({
+                $or: [
+                    { title: { $regex: word, $options: "i" } },
+                    { description: { $regex: word, $options: "i" } },
+                    { author: { $regex: word, $options: "i" } },
+                    { genre: { $regex: word, $options: "i" } }
+                ]
+            }));
+
+            if (keywordConditions.length > 0) {
+                filter.$and = keywordConditions; // ✅ Fixed: Assigned to 'filter' instead of 'query'
+            }
         }
 
+        // --- STANDARD FILTERS ---
+        
         // Filter by genre
         if (genre) {
             filter.genre = { $in: genre.split(',') };
@@ -258,14 +275,17 @@ async function getAllBooks(req, res) {
         }
 
         // Filter by price
-        if (price === "free") {
-            filter.price = 0;
-        } else if (price === "premium") {
-            filter.price = { $gt: 0 };
-        } else if (price) {
-            const [min, max] = price.split('-').map(Number);
-            if (!isNaN(min) && !isNaN(max)) {
-                filter.price = { $gte: min, $lte: max };
+        if (price) {
+            if (price === "free") {
+                filter.price = 0;
+            } else if (price === "premium") {
+                filter.price = { $gt: 0 };
+            } else {
+                // Expecting format "min-max" e.g., "0-500"
+                const [min, max] = price.split('-').map(Number);
+                if (!isNaN(min) && !isNaN(max)) {
+                    filter.price = { $gte: min, $lte: max };
+                }
             }
         }
 
@@ -281,6 +301,7 @@ async function getAllBooks(req, res) {
 
         // Filter by language
         if (language) {
+            // Handle specific logic if 'none' means Sinhala or standard check
             filter.language = language;
         }
 
@@ -289,7 +310,7 @@ async function getAllBooks(req, res) {
             filter.trending = true;
         }
 
-        // Build sort options
+        // --- SORTING ---
         const sortOptions = {};
         const validSortFields = [
             'title', 'author', 'price', 'createdAt', 
@@ -302,21 +323,23 @@ async function getAllBooks(req, res) {
             sortOptions.createdAt = -1; // Default sort
         }
 
-        // Pagination
+        // --- PAGINATION ---
         const skip = (parseInt(page) - 1) * parseInt(limit);
 
-        // Execute query
+        // --- EXECUTION ---
         const [books, total] = await Promise.all([
             Book.find(filter)
                 .sort(sortOptions)
                 .skip(skip)
                 .limit(parseInt(limit))
-                .lean(),
+                .lean(), // lean() makes it faster (returns plain JS objects, not Mongoose docs)
             Book.countDocuments(filter)
         ]);
 
-        // Get type-specific statistics
-        const typeStats = await Book.aggregate([
+        // --- OPTIONAL: STATS (Aggregations) ---
+        // Only run this if needed, as it adds DB load. 
+        // If you just need the books, you can remove this block.
+        /* const typeStats = await Book.aggregate([
             { $match: filter },
             {
                 $group: {
@@ -327,13 +350,14 @@ async function getAllBooks(req, res) {
                 }
             }
         ]);
+        */
 
-         // Enhance with formatted info for frontend
+        // --- FORMATTING RESPONSE ---
         const enhancedBooks = books.map(book => ({
             ...book,
-            downloadUrl: book.cloudinaryUrl,
+            downloadUrl: book.cloudinaryUrl, // Alias for frontend clarity
             formattedInfo: {
-                priceDisplay: book.price === 0 ? 'Free' : `$${book.price.toFixed(2)}`,
+                priceDisplay: book.price === 0 ? 'Free' : `Rs. ${book.price.toFixed(2)}`,
                 ...(book.type === 'audiobook' && {
                     audioLength: book.audioLength,
                     narratorsList: book.narrators?.map(n => n.name).join(', ') || ''
@@ -358,6 +382,8 @@ async function getAllBooks(req, res) {
         return res.status(500).json({ success: false, message: 'Failed to fetch books' });
     }
 }
+
+module.exports = { getAllBooks };
 
 /* filter options */
 
