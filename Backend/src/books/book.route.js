@@ -9,9 +9,11 @@ const { verifyFirebaseToken } = require('../middleware/firebase.middleware'); //
 
 // --- 🔓 PUBLIC ROUTES (No Token Required) ---
 // Anyone should be able to see the list of books
+router.get('/type/:type', bookController.getBooksByType);
+router.get('/filters', bookController.getFilterOptions);
 router.get('/', bookController.getAllBooks);
 router.get('/:id', bookController.getBookById);
-router.get('/type/:type', bookController.getBooksByType);
+
 
 // --- 🔒 PROTECTED ROUTES (Token Required) ---
 // Apply middleware only to routes below this line

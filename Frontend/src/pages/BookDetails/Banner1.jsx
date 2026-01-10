@@ -8,6 +8,7 @@ import { addToCart, removeFromCart } from "../../redux/features/cart/cartSlice";
 // Import Services & Auth
 import { fetchBookById } from "../../services/book.service";
 import { downloadBookFile } from "../../services/purchase.service";
+import { addToWishlist, removeByBookId, checkInWishlist } from "../../services/wishlist.service";
 import { formatBookData } from "../../utils/bookFormatter";
 import { useAuth } from "../../context/AuthContext";
 
@@ -24,6 +25,7 @@ const BookHeaderSection = () => {
 
     // Audio/UI states
     const [isWishlisted, setIsWishlisted] = useState(false);
+    const [wishlistLoading, setWishlistLoading] = useState(false);
     const [isPlaying, setIsPlaying] = useState(false);
     const [currentTime, setCurrentTime] = useState(0);
     const [duration, setDuration] = useState(0);
@@ -38,6 +40,16 @@ const BookHeaderSection = () => {
     const cartItems = useSelector((state) => state.cart.cartItems);
 
     const isInCart = book ? cartItems.some((item) => item.id === book.id) : false;
+
+    useEffect(() => {
+        const checkStatus = async () => {
+            if (currentUser && id) {
+                const status = await checkInWishlist(id);
+                setIsWishlisted(status.isInWishlist);
+            }
+        };
+        checkStatus();
+    }, [id, currentUser]);
 
     useEffect(() => {
         const loadBookDetails = async () => {
@@ -109,6 +121,39 @@ const BookHeaderSection = () => {
         }
     };
 
+    // Toggle Wishlist with API
+    const toggleWishlist = async () => {
+        if (!currentUser) {
+            alert("Please login to add items to your wishlist.");
+            navigate('/login');
+            return;
+        }
+
+        if (wishlistLoading) return; // Prevent double clicks
+        setWishlistLoading(true);
+
+        // Optimistic UI Update (Change icon immediately)
+        const previousState = isWishlisted;
+        setIsWishlisted(!previousState);
+
+        try {
+            if (previousState) {
+                // If it was wishlisted, remove it
+                await removeByBookId(id); 
+            } else {
+                // If it wasn't, add it
+                await addToWishlist(id); 
+            }
+        } catch (err) {
+            console.error("Wishlist action failed", err);
+            // Revert UI on error
+            setIsWishlisted(previousState);
+            alert("Failed to update wishlist.");
+        } finally {
+            setWishlistLoading(false);
+        }
+    };
+
     // --- AUDIO FUNCTIONS ---
     const togglePlayPause = () => { if (audioRef.current) { if (isPlaying) { audioRef.current.pause(); cancelAnimationFrame(animationRef.current); } else { audioRef.current.play(); animationRef.current = requestAnimationFrame(whilePlaying); } setIsPlaying(!isPlaying); } };
     const whilePlaying = () => { if (audioRef.current) { setCurrentTime(audioRef.current.currentTime); if (progressRef.current) { const progressPercentage = (audioRef.current.currentTime / audioRef.current.duration) * 100; progressRef.current.style.width = `${progressPercentage}%`; } animationRef.current = requestAnimationFrame(whilePlaying); } };
@@ -117,7 +162,7 @@ const BookHeaderSection = () => {
     const toggleMute = () => { if (audioRef.current) { const newMutedState = !isMuted; setIsMuted(newMutedState); audioRef.current.muted = newMutedState; if (newMutedState) { setVolume(0); } else { setVolume(1); audioRef.current.volume = 1; } } };
     const handleLoadedMetadata = () => { if (audioRef.current) { setDuration(audioRef.current.duration); } };
     const handleAudioEnd = () => { setIsPlaying(false); cancelAnimationFrame(animationRef.current); setCurrentTime(0); if (progressRef.current) { progressRef.current.style.width = '0%'; } };
-    const toggleWishlist = () => { setIsWishlisted(!isWishlisted); };
+    //const toggleWishlist = () => { setIsWishlisted(!isWishlisted); };
     const formatTime = (time) => { if (!time || isNaN(time)) return "00:00"; const minutes = Math.floor(time / 60); const seconds = Math.floor(time % 60); return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`; };
 
     if (loading) return <div className="container py-5 text-center">Loading...</div>;
