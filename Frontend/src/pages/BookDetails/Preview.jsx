@@ -1,10 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { addToCart, removeFromCart } from '../../redux/features/cart/cartSlice'; 
 import { fetchBookById } from '../../services/book.service'; 
 
 const BookPreview = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+
+  const dispatch = useDispatch();
+  const cartItems = useSelector((state) => state.cart.cartItems);
   
   const [book, setBook] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -12,6 +17,8 @@ const BookPreview = () => {
   
   // --- ZOOM STATE ---
   const [zoomLevel, setZoomLevel] = useState(1); // 1 = 100%
+
+  const isInCart = book ? cartItems.some((item) => item.id === book.id) : false;
 
   // --- 1. FETCH BOOK ---
   useEffect(() => {
@@ -39,6 +46,24 @@ const BookPreview = () => {
     };
     if (id) loadBook();
   }, [id, navigate]);
+
+  const handleCartAction = () => {
+    if (!book) return;
+    
+    if (isInCart) {
+      dispatch(removeFromCart(book.id));
+    } else {
+      // Ensure we pass the necessary book data to the cart
+      dispatch(addToCart({
+        id: book.id,
+        title: book.title,
+        author: book.author,
+        price: book.price,
+        image: book.image || book.coverImage, // Handle data variations
+        type: book.type
+      }));
+    }
+  };
 
   // --- 2. HELPERS ---
   const getPreviewUrl = (originalUrl) => {
@@ -96,11 +121,18 @@ const BookPreview = () => {
                <i className="bi bi-download"></i> Download
              </a>
         ) : (
-            <button className="btn btn-primary d-flex align-items-center gap-2 px-4">
-               <i className="bi bi-cart"></i> Buy for ${book.price}
+            <button 
+                className={`btn d-flex align-items-center gap-2 px-4 ${isInCart ? 'btn-success' : 'btn-primary'}`}
+                onClick={handleCartAction}
+            >
+               <i className={`bi ${isInCart ? 'bi-check-lg' : 'bi-cart'}`}></i> 
+               {isInCart ? "In Cart" : "Add to Cart"}
             </button>
         )}
       </header>
+
+      
+      
 
       {/* --- MAIN CONTENT --- */}
       <main className="flex-grow-1 d-flex flex-column align-items-center pt-4 pb-5 overflow-auto">
@@ -159,7 +191,7 @@ const BookPreview = () => {
                         <small className="text-muted">Purchase to unlock full access and download.</small>
                     </div>
                 </div>
-                <button className="btn btn-primary btn-sm px-4">Get Full Access</button>
+                
             </div>
         </div>
       )}

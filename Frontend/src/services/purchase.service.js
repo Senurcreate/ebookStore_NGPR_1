@@ -42,3 +42,12 @@ export const downloadBookFile = async (bookId) => {
         throw error.response?.data || error.message;
     }
 };
+
+export const cancelOrder = async (orderId) => {
+    try {
+        const response = await axios.patch(`/purchases/${orderId}/cancel`);
+        return response.data;
+    } catch (error) {
+        throw error.response?.data || error.message;
+    }
+};

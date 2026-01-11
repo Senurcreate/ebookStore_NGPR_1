@@ -7,7 +7,8 @@ import { addToCart, removeFromCart } from "../../redux/features/cart/cartSlice";
 
 // Import Services & Auth
 import { fetchBookById } from "../../services/book.service";
-import { downloadBookFile } from "../../services/purchase.service";
+// 1. ADDED fetchMyPurchases here
+import { downloadBookFile, fetchMyPurchases } from "../../services/purchase.service";
 import { addToWishlist, removeByBookId, checkInWishlist } from "../../services/wishlist.service";
 import { formatBookData } from "../../utils/bookFormatter";
 import { useAuth } from "../../context/AuthContext";
@@ -22,6 +23,9 @@ const BookHeaderSection = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [downloading, setDownloading] = useState(false);
+    
+    // 2. ADDED: State to track if user bought the book
+    const [isPurchased, setIsPurchased] = useState(false);
 
     // Audio/UI states
     const [isWishlisted, setIsWishlisted] = useState(false);
@@ -41,6 +45,26 @@ const BookHeaderSection = () => {
 
     const isInCart = book ? cartItems.some((item) => item.id === book.id) : false;
 
+    // --- HELPER: ID Matcher (Fixes the issue where ID is sometimes Object, sometimes String) ---
+    const checkMatch = (purchase, currentBookId) => {
+        if (!purchase) return false;
+        const targetId = String(currentBookId);
+
+        // Check top level ID
+        if (String(purchase.id) === targetId || String(purchase._id) === targetId) return true;
+        
+        // Check nested book object
+        if (purchase.bookId) {
+            if (String(purchase.bookId) === targetId) return true;
+            if (purchase.bookId._id && String(purchase.bookId._id) === targetId) return true;
+        }
+        if (purchase.book) {
+            if (String(purchase.book) === targetId) return true;
+            if (purchase.book._id && String(purchase.book._id) === targetId) return true;
+        }
+        return false;
+    };
+
     useEffect(() => {
         const checkStatus = async () => {
             if (currentUser && id) {
@@ -51,15 +75,17 @@ const BookHeaderSection = () => {
         checkStatus();
     }, [id, currentUser]);
 
+    // --- MAIN DATA LOADING ---
     useEffect(() => {
         const loadBookDetails = async () => {
             try {
                 setLoading(true);
                 const response = await fetchBookById(id);
+                let canDownloadAPI = false;
 
                 if (response.success || response.book) {
                     const rawBook = response.book || response.data;
-                    const canDownload = rawBook.accessInfo?.canDownload || false;
+                    canDownloadAPI = rawBook.accessInfo?.canDownload || false;
                     const previewLink = rawBook.previewUrl || rawBook.cloudinaryUrl;
 
                     const formatted = {
@@ -71,10 +97,32 @@ const BookHeaderSection = () => {
                         narrator: rawBook.narrators?.[0]?.name || "Unknown",
                         audioUrl: rawBook.cloudinaryUrl,
                         previewUrl: previewLink,
-                        canDownload: canDownload
+                        canDownload: canDownloadAPI
                     };
                     setBook(formatted);
                 }
+
+                // 3. ADDED: Verify Purchase History
+                if (currentUser) {
+                    try {
+                        const purchasesResponse = await fetchMyPurchases();
+                        const myBooks = purchasesResponse.data || purchasesResponse;
+                        
+                        // Check if we own this book
+                        const found = myBooks.some(p => checkMatch(p, id));
+                        
+                        if (found) {
+                            setIsPurchased(true);
+                        } else if (canDownloadAPI) {
+                            setIsPurchased(true);
+                        }
+                    } catch (err) {
+                        console.error("Error verifying purchase:", err);
+                    }
+                } else if (canDownloadAPI) {
+                    setIsPurchased(true);
+                }
+
             } catch (err) {
                 console.error(err);
                 setError("Could not load book details.");
@@ -89,15 +137,42 @@ const BookHeaderSection = () => {
     }, [id, currentUser]);
 
     // --- HANDLERS ---
+    // --- UPDATED HANDLER: Force Instant Download ---
     const handleDownload = async () => {
         try {
             setDownloading(true);
+            // 1. Get the secure URL from your backend
             const result = await downloadBookFile(id);
 
             if (result.success && result.data.downloadUrl) {
-                window.open(result.data.downloadUrl, '_blank');
+                const fileUrl = result.data.downloadUrl;
+                // Use the filename from backend, or generate one based on title
+                const fileName = result.data.fileName || `${book.title}.${isEbook ? 'pdf' : 'mp3'}`;
+
+                // 2. Fetch the file content as a "Blob" (Binary Large Object)
+                // This downloads the data into the browser's memory without opening a tab
+                const response = await fetch(fileUrl);
+                
+                if (!response.ok) throw new Error("Network response was not ok");
+                
+                const blob = await response.blob();
+
+                // 3. Create a temporary URL pointing to that data in memory
+                const url = window.URL.createObjectURL(blob);
+                
+                // 4. Create a hidden link element and click it programmatically
+                const link = document.createElement('a');
+                link.href = url;
+                link.setAttribute('download', fileName); // This attribute forces the "Save As" behavior
+                document.body.appendChild(link);
+                link.click();
+                
+                // 5. Cleanup memory
+                link.parentNode.removeChild(link);
+                window.URL.revokeObjectURL(url);
             }
         } catch (err) {
+            console.error("Download Error:", err);
             if (err.requiresLogin || err.status === 401) {
                 alert("You need to login to access this.");
                 navigate('/login');
@@ -121,7 +196,6 @@ const BookHeaderSection = () => {
         }
     };
 
-    // Toggle Wishlist with API
     const toggleWishlist = async () => {
         if (!currentUser) {
             alert("Please login to add items to your wishlist.");
@@ -129,24 +203,20 @@ const BookHeaderSection = () => {
             return;
         }
 
-        if (wishlistLoading) return; // Prevent double clicks
+        if (wishlistLoading) return; 
         setWishlistLoading(true);
 
-        // Optimistic UI Update (Change icon immediately)
         const previousState = isWishlisted;
         setIsWishlisted(!previousState);
 
         try {
             if (previousState) {
-                // If it was wishlisted, remove it
                 await removeByBookId(id); 
             } else {
-                // If it wasn't, add it
                 await addToWishlist(id); 
             }
         } catch (err) {
             console.error("Wishlist action failed", err);
-            // Revert UI on error
             setIsWishlisted(previousState);
             alert("Failed to update wishlist.");
         } finally {
@@ -162,7 +232,6 @@ const BookHeaderSection = () => {
     const toggleMute = () => { if (audioRef.current) { const newMutedState = !isMuted; setIsMuted(newMutedState); audioRef.current.muted = newMutedState; if (newMutedState) { setVolume(0); } else { setVolume(1); audioRef.current.volume = 1; } } };
     const handleLoadedMetadata = () => { if (audioRef.current) { setDuration(audioRef.current.duration); } };
     const handleAudioEnd = () => { setIsPlaying(false); cancelAnimationFrame(animationRef.current); setCurrentTime(0); if (progressRef.current) { progressRef.current.style.width = '0%'; } };
-    //const toggleWishlist = () => { setIsWishlisted(!isWishlisted); };
     const formatTime = (time) => { if (!time || isNaN(time)) return "00:00"; const minutes = Math.floor(time / 60); const seconds = Math.floor(time % 60); return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`; };
 
     if (loading) return <div className="container py-5 text-center">Loading...</div>;
@@ -171,9 +240,40 @@ const BookHeaderSection = () => {
 
     const isEbook = book.type === "ebook";
     const isPremium = book.price > 0;
-    const canDownload = book.canDownload; // Calculated in useEffect based on purchase status
+    
+    // 4. ADDED: Final check for access
+    const hasAccess = book.canDownload || isPurchased;
 
-    // --- RENDER LOGIC ---
+    // 5. HELPER FOR BUTTONS (Ensures consistency)
+    const renderActionButtons = () => (
+        <div className="d-flex gap-2">
+            {/* If NO access, show "Add to Cart" */}
+            {!hasAccess && (
+                <button 
+                    className={`btn px-3 small-btn ${isInCart ? 'btn-success' : 'btn-primary'}`}
+                    onClick={handleCartAction}
+                >
+                    <i className={`bi ${isInCart ? 'bi-check-lg' : 'bi-cart-plus me-1'}`}></i> 
+                    {isInCart ? "In Cart" : "Add to Cart"}
+                </button>
+            )}
+
+            <button className="btn btn-outline-primary px-3 small-btn" onClick={handlePreview}>
+                <i className="bi bi-eye me-1"></i> Preview
+            </button>
+
+            {/* Always show Download, but disable it if no access */}
+            <button 
+                className={`btn px-3 small-btn ${hasAccess ? 'btn-success' : 'btn-secondary'}`} 
+                disabled={!hasAccess || downloading}
+                onClick={handleDownload}
+            >
+                <i className="bi bi-download me-1"></i> {downloading ? 'Downloading...' : 'Download'}
+            </button>
+        </div>
+    );
+
+    // --- RENDER LOGIC (Restored exactly as before) ---
 
     // 1. EBOOK RENDERING
     if (isEbook) {
@@ -233,27 +333,7 @@ const BookHeaderSection = () => {
                                         </div>
 
                                         <div className="d-flex justify-content-between pt-1 mt-1 mb-1 pb-1">
-                                            <div className="d-flex gap-2">
-                                                {/* Logic: If purchased (canDownload), show Download. If not, show Cart. */}
-                                                {!canDownload ? (
-                                                    <button className={`btn px-3 small-btn ${isInCart ? 'btn-success' : 'btn-primary'}`}
-                                                        onClick={handleCartAction}>
-                                                        <i className={`bi ${isInCart ? 'bi-check-lg' : 'bi-cart-plus me-1'}`}></i> {isInCart ? "In Cart" : "Add to Cart"}
-                                                    </button>
-                                                ) : null}
-
-                                                <button className="btn btn-outline-primary px-3 small-btn" onClick={handlePreview}>
-                                                    <i className="bi bi-eye me-1"></i> Preview
-                                                </button>
-
-                                                <button 
-                                                    className={`btn px-3 small-btn ${canDownload ? 'btn-success' : 'btn-secondary'}`} 
-                                                    disabled={!canDownload || downloading}
-                                                    onClick={handleDownload}
-                                                >
-                                                    <i className="bi bi-download me-1"></i> {downloading ? 'Downloading...' : 'Download'}
-                                                </button>
-                                            </div>
+                                            {renderActionButtons()}
                                         </div>
                                     </div>
                                 </div>
@@ -283,14 +363,7 @@ const BookHeaderSection = () => {
                                             <p className="book-description text-justify">{book.description}</p>
                                         </div>
                                         <div className="d-flex justify-content-between pt-2 mt-3 mb-1 pb-1">
-                                            <div className="d-flex gap-2">
-                                                <button className="btn btn-outline-primary px-3 small-btn" onClick={handlePreview}>
-                                                    <i className="bi bi-eye me-1"></i> Preview
-                                                </button>
-                                                <button className="btn btn-primary px-3 small-btn" onClick={handleDownload} disabled={downloading}>
-                                                    <i className="bi bi-download me-1"></i> {downloading ? 'Downloading...' : 'Download'}
-                                                </button>
-                                            </div>
+                                            {renderActionButtons()}
                                         </div>
                                     </div>
                                 </div>
@@ -418,19 +491,7 @@ const BookHeaderSection = () => {
                                     </div>
 
                                     <div className="d-flex justify-content-between pt-1 mt-1 mb-1 pb-1">
-                                        <div className="d-flex gap-2">
-                                            {/* Logic: If purchased (canDownload), don't show cart. */}
-                                            {!canDownload ? (
-                                                <button className={`btn px-3 small-btn ${isInCart ? 'btn-success' : 'btn-primary'}`}
-                                                    onClick={handleCartAction}>
-                                                    <i className={`bi ${isInCart ? 'bi-check-lg' : 'bi-cart-plus me-1'}`}></i> {isInCart ? "In Cart" : "Add to Cart"}
-                                                </button>
-                                            ) : null}
-
-                                            <button className="btn btn-secondary px-3 small-btn" disabled={!canDownload || downloading} onClick={handleDownload}>
-                                                <i className="bi bi-download me-1"></i> {downloading ? 'Downloading...' : 'Download'}
-                                            </button>
-                                        </div>
+                                        {renderActionButtons()}
                                     </div>
                                 </div>
                             </div>
@@ -454,7 +515,7 @@ const BookHeaderSection = () => {
                                             </div>
                                         </div>
                                     </div>
-                                    {/* Free Audio Player Controls */}
+                                    {/* Audio Player Controls (Repeated for Free) */}
                                     <div className="mt-4">
                                         <div className="audio-player-container mb-3">
                                             <div className="d-flex justify-content-between align-items-center mb-2">
@@ -470,7 +531,6 @@ const BookHeaderSection = () => {
                                                 <button className="btn btn-outline-primary btn-sm me-2" onClick={togglePlayPause}>
                                                     <i className={`bi ${isPlaying ? 'bi-pause' : 'bi-play'}`}></i>
                                                 </button>
-                                                {/* Volume controls for free version */}
                                                 <div className="d-flex align-items-center">
                                                     <div className="volume-control" style={{ width: '60px' }}>
                                                         <input type="range" min="0" max="1" step="0.01" value={volume} onChange={handleVolumeChange} className="form-range volume-slider" style={{ height: '5px', background: `linear-gradient(to right, #4a6bdf 0%, #4a6bdf ${volume * 100}%, #e9ecef ${volume * 100}%, #e9ecef 100%)` }} />
@@ -494,11 +554,7 @@ const BookHeaderSection = () => {
                                         <p className="book-description text-justify">{book.description}</p>
                                     </div>
                                     <div className="d-flex justify-content-between pt-2 mt-3 mb-1 pb-1">
-                                        <div className="d-flex gap-2">
-                                            <button className="btn btn-primary px-3 small-btn" onClick={handleDownload} disabled={downloading}>
-                                                <i className="bi bi-download me-1"></i> {downloading ? 'Downloading...' : 'Download'}
-                                            </button>
-                                        </div>
+                                        {renderActionButtons()}
                                     </div>
                                 </div>
                             </div>

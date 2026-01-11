@@ -11,7 +11,8 @@ const downloadHistorySchema = new mongoose.Schema({
         ref: 'Book',
         required: true
     },
-    // Track if download was free or purchased
+    // Trac
+    // k if download was free or purchased
     downloadType: {
         type: String,
         enum: ['free', 'purchased'],

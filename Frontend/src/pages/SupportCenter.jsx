@@ -6,7 +6,9 @@ const SupportCenter = () => {
   const [view, setView] = useState('default');
   const [activeAccordion, setActiveAccordion] = useState(null);
 
-  const toggleAccordion = (index) => {
+  const toggleAccordion = (index, e) => {
+    e.preventDefault(); 
+    e.currentTarget.blur();
     setActiveAccordion(activeAccordion === index ? null : index);
   };
 
@@ -142,7 +144,7 @@ const SupportCenter = () => {
                 <button 
                   className={`accordion-button fw-bold small ${activeAccordion === i ? '' : 'collapsed'}`} 
                   type="button" 
-                  onClick={() => toggleAccordion(i)}
+                  onClick={(e) => toggleAccordion(i, e)}
                 >
                   {faq.q}
                 </button>

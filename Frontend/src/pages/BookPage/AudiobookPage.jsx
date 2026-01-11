@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import FilterSection from "./FilterSection";
+import { useSearchParams } from "react-router-dom";
 import AudiobookGrid from "../../components/AudiobookGrid";
 import PaginationSection from "../../components/PaginationSection";
 import { fetchBooks, fetchFilterOptions } from "../../services/book.service";
@@ -18,6 +19,8 @@ const PRICE_OPTIONS = ["Prices", "Under Rs 500", "Rs 500 - Rs 1000", "Above Rs 1
 const RATING_OPTIONS = ["Ratings","1 Stars", "2 Stars", "3 Stars", "4 Stars", "5 Stars"];
 
 const AudiobookPage = () => {
+  const [searchParams] = useSearchParams();
+  const activeSearch = searchParams.get("search");
   const [books, setBooks] = useState([]);
   const [filters, setFilters] = useState(DEFAULT_FILTERS);
   const [currentPage, setCurrentPage] = useState(1);
@@ -75,6 +78,7 @@ const AudiobookPage = () => {
           sortBy: "createdAt",
           sortOrder: "desc"
         };
+        if (activeSearch) params.search = activeSearch;
 
         // Add filters to params if they are selected
         if (filters.genre !== "Genres") params.genre = filters.genre;
@@ -123,12 +127,12 @@ const AudiobookPage = () => {
 
     loadAudiobooks();
     window.scrollTo(0, 0);
-  }, [filters, currentPage]); 
+  }, [filters, currentPage, activeSearch]); 
 
   /* Reset to page 1 whenever filters change */
   useEffect(() => {
     setCurrentPage(1);
-  }, [filters]);
+  }, [filters, activeSearch]);
 
   const handleFilterChange = (newFilters) => {
       setFilters(newFilters);

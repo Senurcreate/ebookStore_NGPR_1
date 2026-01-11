@@ -25,7 +25,13 @@ import PaymentSuccess from "./pages/Payments/PaymentSuccessPage";
 
 import AdminRoute from "./routes/AdminRoute";
 import AdminLayout from "./admin/layouts/AdminLayout";
-import Dashboard from "./admin/pages/Dasboard";
+import Dashboard from "./admin/pages/Dashboard";
+import Books from "./admin/pages/Books";
+import Purchases from "./admin/pages/Purchases";
+import Analytics from "./admin/pages/Analytics";
+import Users from "./admin/pages/Users";
+import Reviews from "./admin/pages/Reviews";
+
 
 
 
@@ -91,6 +97,11 @@ function MainLayout() {
             <AdminLayout>
               <Routes>
                 <Route path="dashboard" element={<Dashboard />} />
+                <Route path="books" element={<Books />} />
+                <Route path="Purchases" element={<Purchases />} />
+                <Route path="analytics" element={<Analytics />} />
+                <Route path="reviews" element={<Reviews />} />
+                <Route path="users" element={<Users />} />
               </Routes>
             </AdminLayout>
           } />
