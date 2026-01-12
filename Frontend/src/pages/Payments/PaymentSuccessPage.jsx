@@ -22,8 +22,8 @@ const PaymentSuccessPage = () => {
 
               <div className="d-grid gap-3">
                 {/* Link to the Download History Page */}
-                <Link to="/downloads" className="btn btn-primary py-3 fw-bold rounded-3" style={{ backgroundColor: '#3f5ed9', borderColor: '#3f5ed9' }}>
-                  <i className="bi bi-journal-album me-2"></i> Go to Download History
+                <Link to="/orders" className="btn btn-primary py-3 fw-bold rounded-3" style={{ backgroundColor: '#3f5ed9', borderColor: '#3f5ed9' }}>
+                  <i className="bi bi-journal-album me-2"></i> Go to Order History
                 </Link>
                 
                 <Link to="/" className="btn btn-outline-secondary py-3 fw-bold rounded-3">

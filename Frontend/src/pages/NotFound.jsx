@@ -1,7 +1,7 @@
 import React from 'react'; 
 import { Link } from 'react-router-dom'; 
 import Navbar from '../components/Navbar'; 
-import '../styles/_custom/notfound.scss'; 
+import '../styles/main.scss'; 
  
 function NotFound() { 
   return ( 
@@ -21,7 +21,7 @@ function NotFound() {
           {/* Text content */} 
           <div className="text-content"> 
             <h2 className="heading-2">Oops! This Chapter is Missing</h2> 
-            <p className="paragraph-1"> 
+            <p className="paragraph-1 text-bold"> 
               It looks like this page has been checked out or doesn't exist in our library. 
             </p> 
             <p className="paragraph-2"> 
@@ -29,18 +29,6 @@ function NotFound() {
 unavailable. 
             </p> 
           </div> 
- 
-          {/* Search form */} 
-          <form className="search-form" onSubmit={(e) => e.preventDefault()}> 
-            <input 
-              type="text" 
-              className="search-input-main" 
-              placeholder="Search for books, authors, or genres..." 
-            /> 
-            <button type="submit" className="search-btn"> 
-              <i className="bi bi-search"></i> 
-            </button> 
-          </form> 
  
           {/* Action buttons */} 
           <div className="button-group"> 

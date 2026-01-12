@@ -258,9 +258,11 @@ const BookHeaderSection = () => {
                 </button>
             )}
 
-            <button className="btn btn-outline-primary px-3 small-btn" onClick={handlePreview}>
-                <i className="bi bi-eye me-1"></i> Preview
-            </button>
+            {isEbook && (
+                <button className="btn btn-outline-primary px-3 small-btn" onClick={handlePreview}>
+                    <i className="bi bi-eye me-1"></i> Preview
+                </button>
+            )}
 
             {/* Always show Download, but disable it if no access */}
             <button 
@@ -285,7 +287,7 @@ const BookHeaderSection = () => {
                         <nav aria-label="breadcrumb">
                             <ol className="breadcrumb">
                                 <li className="breadcrumb-item"><a href="/" className="text-decoration-none">Home</a></li>
-                                <li className="breadcrumb-item"><a href="/fiction" className="text-decoration-none">Book</a></li>
+                                <li className="breadcrumb-item"><a href="/e-books" className="text-decoration-none">EBooks</a></li>
                                 <li className="breadcrumb-item active" aria-current="page">{book.title}</li>
                             </ol>
                         </nav>

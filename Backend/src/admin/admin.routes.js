@@ -61,7 +61,7 @@ router.get('/export/sales', async (req, res) => {
     try {
         const purchases = await Purchase.find({ status: 'completed' })
             .populate('user', 'displayName email')
-            .populate('book', 'title author')
+            .populate('book', 'title  author type coverImage')
             .sort({ purchasedAt: -1 })
             .lean();
 

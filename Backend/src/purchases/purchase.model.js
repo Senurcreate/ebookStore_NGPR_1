@@ -11,6 +11,13 @@ const purchaseSchema = new mongoose.Schema({
         ref: 'Book',
         required: true
     },
+    bookInfo: {
+        title: String,
+        author: String,
+        price: Number,
+        type: { type: String, enum: ['ebook', 'audiobook'] },
+        coverImage: String
+    },
     // For simulation - we'll generate a fake price
     amount: {
         type: Number,

@@ -33,24 +33,29 @@ const Analytics = () => {
   const revenueData = orderData.map(item => ({ name: item.name, revenue: item.orders * 15 })); 
 
   // --- 🛠️ MAP IMAGES HERE ---
-  const topBooks = data.recentActivity?.purchases?.slice(0, 5).map((p, i) => {
-      const book = p.book || {};
+  const topBooks = data.topSellingBooks?.map((item, i) => {
+      const book = item.bookInfo || {};
+      
       return {
         rank: `#${i+1}`,
         title: book.title || "Unknown Title",
         author: book.author || "Unknown Author",
-        revenue: `$${p.amount}`,
-        sales: '1 sales',
         
-        // ⬇️ Use the real image, fallback to placeholder
+        // Use the total revenue calculated by the backend
+        revenue: item.revenue ? `$${item.revenue.toFixed(2)}` : '$0.00',
+        
+        // Show the actual count of sales
+        sales: `${item.count} sales`,
+        
+        // Image handling
         img: book.coverImage || "https://placehold.co/45x65?text=No+Img",
         
+        // Type styling
         type: book.type === 'audiobook' ? 'Audio' : 'eBook',
         icon: book.type === 'audiobook' ? 'bi-headphones' : 'bi-book',
         bg: book.type === 'audiobook' ? '#8b5cf6' : '#6366f1'
       };
   }) || [];
-
   return (
     <div className="container-fluid py-4 px-4" style={{ backgroundColor: '#f8f9fa', minHeight: '100vh' }}>
       <div className="mb-4">

@@ -243,8 +243,6 @@ async function getAllBooks(req, res) {
         // 1. Initialize Filter Object
         let filter = {};
 
-        // --- 🔍 SMART SEARCH LOGIC ---
-        // Matches books that contain ALL the typed words (in any order, across multiple fields)
         if (search) {
             const searchKeywords = search.split(" ").filter(word => word.trim() !== "");
 
