@@ -38,6 +38,7 @@ const AudioBookCard = ({ book, showDelete = false, onDelete = () => {} }) => {
         price: book.price,
         image: book.image || book.coverImage,
         type: book.type,
+        format: 'MP3'
       };
       dispatch(addToCart(cartItem));
     }

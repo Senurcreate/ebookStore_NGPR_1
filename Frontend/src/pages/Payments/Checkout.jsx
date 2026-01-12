@@ -3,6 +3,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { removeFromCart, clearCart } from '../../redux/features/cart/cartSlice';
 import { useAuth } from '../../context/AuthContext';
+import { addToWishlist } from '../../services/wishlist.service';
 import "../../styles/main.scss";
 
 
@@ -19,6 +20,7 @@ const Checkout = () => {
 
   // UI States
   const [selectedIds, setSelectedIds] = useState(cartItems.map(item => item.id));
+  const [loadingIds, setLoadingIds] = useState([]);
 
   // Derived Calculations
   const selectedItems = cartItems.filter(item => selectedIds.includes(item.id));
@@ -45,6 +47,37 @@ const Checkout = () => {
   const handleRemoveItem = (id) => {
     dispatch(removeFromCart(id));
     setSelectedIds(selectedIds.filter(itemId => itemId !== id));
+  };
+
+  const handleMoveToWishlist = async (item) => {
+    if (!currentUser) {
+      alert("Please login to save items to your wishlist.");
+      return;
+    }
+
+    try {
+      // 1. Add loading state for this specific item
+      setLoadingIds(prev => [...prev, item.id]);
+
+      // 2. Call the API
+      await addToWishlist(item.id);
+
+      // 3. If successful, remove from Cart (Redux)
+      dispatch(removeFromCart(item.id));
+      
+      // 4. Update local selection state
+      setSelectedIds(selectedIds.filter(itemId => itemId !== item.id));
+
+      
+      // alert("Moved to wishlist!"); 
+
+    } catch (error) {
+      console.error("Failed to move to wishlist", error);
+      alert(error.message || "Failed to add to wishlist. It might already be there.");
+    } finally {
+      // Remove loading state
+      setLoadingIds(prev => prev.filter(id => id !== item.id));
+    }
   };
 
   // NAVIGATE ---
@@ -82,7 +115,7 @@ const Checkout = () => {
 
       return(
       <div className="container py-5">
-          <h2 className="fw-normal mb-4">Checkout</h2>
+          <h2 className="fw-normal mb-4 text-start mt-4">Checkout</h2>
           
           <div className="row g-4">
             {/* LEFT COLUMN: Cart Items */}
@@ -135,8 +168,18 @@ const Checkout = () => {
                           <p className="mb-0 text-muted small">{item.format}</p>
                         </div>
                         <div className="d-flex gap-2">
-                          <button className="btn btn-light btn-sm text-secondary rounded-circle" style={{width: '32px', height: '32px'}}>
-                            <i className="bi bi-heart"></i>
+                          <button 
+                            onClick={() => handleMoveToWishlist(item)}
+                            disabled={loadingIds.includes(item.id)}
+                            className="btn btn-light btn-sm text-secondary rounded-circle" 
+                            style={{width: '32px', height: '32px'}}
+                            title="Move to Wishlist"
+                          >
+                             {loadingIds.includes(item.id) ? (
+                               <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true" style={{width: '12px', height: '12px'}}></span>
+                             ) : (
+                               <i className="bi bi-heart"></i>
+                             )}
                           </button>
                           <button onClick={() => handleRemoveItem(item.id)} className="btn btn-light btn-sm text-secondary rounded-circle" style={{width: '32px', height: '32px'}}>
                             <i className="bi bi-trash"></i>

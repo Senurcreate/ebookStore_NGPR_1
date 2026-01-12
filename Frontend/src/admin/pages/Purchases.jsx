@@ -250,15 +250,17 @@ const Purchases = () => {
                     </td>
 
                     {/* Book Title */}
-                    <td className="fw-medium text-dark">{item.book?.title || 'Deleted Book'}</td>
+                    <td className="fw-medium text-dark">{item.book?.title ||item.bookInfo?.title || 'Deleted Book'}</td>
                     
                     {/* Format (eBook/Audio) */}
                     <td className="text-center">
-                        {item.book?.type === 'audiobook' ? (
-                            <i className="bi bi-headphones text-danger" title="Audiobook"></i>
-                        ) : (
-                            <i className="bi bi-book text-primary" title="eBook"></i>
-                        )}
+                        {(item.book?.type || item.bookInfo?.type) === 'audiobook' ? (
+                          <i className="bi bi-headphones text-danger" title="Audiobook"></i>
+                      ) : (item.book?.type || item.bookInfo?.type) === 'ebook' ? (
+                          <i className="bi bi-book text-primary" title="eBook"></i>
+                      ) : (
+                          <span className="text-muted">-</span>
+                      )}
                     </td>
 
                     {/* Amount */}

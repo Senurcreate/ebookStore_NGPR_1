@@ -127,6 +127,41 @@ async function getDashboardStats(req, res) {
                 .lean()
         ]);
 
+        const topSellingBooks = await Purchase.aggregate([
+            { $match: { status: 'completed' } },
+            { 
+                $group: { 
+                    _id: '$book', 
+                    count: { $sum: 1 }, 
+                    revenue: { $sum: '$amount' } 
+                }
+            },
+            { $sort: { count: -1 } },
+            { $limit: 5 },
+            // Join with Books collection to get title/image
+            { 
+                $lookup: { 
+                    from: 'books', 
+                    localField: '_id', 
+                    foreignField: '_id', 
+                    as: 'bookInfo' 
+                } 
+            },
+            { $unwind: '$bookInfo' },
+            // Clean up the output
+            {
+                $project: {
+                    _id: 1,
+                    count: 1,
+                    revenue: 1,
+                    'bookInfo.title': 1,
+                    'bookInfo.author': 1,
+                    'bookInfo.coverImage': 1,
+                    'bookInfo.type': 1
+                }
+            }
+        ]);
+
         // Get reported content count
         const reportedContent = await Review.countDocuments({ 
             'reports.0': { $exists: true }
@@ -169,6 +204,19 @@ async function getDashboardStats(req, res) {
                     reviews: recentActivity[1],
                     activeUsers: recentActivity[2]
                 },
+
+                topSellingBooks: topSellingBooks, 
+                systemHealth: {
+                    database: dbStatus,
+                    memoryUsage: {
+                        rss: Math.round(memoryUsage.rss / 1024 / 1024) + ' MB',
+                        heapTotal: Math.round(memoryUsage.heapTotal / 1024 / 1024) + ' MB',
+                        heapUsed: Math.round(memoryUsage.heapUsed / 1024 / 1024) + ' MB'
+                    },
+                    uptime: Math.round(uptime / 60) + ' minutes',
+                    nodeVersion: process.version
+                },
+            
                 systemHealth: {
                     database: dbStatus,
                     memoryUsage: {
