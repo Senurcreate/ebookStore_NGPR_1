@@ -73,17 +73,64 @@
   }
 }
 
+/* MOBILE RESPONSIVENESS */
 @media (max-width: 768px) {
-  .filter-center {
-    flex-wrap: wrap; /* stack only on mobile */
-    justify-content: center;
+  
+  /*Change the main container to a vertical stack */
+  .filter-section {
+    flex-direction: column;
+    align-items: stretch; /* Stretch items to fit the screen width */
+    padding: 1rem;
+    gap: 1rem;
+    height: auto; /* Allow height to grow with content */
   }
 
+  /* Arrange the 'Filters' label area */
+  .filter-left {
+    width: 100%;
+    justify-content: space-between; /* Spreads label and icon if needed */
+    border-bottom: 1px solid #f0f0f0; /* Optional: adds a subtle separator */
+    padding-bottom: 0.8rem;
+    margin-bottom: 0.5rem;
+  }
+
+  /* Stack the dropdowns vertically */
+  .filter-center {
+    //flex-direction: column;
+    width: 100%;
+    gap: 0.8rem;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  /* Force Dropdowns to be Full Width for better touch targets */
+  .filter-center select,
+  .filter-center .form-select.dropdown-menu-box {
+    width: 100% !important;
+    min-width: 100% !important;
+    max-width: 100%;
+  }
+
+  .filter-center select {
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+  }
+
+  /* Adjust the Reset Button container */
   .filter-right {
     width: 100%;
-    justify-content: flex-end;
+    margin-left: 0; /* Reset the auto margin */
     margin-top: 0.5rem;
   }
+
+  /* Make the reset button full width */
+  .reset-btn {
+    width: 100%;
+    padding: 0.8rem; /* Taller button for easier tapping */
+    text-align: center;
+  }
 }
+
 
 

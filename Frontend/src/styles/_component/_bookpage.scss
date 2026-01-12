@@ -33,4 +33,30 @@
   }
 }
 
+@media (min-width: 576px) {
+  .book-page {
+    padding: 1.5rem 1.5rem;
+    padding-top: 85px;
+  }
+}
+
+/* Tablets ≥768px */
+
+@media (min-width: 768px) {
+  .book-page {
+    padding: 1.75rem 2rem;
+    padding-top: 85px;
+  }
+}
+
+/* Laptops ≥992px */
+
+@media (min-width: 992px) {
+  .book-page {
+    padding: 2rem 3rem;
+    padding-top: 90px;
+  }
+}
+
+
 
