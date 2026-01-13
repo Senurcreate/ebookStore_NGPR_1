@@ -58,8 +58,6 @@ const Books = () => {
   }, [executedSearch, filterType, filterLanguage, page]); 
 
   // --- HANDLERS ---
-  
-  // ✅ NEW: Reset Handler
   // This clears all inputs and forces the useEffect to re-run
   const handleReset = () => {
     setSearchQuery('');
@@ -195,19 +193,19 @@ const Books = () => {
                 <option value="Sinhala">Sinhala</option>
               </select>
 
-              {/* ✅ UPDATED REFRESH/RESET BUTTON */}
+              {/* UPDATED REFRESH/RESET BUTTON */}
               <button 
                 className="btn btn-white bg-white border d-flex align-items-center justify-content-center rounded-3 text-dark fw-medium shadow-sm"
                 style={{ width: '42px', height: '40px' }}
                 onClick={handleReset}
-                disabled={loading} // Prevent clicks while loading
+                disabled={loading} 
                 title="Reset Filters"
               >
                 {loading ? (
-                    // 🌀 Show Spinner when loading
+                    // Show Spinner when loading
                     <span className="spinner-border spinner-border-sm text-secondary" role="status" aria-hidden="true"></span>
                 ) : (
-                    // 🔄 Show Icon when idle
+                    // Show Icon when idle
                     <i className="bi bi-arrow-clockwise"></i>
                 )}
               </button>
@@ -260,7 +258,7 @@ const Books = () => {
 
                   <td>
                     <div className="d-flex justify-content-center">
-                      <span className="status-badge" style={{ backgroundColor: book.type === 'audiobook' ? '#f43f5e' : '#6366f1', color: '#fff', justifyContent: 'center', padding: '4px 12px', borderRadius: '20px', fontSize: '12px' }}>
+                      <span className="status-badge" style={{ backgroundColor: book.type === 'audiobook' ? '#fc5b77' : '#6366f1', color: '#fff', justifyContent: 'center', padding: '4px 12px', borderRadius: '20px', fontSize: '12px' }}>
                         <i className={`bi ${book.type === 'audiobook' ? 'bi-headphones' : 'bi-book'} me-1`}></i>
                         {book.type}
                       </span>

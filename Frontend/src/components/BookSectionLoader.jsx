@@ -19,7 +19,6 @@ const BookSectionLoader = ({ title, fetchFunction, type = "ebook" }) => {
           const formattedBooks = response.data.map(book => formatBookData(book));
           setBooks(formattedBooks);
         } else {
-            // Optional: Handle empty data gracefully
             setBooks([]);
         }
       } catch (err) {
@@ -33,7 +32,7 @@ const BookSectionLoader = ({ title, fetchFunction, type = "ebook" }) => {
     loadData();
   }, [fetchFunction, title]);
 
-  // Loading State (Skeleton or Spinner)
+  // Loading State 
   if (loading) {
     return (
       <div className="container py-5 text-center">

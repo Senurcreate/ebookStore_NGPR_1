@@ -55,7 +55,7 @@ const Users = () => {
 
   // --- HANDLERS ---
   
-  // ✅ NEW: Reset Handler
+  // Reset Handler
   const handleReset = () => {
     setSearchQuery('');       // Clear visual input
     setExecutedSearch('');    // Clear actual search param
@@ -225,7 +225,7 @@ const Users = () => {
                 <option value="admin">Admins</option>
               </select>
 
-              {/* ✅ UPDATED RESET BUTTON */}
+              {/* UPDATED RESET BUTTON */}
               <button 
                 className="btn btn-white bg-white border d-flex align-items-center justify-content-center rounded-3 text-dark fw-medium shadow-sm"
                 style={{ width: '42px', height: '40px' }}

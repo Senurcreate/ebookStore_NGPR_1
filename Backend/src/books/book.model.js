@@ -52,7 +52,7 @@ const bookSchema = new mongoose.Schema({
         trim: true,
         validate: {
             validator: function(v) {
-                // Allow both Cloudinary URLs and Goodreads URLs
+                // Allow any type of URLs
                 if (v.startsWith('http')) { 
                     return true;
                 }
@@ -194,28 +194,6 @@ const bookSchema = new mongoose.Schema({
             default: null
         }
     },
-    
-    // Download restrictions
-    downloadPolicy: {
-        maxDownloads: {
-            type: Number,
-            default: function() {
-                return this.price > 0 ? 3 : 1;
-            },
-            min: 1
-        },
-        validityHours: {
-            type: Number,
-            default: 24,
-            min: 1,
-            max: 168 // 1 week max
-        },
-        allowMultipleDevices: {
-            type: Boolean,
-            default: true
-        }
-    },
-    
     // Preview settings - different for ebooks vs audiobooks
     preview: {
         enabled: {
@@ -670,61 +648,37 @@ bookSchema.statics.updateRatingStats = async function(bookId) {
  * Returns object with canDownload (bool) and purchase details
  */
 bookSchema.methods.checkDownloadEligibility = async function(userId) {
-    // 1. If the book is free, anyone can download
+    // 1. Free books are always available
     if (this.price === 0) {
-        return { 
-            canDownload: true, 
-            reason: 'free',
-            isFree: true
-        };
+        return { canDownload: true, reason: 'free', isFree: true };
     }
 
-    // 2. If no user ID provided (not logged in) and book is not free
+    // 2. Login required
     if (!userId) {
-        return { 
-            canDownload: false, 
-            reason: 'authentication_required',
-            isFree: false
-        };
+        return { canDownload: false, reason: 'authentication_required', isFree: false };
     }
 
-    // 3. Check for a COMPLETED purchase
-    // We use mongoose.model to avoid circular dependency issues
+    // 3. Check for COMPLETED purchase only (Ignore limits)
     const Purchase = mongoose.model('Purchase');
     const purchase = await Purchase.findOne({
         user: userId,
         book: this._id,
-        status: 'completed' // Crucial: Only completed transactions
+        status: 'completed'
     });
 
     if (purchase) {
-        // 4. Check if the purchase allows downloading (limits/expiry)
-        const downloadStatus = purchase.canDownload(); // Using the method from your Purchase model
-        
-        if (downloadStatus.allowed) {
-            return { 
-                canDownload: true, 
-                reason: 'purchased',
-                purchase: purchase,
-                isFree: false
-            };
-        } else {
-            return {
-                canDownload: false,
-                reason: downloadStatus.reason, // e.g., 'max_downloads_reached'
-                message: downloadStatus.message
-            };
-        }
+        // SUCCESS: If they bought it, they can download it. No other checks.
+        return { 
+            canDownload: true, 
+            reason: 'purchased',
+            purchase: purchase,
+            isFree: false
+        };
     }
 
-    // 5. No purchase found
-    return { 
-        canDownload: false, 
-        reason: 'purchase_required', 
-        isFree: false
-    };
+    // 4. No purchase found
+    return { canDownload: false, reason: 'purchase_required', isFree: false };
 };
-
 const Book = mongoose.model('Book', bookSchema);
 
 module.exports = Book;

@@ -12,6 +12,11 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
   overflow: hidden;
 
+  &:hover {
+    transform: translateY(-5px); 
+    box-shadow: 0 12px 20px rgba(0, 0, 0, 0.2);
+  }
+
   .audiobook-img {
     width: 8rem;
     height: 12rem;
@@ -38,7 +43,6 @@
       //margin-bottom: 0.3rem;
       font-size: 1.0rem;
       .title-text {
-        // EXACT CODE FROM YOUR EBOOK EXAMPLE:
         overflow: hidden;
         display: -webkit-box;
         display: box;
@@ -46,8 +50,6 @@
         box-orient: vertical;
         -webkit-line-clamp: 1;
         line-clamp: 1;
-        
-        // Ensures it breaks words if a single word is too long
         word-break: break-all; 
       } 
 

@@ -23,7 +23,7 @@ function Navbar() {
   const location = useLocation();
   const cartCount = useSelector((state) => state.cart.cartCount);
 
-  // --- 🧠 SMART SEARCH HANDLER ---
+  // --- SMART SEARCH HANDLER ---
   const handleSearch = (e) => {
     // Trigger on 'Enter' key or Click
     if ((e.type === 'keydown' && e.key === 'Enter') || e.type === 'click') {
@@ -36,25 +36,25 @@ function Navbar() {
         let targetPath = '/e-books'; // Default
         let finalSearchTerm = rawQuery;
 
-        // 1. Check if user is ALREADY on audiobooks (keep them there unless they specify otherwise)
+        // Check if user is ALREADY on audiobooks (keep them there unless they specify otherwise)
         if (location.pathname.includes('/audiobooks')) {
             targetPath = '/audiobooks';
         }
 
-        // 2. DETECT INTENT: Did they type "audiobook"?
+        // DETECT INTENT: Did they type "audiobook"?
         // Example: "horror audiobooks" -> Go to /audiobooks, search for "horror"
         if (lowerQuery.includes('audiobook') || lowerQuery.includes('audio book')) {
             targetPath = '/audiobooks';
             // Remove the word "audiobook" so we don't restrict results unnecessarily
             finalSearchTerm = rawQuery.replace(/audio\s?books?/gi, '').trim();
         } 
-        // 3. DETECT INTENT: Did they type "ebook"?
+        // DETECT INTENT: Did they type "ebook"?
         else if (lowerQuery.includes('ebook') || lowerQuery.includes('e-book')) {
             targetPath = '/e-books';
             finalSearchTerm = rawQuery.replace(/e-?books?/gi, '').trim();
         }
 
-        // 4. Navigate
+        //  Navigate
         // If the user just typed "Audiobooks" (and finalSearchTerm is empty), just go to the page
         if (!finalSearchTerm) {
              navigate(targetPath);

@@ -1,13 +1,9 @@
 .bookpage .book-grid {
   display: grid;
-
-  // Bigger cards (controls width) 
   grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
-
   gap: 2.5rem;
   padding-bottom: 3rem;
-
-  align-items: flex-start; // prevents vertical stretching start
+  align-items: flex-start; 
 }
 
 /* Wrapper ONLY for book page */
@@ -36,10 +32,10 @@
   }
 }
 
-/* Image control — fixes tall skinny look */
+/* Image control */
 .book-grid .book-card img {
   width: 100%;
-  height: 450px; /* key change 260px*/
+  height: 450px; 
   object-fit: cover;
   border-radius: 10px;
   display: block;
@@ -97,12 +93,13 @@
 /* Laptops ≥992px */
 @media (min-width: 992px) {
   .bookpage .book-grid {
-    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    grid-template-columns: repeat(3, 1fr);
     gap: 2.5rem;
   }
 
   .book-card {
     padding: 1rem;
+    max-width: none;
   }
 }
 
@@ -110,38 +107,10 @@
 /* Large screens ≥1200px */
 @media (min-width: 1200px) {
   .bookpage .book-grid {
-    grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2.5rem;
   }
 }
 
-/*.book-grid {
-  display: grid;
-  //grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  grid-template-columns: repeat(4, 1fr); 
-  gap: 2rem;
-  padding-bottom: 2rem;
-
-
-  .book-card {
-    border: 1px solid #e7e7e7;
-    border-radius: 10px;
-    padding: 1rem;
-    background: #fff;
-    box-shadow: 0 0 10px rgba(0,0,0,0.05);
-    transition: 0.25s ease;
-    cursor: pointer;
-
-    &:hover {
-      box-shadow: 0 0 20px rgba(0,0,0,0.1);
-      transform: translateY(-3px);
-    }
-  }
-
-  .bookpage-card {
-  //transform: scale(1.12);
-  transform-origin: top center;
-  }
-
-}*/
 
 

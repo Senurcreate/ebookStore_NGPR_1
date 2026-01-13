@@ -385,28 +385,7 @@ h6 { font-size: 1rem; }
     }
 }
 
-/* Utility classes for even smaller text 
-.small {
-    font-size: 12px !important;
-}
 
-.smaller {
-    font-size: 11px !important;
-}
-
-/* Reduce all heading sizes 
-h1 { font-size: 1.8rem; }
-h2 { font-size: 1.6rem; }
-h3 { font-size: 1.4rem; }
-h4 { font-size: 1.2rem; }
-h5 { font-size: 1.1rem; }
-h6 { font-size: 1rem; }
-
-*/
-
-
-//audiobook
-// Add these styles to your existing styles.scss
 
 
 /* aBook Cover */
@@ -610,13 +589,13 @@ h6 { font-size: 1rem; }
   }
   
   .reply-text {
-    max-width: 70%; // Slightly less for replies
+    max-width: 70%;
     word-wrap: break-word;
     overflow-wrap: break-word;
   }
 }
 
-/* Flag Popup Styles - FIXED POSITION */
+/* Flag Popup Styles */
 .flag-popup {
   position: fixed;
   z-index: 10000;

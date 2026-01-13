@@ -7,7 +7,7 @@ const Book = require('../books/book.model');
 async function addToWishlist(req, res) {
     try {
         const { bookId } = req.body;
-        const userId = req.user?._id; // Assuming you have authentication middleware
+        const userId = req.user?._id; 
 
         if (!userId) {
             return res.status(401).json({ message: 'User not authenticated' });

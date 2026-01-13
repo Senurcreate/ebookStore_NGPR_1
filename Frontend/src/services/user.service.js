@@ -1,4 +1,4 @@
-import axios from '../utils/axios'; // Use your configured axios instance
+import axios from '../utils/axios'; 
 
 // Get User Profile
 export const fetchUserProfile = async () => {

@@ -1,7 +1,7 @@
 import { configureStore } from '@reduxjs/toolkit'
 import cartReducer from '../redux/features/cart/cartSlice'
 
-// 1. Load state from localStorage
+//  Load state from localStorage
 const loadState = () => {
   try {
     const serializedState = localStorage.getItem('ebook_cart');
@@ -14,7 +14,7 @@ const loadState = () => {
   }
 };
 
-// 2. Save state to localStorage
+// Save state to localStorage
 const saveState = (state) => {
   try {
     const serializedState = JSON.stringify(state);

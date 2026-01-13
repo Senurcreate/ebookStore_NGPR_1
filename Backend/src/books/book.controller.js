@@ -2,6 +2,32 @@ const Book = require('./book.model');
 //const Purchase = require('../purchases/purchase.model');
 const CloudinaryService = require('../services/cloudinary.service');
 
+const buildCloudinaryInfo = (inputUrl, fetchedInfo) => {
+    const publicId = CloudinaryService.extractPublicId(inputUrl);
+    
+    const baseInfo = {
+        publicId: publicId,
+        secureUrl: inputUrl, // FORCE the secureUrl to match the input
+        resourceType: 'auto',
+        format: inputUrl.split('.').pop() || 'pdf',
+        bytes: 0,
+        duration: 0
+    };
+
+    // If  successfully fetched real data from Cloudinary, merge it in
+    if (fetchedInfo) {
+        return {
+            ...baseInfo,
+            resourceType: fetchedInfo.resourceType,
+            format: fetchedInfo.format,
+            bytes: fetchedInfo.bytes,
+            duration: fetchedInfo.duration || 0,
+        };
+    }
+
+    return baseInfo;
+};
+
 /**
  * Create a new book with Google Drive integration (supports both ebooks and audiobooks)
  */
@@ -9,179 +35,75 @@ async function createBook(req, res) {
     try {
         const body = { ...(req.body || {}) };
         const bookType = body.type || 'ebook';
+        
+        // --- 1. Validate & Prepare Metadata ---
+        let finalCloudinaryInfo = {};
+        let finalFileSize = 0;
 
-        // Required fields based on book type
-        const commonRequired = [
-            'title',
-            'author',
-            'publisher',
-            'publication_date',
-            'description',
-            'genre',
-            'language',
-            'isbn',
-            'coverImage',
-            'driveUrl',
-            'price'
-        ];
-
-        // Type-specific required fields
-        const typeRequired = {
-            ebook: ['pages'],
-            audiobook: ['audioLength', 'narrators']
-        };
-
-        // Combine required fields
-        const required = [...commonRequired, ...(typeRequired[bookType] || [])];
-
-        // Check for missing required fields
-        const missing = required.filter(f => {
-            const value = body[f];
-            return value === undefined || value === '' || 
-                   (Array.isArray(value) && value.length === 0);
-        });
-
-        if (missing.length) {
-            return res.status(400).json({
-                success: false,
-                message: 'Missing required fields',
-                missing,
-                type: bookType
-            });
-        }
-
-        // Validate Cloudinary URL
-        if (!CloudinaryService.isValidCloudinaryUrl(body.cloudinaryUrl)) {
-            return res.status(400).json({
-                success: false,
-                message: 'Invalid Cloudinary URL for main file'
-            });
-        }
-
-
-        // Validate price
-        if (isNaN(parseFloat(body.price)) || parseFloat(body.price) < 0) {
-            return res.status(400).json({
-                success: false,
-                message: 'Price must be a valid number greater than or equal to 0'
-            });
-        }
-
-        // Validate ebook-specific fields
-        if (bookType === 'ebook') {
-            if (!Number.isInteger(parseInt(body.pages)) || parseInt(body.pages) <= 0) {
-                return res.status(400).json({
-                    success: false,
-                    message: 'Pages must be a positive integer for ebooks'
-                });
-            }
-        }
-
-        // Validate audiobook-specific fields
-        if (bookType === 'audiobook') {
-            // Validate audio length format (HH:MM:SS or MM:SS)
-            const timePattern = /^([0-9]{1,2}:)?[0-9]{1,2}:[0-9]{2}$/;
-            if (!timePattern.test(body.audioLength)) {
-                return res.status(400).json({
-                    success: false,
-                    message: 'Audio length must be in format HH:MM:SS or MM:SS',
-                    examples: ['02:30:45', '45:30', '1:15:00']
-                });
+        if (body.cloudinaryUrl) {
+            if (!CloudinaryService.isValidCloudinaryUrl(body.cloudinaryUrl)) {
+                 return res.status(400).json({ success: false, message: 'Invalid Cloudinary URL' });
             }
 
-            // Validate narrators array
-            if (!Array.isArray(body.narrators) || body.narrators.length === 0) {
-                return res.status(400).json({
-                    success: false,
-                    message: 'At least one narrator is required for audiobooks'
-                });
+            // A. Try to fetch real metadata (Size, Duration)
+            let fetchedInfo = null;
+            try {
+                const publicId = CloudinaryService.extractPublicId(body.cloudinaryUrl);
+                if (publicId) {
+                    fetchedInfo = await CloudinaryService.getFileInfo(publicId);
+                }
+            } catch (err) {
+                console.warn("⚠️ Metadata fetch failed (using default URL):", err.message);
             }
 
-            // Validate each narrator has a name
-            const invalidNarrators = body.narrators.filter(n => !n.name || n.name.trim() === '');
-            if (invalidNarrators.length > 0) {
-                return res.status(400).json({
-                    success: false,
-                    message: 'All narrators must have a name'
-                });
-            }
+            // B. Build the forced object
+            finalCloudinaryInfo = buildCloudinaryInfo(body.cloudinaryUrl, fetchedInfo);
+            finalFileSize = finalCloudinaryInfo.bytes;
         }
 
-        // Prepare book data
+        // --- 2. Construct Book Data ---
         const bookData = {
             ...body,
             type: bookType,
             price: parseFloat(body.price),
             trending: Boolean(body.trending),
-            publication_date: new Date(body.publication_date)
+            publication_date: new Date(body.publication_date),
+            
+            // Apply the forced info
+            cloudinaryUrl: body.cloudinaryUrl,
+            cloudinaryInfo: finalCloudinaryInfo,
+            fileSize: finalFileSize,
+            
+            // FORCE fileInfo to match immediately
+            fileInfo: {
+                downloadUrl: body.cloudinaryUrl,
+                previewUrl: body.cloudinaryUrl,
+                embedCode: CloudinaryService.generateEmbedCode(body.cloudinaryUrl, bookType)
+            }
         };
 
-        // Process type-specific fields
-        if (bookType === 'ebook') {
-            bookData.pages = parseInt(body.pages);
-        } else if (bookType === 'audiobook') {
-            bookData.audioLength = body.audioLength.trim();
-            bookData.narrators = body.narrators.map(n => ({
-                name: n.name.trim()
-            }));
-            
-            // Process audio sample URL if provided
-            if (body.audioSampleDriveUrl) {
-                bookData.audioSampleDriveUrl = body.audioSampleDriveUrl.trim();
+        // Type-specific parsing
+        if (bookType === 'ebook') bookData.pages = parseInt(body.pages);
+        if (bookType === 'audiobook') {
+            bookData.audioLength = body.audioLength?.trim();
+            if (body.narrators) {
+                bookData.narrators = body.narrators.map(n => ({ name: n.name.trim() }));
             }
         }
 
-        
-
-        // Create & save book
+        // --- 3. Save ---
         const newBook = new Book(bookData);
         const savedBook = await newBook.save();
 
-        console.log(`📚 ${bookType === 'audiobook' ? '🎵 Audiobook' : '📖 Ebook'} created:`, savedBook._id);
         return res.status(201).json({
             success: true,
-            message: `${bookType === 'audiobook' ? 'Audiobook' : 'Book'} created successfully`,
-            book: savedBook,
-            previewInfo: savedBook.getPreviewContent()
+            message: 'Book created successfully',
+            book: savedBook
         });
 
     } catch (error) {
         console.error('❌ Error creating book:', error);
-
-        // Handle validation errors
-        if (error.name === 'ValidationError') {
-            const errors = Object.keys(error.errors || {}).reduce((acc, key) => {
-                acc[key] = error.errors[key].message;
-                return acc;
-            }, {});
-            return res.status(400).json({
-                success: false,
-                message: 'Validation failed',
-                errors
-            });
-        }
-
-        // Handle duplicate ISBN
-        if (error.code === 11000) {
-            if (error.keyPattern?.isbn) {
-                return res.status(400).json({
-                    success: false,
-                    message: 'A book with this ISBN already exists'
-                });
-            }
-            if (error.keyPattern?.driveUrl) {
-                return res.status(400).json({
-                    success: false,
-                    message: 'This Google Drive URL is already used for another book'
-                });
-            }
-        }
-
-        return res.status(500).json({
-            success: false,
-            message: 'Failed to create book',
-            error: error.message
-        });
+        return res.status(500).json({ success: false, message: error.message });
     }
 }
 
@@ -511,50 +433,90 @@ async function updateBook(req, res) {
         const { id } = req.params;
         const updates = req.body || {};
 
-        // Get current book to check type
-        const currentBook = await Book.findById(id);
-        if (!currentBook) {
-            return res.status(404).json({
-                success: false,
-                message: 'Book not found'
-            });
-        }
+        const book = await Book.findById(id);
+        if (!book) return res.status(404).json({ success: false, message: 'Book not found' });
+        const urlToUse = updates.cloudinaryUrl || book.cloudinaryUrl;
 
+        const isUrlChanged = updates.cloudinaryUrl && updates.cloudinaryUrl !== book.cloudinaryUrl;
         
+        const isDataBroken = book.cloudinaryInfo?.secureUrl?.includes('your-cloud-name') || 
+                             book.fileInfo?.downloadUrl?.includes('your-cloud-name');
 
-        // If URL changed, update Cloudinary info
-                if (updates.cloudinaryUrl && updates.cloudinaryUrl !== currentBook.cloudinaryUrl) {
-                    const publicId = CloudinaryService.extractPublicId(updates.cloudinaryUrl);
-                    if (publicId) {
-                        const fileInfo = await CloudinaryService.getFileInfo(publicId);
-                        if (fileInfo) {
-                            updates.cloudinaryInfo = {
-                                publicId,
-                                resourceType: fileInfo.resourceType,
-                                format: fileInfo.format,
-                                secureUrl: fileInfo.url,
-                                bytes: fileInfo.bytes,
-                                duration: fileInfo.duration
-                            };
-                            updates.fileSize = fileInfo.bytes;
-                        }
-                    }
+        const isMismatch = book.fileInfo?.downloadUrl !== urlToUse;
+
+        const isMissingInfo = !book.cloudinaryInfo || !book.cloudinaryInfo.publicId;
+
+
+        if (isUrlChanged || isDataBroken || isMismatch || isMissingInfo) {
+            console.log(`🔄 Force-Syncing Metadata for: ${book.title}`);
+
+            book.cloudinaryUrl = urlToUse;
+
+            let fetchedInfo = null;
+            try {
+                const publicId = CloudinaryService.extractPublicId(urlToUse);
+                if (publicId) {
+                    fetchedInfo = await CloudinaryService.getFileInfo(publicId);
                 }
-
-                const updatedBook = await Book.findByIdAndUpdate(id, updates, { new: true, runValidators: true });
-
-                return res.status(200).json({
-                    success: true,
-                    message: 'Book updated successfully',
-                    book: updatedBook
-                });
-
-            } catch (error) {
-                console.error('❌ Error updating book:', error);
-                return res.status(500).json({ success: false, message: 'Failed to update book' });
+            } catch (err) {
+                console.warn("⚠️ Metadata fetch warning:", err.message);
             }
+            const publicId = CloudinaryService.extractPublicId(urlToUse);
+            const baseInfo = {
+                publicId: publicId,
+                secureUrl: urlToUse, // FORCE this to match
+                resourceType: 'auto',
+                format: urlToUse.split('.').pop() || 'pdf',
+                bytes: 0,
+                duration: 0
+            };
+
+            book.cloudinaryInfo = fetchedInfo ? {
+                ...baseInfo,
+                resourceType: fetchedInfo.resourceType,
+                format: fetchedInfo.format,
+                bytes: fetchedInfo.bytes,
+                duration: fetchedInfo.duration || 0,
+            } : baseInfo;
+
+            book.fileSize = book.cloudinaryInfo.bytes;
+
+            book.fileInfo = {
+                downloadUrl: urlToUse, // FORCE this to match
+                previewUrl: urlToUse,
+                embedCode: CloudinaryService.generateEmbedCode(urlToUse, book.type)
+            };
         }
 
+        // --- Apply other standard updates ---
+        const protectedFields = ['cloudinaryUrl', 'cloudinaryInfo', 'fileInfo', '_id'];
+        Object.keys(updates).forEach((key) => {
+            if (!protectedFields.includes(key)) {
+                book[key] = updates[key];
+            }
+        });
+
+        // --- Sanitization for eBooks (Prevents "min: 1" error) ---
+        if (book.type === 'ebook') {
+            if (book.preview) book.preview.sampleMinutes = undefined;
+            book.audioLength = undefined;
+            book.narrators = undefined;
+        }
+
+        // --- Save ---
+        const updatedBook = await book.save();
+
+        return res.status(200).json({
+            success: true,
+            message: 'Book updated successfully',
+            book: updatedBook
+        });
+
+    } catch (error) {
+        console.error('❌ Error updating book:', error);
+        return res.status(500).json({ success: false, message: error.message });
+    }
+}
 /**
  * Delete a book
  */
@@ -780,34 +742,37 @@ async function getBookStats(req, res) {
 }
 
 /**
- * Search books with advanced filters (supports narrator search)
+ * Search books with forgiving logic (Partial matches & Substrings)
  */
 async function searchBooks(req, res) {
+
     try {
-        const { 
-            q, 
-            genre, 
-            author, 
+
+        const {
+            q,
+            genre,
+            author,
             narrator,
-            minPrice, 
-            maxPrice, 
-            type, 
+            minPrice,
+            maxPrice,
+            type,
             language,
             minPages,
             maxPages,
             minAudioLength,
             maxAudioLength
         } = req.query;
-        
+
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 20;
-
         let filter = {};
+
 
         // Text search (title, author, description)
         if (q) {
             filter.$text = { $search: q };
         }
+
 
         // Genre filter
         if (genre) {
@@ -846,12 +811,10 @@ async function searchBooks(req, res) {
             filter.pages = {};
             if (minPages !== undefined) filter.pages.$gte = parseInt(minPages);
             if (maxPages !== undefined) filter.pages.$lte = parseInt(maxPages);
+
         }
 
-        // Audio length filter (for audiobooks - requires converting HH:MM:SS to seconds)
         if (minAudioLength || maxAudioLength) {
-            // This would require custom logic to convert time strings to seconds
-            // For simplicity, we'll note this as a TODO enhancement
             console.log('Audio length filtering not yet implemented');
         }
 
@@ -859,16 +822,17 @@ async function searchBooks(req, res) {
 
         const [books, total] = await Promise.all([
             Book.find(filter)
-                .sort({ 
+                .sort({
                     trending: -1,
-                    'ratingStats.average': -1, 
-                    createdAt: -1 
+                    'ratingStats.average': -1,
+                    createdAt: -1
                 })
                 .skip(skip)
                 .limit(limit)
                 .lean(),
             Book.countDocuments(filter)
         ]);
+
 
         // Add formatted info to each book
         const enhancedBooks = await Promise.all(
@@ -884,11 +848,13 @@ async function searchBooks(req, res) {
                         }),
                         ...(book.type === 'ebook' && {
                             pages: book.pages
+
                         })
                     }
                 };
             })
         );
+
 
         return res.status(200).json({
             success: true,
@@ -910,6 +876,7 @@ async function searchBooks(req, res) {
         });
     }
 }
+
 
 /**
  * Get audiobooks by narrator

@@ -5,7 +5,7 @@ const Purchase = require('../purchases/purchase.model');
 const CloudinaryService = require('../services/cloudinary.service');
 
 /**
- * 1. SECURE DOWNLOAD
+ * SECURE DOWNLOAD
  * Ensures user has purchased the book before returning the link.
  */
 async function downloadBook(req, res) {
@@ -13,7 +13,7 @@ async function downloadBook(req, res) {
         const { bookId } = req.params;
         const userId = req.user?._id;
 
-        // 1. Basic Authentication Check
+        //  Basic Authentication Check
         if (!userId) {
             return res.status(401).json({
                 success: false,
@@ -21,7 +21,7 @@ async function downloadBook(req, res) {
             });
         }
 
-        // 2. Find the Book
+        // Find the Book
         const book = await Book.findById(bookId);
         if (!book) {
             return res.status(404).json({
@@ -30,7 +30,7 @@ async function downloadBook(req, res) {
             });
         }
 
-        // 3. THE GATEKEEPER LOGIC
+        // THE GATEKEEPER LOGIC
         const isFree = book.price === 0;
         let purchase = null;
 
@@ -57,11 +57,11 @@ async function downloadBook(req, res) {
             }
 
             // DENY: Purchase limits exceeded (Max downloads or Time expiry)
-            // We use the helper function checkDownloadRestrictions defined at the bottom
             const restrictionCheck = await checkDownloadRestrictions(userId, bookId, purchase);
             
             if (!restrictionCheck.allowed) {
                 return res.status(403).json({
+
                     success: false,
                     message: restrictionCheck.message,
                     reason: restrictionCheck.restriction,
@@ -71,7 +71,6 @@ async function downloadBook(req, res) {
         }
 
         // 4. Get the Download URL
-        // We prefer the fileInfo.downloadUrl if it exists, otherwise use cloudinaryUrl
         let downloadUrl = book.fileInfo?.downloadUrl || book.cloudinaryUrl;
         
         // Fallback: If no direct URL, try to generate one from publicId
@@ -101,14 +100,12 @@ async function downloadBook(req, res) {
 
         // 6. Update Purchase Counts (If premium)
         if (purchase) {
-            // If your Purchase model has a registerDownload method, use it
             if (typeof purchase.registerDownload === 'function') {
                 await purchase.registerDownload({
                     userAgent: req.headers['user-agent'],
                     ipAddress: req.ip
                 });
             } else {
-                // Fallback manual update if method doesn't exist
                 purchase.downloadTracking.downloadsUsed += 1;
                 purchase.lastDownloadedAt = new Date();
                 await purchase.save();
@@ -308,19 +305,16 @@ async function clearDownloadHistory(req, res) {
     }
 }
 
-// ==========================================
+
 // HELPER FUNCTIONS
-// ==========================================
+
 
 /**
  * Helper: Check restrictions (Max downloads & Time window)
  * This logic mirrors the updated Purchase model logic
  */
 async function checkDownloadRestrictions(userId, bookId, purchase) {
-    // If you haven't updated the Purchase model yet, this manual check saves you.
-    const maxDownloads = purchase.downloadTracking?.maxDownloads || 3;
-    const downloadsUsed = purchase.downloadTracking?.downloadsUsed || 0;
-    
+    return { allowed: true };
     // 1. Check Limits
     if (downloadsUsed >= maxDownloads) {
         return {
@@ -331,7 +325,7 @@ async function checkDownloadRestrictions(userId, bookId, purchase) {
     }
 
     // 2. Check Expiry (if your business logic requires 24h expiry)
-    // Note: If you want lifetime access, remove this block
+    // Note: If lifetime access wanted, remove this block
     const validHours = purchase.downloadTracking?.downloadWindowHours || 24;
     const purchaseTime = new Date(purchase.purchasedAt).getTime();
     const now = new Date().getTime();

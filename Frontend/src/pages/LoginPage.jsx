@@ -28,14 +28,8 @@ const LoginPage = () => {
   const handleRoleBasedRedirect = async () => {
   try {
     console.log("1. Auth successful, fetching user profile...");
-    
-    // CHANGE 1: Use the correct endpoint '/users/me' to match your controller
     const response = await axios.get('/users/me'); 
-    
     console.log("2. Full Backend Response:", response.data); 
-
-    // CHANGE 2: Extract role correctly based on your controller structure
-    // The controller sends: { success: true, data: { role: "admin", ... } }
     const userData = response.data.data; 
     const role = userData?.role;
 

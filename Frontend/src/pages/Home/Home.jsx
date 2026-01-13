@@ -4,11 +4,12 @@ import Banner from "./Banner";
 import BookSectionLoader from "../../components/BookSectionLoader";
 {/*import Carousel from './Categories'*/}
 import { 
-    fetchNewReleases, 
+    fetchNewReleases,
+    fetchTrendingBooks, 
     fetchBestSellers, 
     fetchNewAudiobooks,
     fetchSinhalaBooks,
-    //fetchEmergingAuthors,
+    fetchFreeSinhala,
     fetchSinhalaAudiobooks
 } from "../../services/book.service";
 
@@ -25,6 +26,10 @@ const Home = () => {
             title="New Releases" 
             fetchFunction={fetchNewReleases} 
         />
+        <BookSectionLoader 
+            title="Trending" 
+            fetchFunction={fetchTrendingBooks} 
+        />
 
         <BookSectionLoader 
             title="Sinhala Books" 
@@ -32,21 +37,11 @@ const Home = () => {
         />
 
         <Banner />
-
-        {/*<BookSectionLoader 
-            title="New Emerging Authors" 
-            fetchFunction={fetchEmergingAuthors} 
-        />*/}
-
-        
-
         <BookSectionLoader 
             title="New Audiobooks" 
             fetchFunction={fetchNewAudiobooks} 
             type="audiobook" 
         />
-
-        
 
         <BookSectionLoader 
             title="Best Sellers" 
@@ -58,6 +53,12 @@ const Home = () => {
             title="Sinhala Audiobooks" 
             fetchFunction={fetchSinhalaAudiobooks}
             type="audiobook" 
+        />
+
+        <BookSectionLoader 
+            title="Emerging Sinhala Voices" 
+            subtitle="Read them for free for a limited time."
+            fetchFunction={fetchFreeSinhala} 
         />
         
     </>

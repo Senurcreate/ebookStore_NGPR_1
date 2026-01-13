@@ -61,7 +61,7 @@ const AudioBookCarousel = ({ title, books  }) => {
             ref={scrollRef}
             onScroll={checkScroll}
           >
-            <div className="audiobook-row">
+            <div className="audiobook-row py-2">
               {books.map((book) => (
                 <AudioBookCard key={book.id} book={book} />
               ))}

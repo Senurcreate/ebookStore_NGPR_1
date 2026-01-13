@@ -24,7 +24,7 @@
 
 .wishlist-grid .book-card img {
   width: 100%;
-  height: 400px; //320px
+  height: 360px; //320px
   object-fit: cover;
   border-radius: 10px;
 }
@@ -78,8 +78,6 @@
   justify-content: center;
   cursor: pointer;
   font-size: 1rem;
-
-  transition: all 0.3s ease;
 }
 
 .wishlist-grid .action-btn.delete {
@@ -92,7 +90,7 @@
   background-color: #dc3545; 
   color: white;         
   border-color: #dc3545;  
-  transform: translateY(-2px); 
+  
 }
 
 .pagination-wrapper {

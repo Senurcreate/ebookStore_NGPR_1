@@ -7,7 +7,6 @@ import { addToCart, removeFromCart } from "../../redux/features/cart/cartSlice";
 
 // Import Services & Auth
 import { fetchBookById } from "../../services/book.service";
-// 1. ADDED fetchMyPurchases here
 import { downloadBookFile, fetchMyPurchases } from "../../services/purchase.service";
 import { addToWishlist, removeByBookId, checkInWishlist } from "../../services/wishlist.service";
 import { formatBookData } from "../../utils/bookFormatter";
@@ -24,7 +23,7 @@ const BookHeaderSection = () => {
     const [error, setError] = useState(null);
     const [downloading, setDownloading] = useState(false);
     
-    // 2. ADDED: State to track if user bought the book
+    //  State to track if user bought the book
     const [isPurchased, setIsPurchased] = useState(false);
 
     // Audio/UI states
@@ -45,7 +44,7 @@ const BookHeaderSection = () => {
 
     const isInCart = book ? cartItems.some((item) => item.id === book.id) : false;
 
-    // --- HELPER: ID Matcher (Fixes the issue where ID is sometimes Object, sometimes String) ---
+    // --- HELPER: ID Matcher  ---
     const checkMatch = (purchase, currentBookId) => {
         if (!purchase) return false;
         const targetId = String(currentBookId);
@@ -102,7 +101,7 @@ const BookHeaderSection = () => {
                     setBook(formatted);
                 }
 
-                // 3. ADDED: Verify Purchase History
+                //  Verify Purchase History
                 if (currentUser) {
                     try {
                         const purchasesResponse = await fetchMyPurchases();
@@ -137,53 +136,75 @@ const BookHeaderSection = () => {
     }, [id, currentUser]);
 
     // --- HANDLERS ---
-    // --- UPDATED HANDLER: Force Instant Download ---
+    // --- HANDLER: Force Instant Download ---
     const handleDownload = async () => {
-        try {
-            setDownloading(true);
-            // 1. Get the secure URL from your backend
-            const result = await downloadBookFile(id);
+    try {
+        setDownloading(true);
+        
+        // 1. Get the URL from your backend or use the book object directly
+        // If you don't have an API for this, you can likely use book.downloadUrl or book.fileInfo.downloadUrl
+        let fileUrl = "";
+        
+        // Option A: If you use the API (keep this if your backend handles permissions)
+        const result = await downloadBookFile(id);
+        if (result.success) {
+            fileUrl = result.data.downloadUrl;
+        } else {
+            throw new Error("Could not get download URL");
+        }
 
-            if (result.success && result.data.downloadUrl) {
-                const fileUrl = result.data.downloadUrl;
-                // Use the filename from backend, or generate one based on title
-                const fileName = result.data.fileName || `${book.title}.${isEbook ? 'pdf' : 'mp3'}`;
+        // Option B: If you just want to use the link from the book object directly:
+        // fileUrl = book.downloadUrl || book.cloudinaryUrl;
 
-                // 2. Fetch the file content as a "Blob" (Binary Large Object)
-                // This downloads the data into the browser's memory without opening a tab
+        if (fileUrl) {
+            const fileName = `${book.title}.${isEbook ? 'pdf' : 'mp3'}`;
+
+            // --- ATTEMPT 1: Secure Blob Download (Best User Experience) ---
+            try {
                 const response = await fetch(fileUrl);
                 
-                if (!response.ok) throw new Error("Network response was not ok");
+                // If CORS blocks this, response.ok will be false or it will throw an error immediately
+                if (!response.ok) throw new Error(`Fetch failed: ${response.status}`);
                 
                 const blob = await response.blob();
-
-                // 3. Create a temporary URL pointing to that data in memory
                 const url = window.URL.createObjectURL(blob);
                 
-                // 4. Create a hidden link element and click it programmatically
                 const link = document.createElement('a');
                 link.href = url;
-                link.setAttribute('download', fileName); // This attribute forces the "Save As" behavior
+                link.setAttribute('download', fileName);
                 document.body.appendChild(link);
                 link.click();
                 
-                // 5. Cleanup memory
+                // Cleanup
                 link.parentNode.removeChild(link);
                 window.URL.revokeObjectURL(url);
+                
+            } catch (fetchError) {
+                // --- ATTEMPT 2: Fallback to Direct Link (The Fix) ---
+                console.warn("CORS block detected, switching to direct download...", fetchError);
+                
+                // This method bypasses the React/CORS restriction
+                const link = document.createElement('a');
+                link.href = fileUrl;
+                link.setAttribute('target', '_blank'); // Open in new tab just in case
+                link.setAttribute('download', fileName);
+                document.body.appendChild(link);
+                link.click();
+                link.parentNode.removeChild(link);
             }
-        } catch (err) {
-            console.error("Download Error:", err);
-            if (err.requiresLogin || err.status === 401) {
-                alert("You need to login to access this.");
-                navigate('/login');
-            } else {
-                alert(err.message || "Download failed. Please try again.");
-            }
-        } finally {
-            setDownloading(false);
         }
-    };
-
+    } catch (err) {
+        console.error("Download Error:", err);
+        if (err.requiresLogin || err.status === 401) {
+            alert("You need to login to access this.");
+            navigate('/login');
+        } else {
+            alert("Download failed. Please try again.");
+        }
+    } finally {
+        setDownloading(false);
+    }
+};
     const handlePreview = () => {
         navigate(`/preview/${id}`);
     };
@@ -241,10 +262,10 @@ const BookHeaderSection = () => {
     const isEbook = book.type === "ebook";
     const isPremium = book.price > 0;
     
-    // 4. ADDED: Final check for access
+    //  Final check for access
     const hasAccess = book.canDownload || isPurchased;
 
-    // 5. HELPER FOR BUTTONS (Ensures consistency)
+    //  HELPER FOR BUTTONS
     const renderActionButtons = () => (
         <div className="d-flex gap-2">
             {/* If NO access, show "Add to Cart" */}
@@ -275,7 +296,7 @@ const BookHeaderSection = () => {
         </div>
     );
 
-    // --- RENDER LOGIC (Restored exactly as before) ---
+    // --- RENDER LOGIC  ---
 
     // 1. EBOOK RENDERING
     if (isEbook) {
@@ -407,7 +428,7 @@ const BookHeaderSection = () => {
                                     <div className="mb-4 position-relative">
                                         <div className="position-relative">
                                             <img src={book.image || bCover} alt="audiobook cover" className='abook-cover-img' />
-                                            <div className="position-absolute" style={{ top: '10px', left: '10px', zIndex: 1 }}>
+                                            <div className="position-absolute" style={{ top: '10px', left: '40px', zIndex: 1 }}>
                                                 <span className="badge bg-info text-white px-3 py-2 shadow-sm">
                                                     <i className="bi bi-headphones me-1"></i> Audiobook
                                                 </span>

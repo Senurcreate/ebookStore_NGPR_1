@@ -6,10 +6,8 @@ const verifyFirebaseToken = async (req, res, next) => {
   try {
     const authHeader = req.headers.authorization;
     
-    // --- MOCK LOGIC (Keep existing logic for Dev) ---
     if (process.env.NODE_ENV === 'development' && 
         (!authHeader || authHeader === 'Bearer mock-token-admin')) {
-      // ... (Keep your existing mock logic exactly as is) ...
       console.log('🔐 Development: Using mock admin token');
       let user = await User.findOne({ email: 'admin@ebookstore.com' });
       if (!user) {
@@ -50,11 +48,10 @@ const verifyFirebaseToken = async (req, res, next) => {
       phoneNumber: decodedToken.phone_number || ''
     };
 
-    // ---------------------------------------------------------
-    //  AUTO-HEAL LOGIC STARTS HERE
-    // ---------------------------------------------------------
 
-    // 1. Try to find user by Firebase UID (The standard check)
+    //  AUTO-HEAL LOGIC STARTS HERE
+
+    // Try to find user by Firebase UID (The standard check)
     let user = await User.findOne({ firebaseUID: firebaseUser.uid });
     
     if (user) {
@@ -70,14 +67,12 @@ const verifyFirebaseToken = async (req, res, next) => {
     } else {
       // User NOT found by UID. This is either a New User OR a Zombie.
 
-      // 2. Check if a user exists with this EMAIL
+      // Check if a user exists with this EMAIL
       const existingUserByEmail = await User.findOne({ email: firebaseUser.email });
 
       if (existingUserByEmail) {
         // SCENARIO B: The "Zombie" Account (Auto-Heal)
         console.log(`🩹 Auto-healing account for ${firebaseUser.email}. Updating UID.`);
-        
-        // We adopt the old MongoDB record but update it with the NEW Firebase UID
         existingUserByEmail.firebaseUID = firebaseUser.uid;
         existingUserByEmail.lastLoginAt = new Date();
         existingUserByEmail.photoURL = firebaseUser.photoURL || existingUserByEmail.photoURL;
@@ -102,10 +97,7 @@ const verifyFirebaseToken = async (req, res, next) => {
       }
     }
 
-    // ---------------------------------------------------------
     //  LOGIC ENDS
-    // ---------------------------------------------------------
-
     req.user = user;
     req.firebaseUser = firebaseUser;
     req.token = decodedToken;

@@ -125,11 +125,8 @@
   cursor: pointer;
   font-size: 18px;
   color: #6c757d;
-  
-  // Default alignment for desktop/larger screens
   transform: translateY(-40%);
-  
-  // Adjust for mobile/smaller screens if needed
+
   @media (max-width: 576px) {
     transform: translateY(-50%);
   }

@@ -93,7 +93,7 @@ const Reviews = () => {
     }
   };
 
-  // --- UPDATED STAR RENDERER ---
+  // --- STAR RENDERER ---
   const renderStars = (rating) => {
     return [...Array(5)].map((_, i) => {
       // Logic for half stars and full stars
@@ -109,7 +109,6 @@ const Reviews = () => {
       return (
         <i 
           key={i} 
-          // Always use 'text-warning' (yellow) for outline, full, and half stars
           className={`bi ${starClass} text-warning me-1`} 
           style={{ fontSize: '0.9rem' }}
         ></i>

@@ -1,6 +1,5 @@
 const mongoose = require('mongoose');
 
-
 // Schema for Replies (Nested inside Review)
 const replySchema = new mongoose.Schema({
     user: {

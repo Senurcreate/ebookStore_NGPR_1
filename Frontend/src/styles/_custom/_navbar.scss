@@ -7,7 +7,7 @@
 
 /* Large rectangular logo */
 .navbar-logo {
-  height: 40px;   /* adjust between 50–65px depending on your logo */
+  height: 40px;  
   width: auto;
   object-fit: contain;
 }
@@ -77,9 +77,9 @@
 
 
 .custom-navbar .btn {
-  padding: 8px 24px; /* Increased top/bottom and left/right padding */
-  font-size: 15px;   /* Slightly larger text */
-  border-radius: 8px; /* Softer, modern corners */
+  padding: 8px 24px; 
+  font-size: 15px;   
+  border-radius: 8px; 
   font-weight: 600;
   letter-spacing: 0.3px;
 }
@@ -91,7 +91,7 @@
 }
 
 .custom-navbar .btn-dark:hover {
-  background-color: #2c4ab0; /* Darker blue on hover */
+  background-color: #2c4ab0; 
   border-color: #2c4ab0;
 }
 
@@ -144,7 +144,6 @@
   }
 }
 
-/* Make sure cart icon has proper spacing */
 .me-2 {
   margin-right: 0.5rem;
 }

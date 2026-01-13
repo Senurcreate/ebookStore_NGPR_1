@@ -26,7 +26,7 @@ export const fetchBookById = async (id) => {
 export const fetchNewReleases = async () => {
     try {
         // sortBy=createdAt
-        const response = await axios.get('/books?sortBy=createdAt&sortOrder=desc&limit=10');
+        const response = await axios.get('/books?type=ebook&sortBy=createdAt&sortOrder=desc&limit=10&language=English');
         return response.data;
     } catch (error) {
         console.error("Error fetching new releases:", error);
@@ -69,7 +69,7 @@ export const fetchNewAudiobooks = async () => {
 export const fetchSinhalaBooks = async () => {
     try {
 
-        const response = await axios.get('/books?language=none&type=ebook&sortBy=createdAt&sortOrder=desc&limit=10');
+        const response = await axios.get('/books?language=none&type=ebook&price=premium&sortBy=createdAt&sortOrder=desc&limit=10');
         return response.data;
     } catch (error) {
         console.error("Error fetching sinhala books:", error);
@@ -78,13 +78,13 @@ export const fetchSinhalaBooks = async () => {
 };
 
 
-export const fetchEmergingAuthors = async () => {
+export const fetchFreeSinhala = async () => {
     try {
         // Filter by:
         // 1. language=none (Sinhala)
         // 2. price=0 (Free)
         // 3. Sorted by newest first
-        const response = await axios.get('/books?language=none&price=0&sortBy=createdAt&sortOrder=desc&limit=10');
+        const response = await axios.get('/books?type=ebook&language=none&price=free&sortBy=createdAt&sortOrder=desc&limit=10');
         return response.data;
     } catch (error) {
         console.error("Error fetching emerging authors:", error);
@@ -111,6 +111,17 @@ export const fetchFilterOptions = async () => {
     } catch (error) {
         console.error("Error fetching filter options:", error);
         return null; 
+    }
+};
+
+// Get Trending Books
+export const fetchTrendingBooks = async () => {
+    try {
+        const response = await axios.get('/books?type=ebook&trending=true&limit=10');
+        return response.data;
+    } catch (error) {
+        console.error("Error fetching trending books:", error);
+        throw error;
     }
 };
 

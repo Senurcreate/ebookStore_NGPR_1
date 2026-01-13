@@ -1,20 +1,20 @@
 import React, { useState, useEffect } from "react";
-import { useParams } from "react-router-dom"; // 1. Import useParams
+import { useParams } from "react-router-dom"; 
 import "../../styles/main.scss";
 
-// 2. Import your service
+// Import your service
 import { fetchBookById } from "../../services/book.service";
 
 const BookDetails = () => {
-  // 3. Get ID from URL
+  // Get ID from URL
   const { id } = useParams();
 
-  // 4. State to hold the book data
+  // State to hold the book data
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // 5. Fetch Data
+  // Fetch Data
   useEffect(() => {
     const loadBookData = async () => {
       try {
@@ -25,19 +25,18 @@ const BookDetails = () => {
           const rawBook = response.book;
           const formattedInfo = response.book.formattedInfo || {};
 
-          // 6. Map Backend Data to UI Structure
-          // We transform the API response into the format this component expects
+          //  Map Backend Data to UI Structure
+          // transform the API response into the format this component expects
           setData({
             title: rawBook.title,
             author: rawBook.author,
             publisher: rawBook.publisher,
-            // Format the date nicely
             publicationDate: new Date(rawBook.publication_date).toLocaleDateString('en-US', {
               year: 'numeric',
               month: 'long',
               day: 'numeric'
             }),
-            edition: "Standard", // Default value (field not in current schema)
+            edition: "Standard",
             genre: rawBook.genre,
             language: rawBook.language === 'none' ? 'Sinhala' : rawBook.language,
             isbn: rawBook.isbn,
@@ -48,7 +47,7 @@ const BookDetails = () => {
             duration: formattedInfo.audioLength || "Unknown",
 
             // Ebook specific mapping
-            fileSize: formattedInfo.fileSize || "Unknown", // Backend sends "2.5 MB"
+            fileSize: formattedInfo.fileSize || "Unknown", 
             ebookFormat: rawBook.fileFormat || "PDF"
           });
         }
@@ -65,7 +64,7 @@ const BookDetails = () => {
     }
   }, [id]);
 
-  // 7. Loading/Error States (Simple text to not break layout)
+  // Loading/Error States (Simple text to not break layout)
   if (loading) return <div className="container mt-5 text-center"><p>Loading details...</p></div>;
   if (!data) return null;
 

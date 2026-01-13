@@ -98,7 +98,7 @@ const UserProfilePage = () => {
     const file = e.target.files[0];
     if (!file) return;
 
-    // 1. Immediate Preview
+    //  Immediate Preview
     const reader = new FileReader();
     reader.readAsDataURL(file);
     reader.onloadend = async () => {
@@ -107,13 +107,13 @@ const UserProfilePage = () => {
         setUploadingImg(true);
 
         try {
-            // 2. Upload to Cloudinary
+            //  Upload to Cloudinary
             const cloudImageUrl = await uploadToCloudinary(file);
             
-            // 3. Save to Backend
+            // Save to Backend
             await updateUserProfile({ photoURL: cloudImageUrl });
             
-            // 4. Update Context
+            //  Update Context
             if (setCurrentUser) {
                 setCurrentUser(prev => ({ ...prev, photoURL: cloudImageUrl }));
             }
@@ -225,7 +225,7 @@ const UserProfilePage = () => {
 
   // --- DELETE ACCOUNT HANDLER ---
  const handleDeleteAccount = async () => {
-    // 1. Confirmation
+    // Confirmation
     if (!window.confirm("Are you sure you want to delete your account? This cannot be undone.")) {
       return;
     }
@@ -270,7 +270,7 @@ const UserProfilePage = () => {
       // STEP 3: Logout & Force Redirect
       await logout();
       
-      // FIX: Use window.location.href instead of navigate
+      // Use window.location.href instead of navigate
       // This forces the browser to leave the page immediately
       window.location.href = '/signup'; 
 

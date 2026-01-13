@@ -8,8 +8,7 @@ function NotFound() {
     <> 
       <Navbar /> 
       <div className="notfound-page"> 
-        <div className="notfound-container"> 
-          {/* Large 404 with overlapping card */} 
+        <div className="notfound-container">  
           <div className="error-display"> 
             <h1 className="error-code">404</h1> 
             <div className="error-card"> 

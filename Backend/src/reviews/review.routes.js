@@ -7,11 +7,8 @@ const Review = require('./review.model');
 
 // Apply authentication middleware to all routes
 
-
-// ====================
 // PUBLIC REVIEW ROUTES (No auth needed for reading)
 // ====================
-
 // Get reviews for a book (public - no auth required)
 router.get('/books/:bookId', reviewController.getBookReviews);
 
@@ -45,9 +42,8 @@ router.post('/:id/report', reviewController.reportReview);
 
 
 
-// ====================
 // ADMIN/MODERATOR ROUTES
-// ====================
+
 
 // Admin: Get all reported reviews
 router.get('/admin/reported', requireAdminOrModerator, async (req, res) => {

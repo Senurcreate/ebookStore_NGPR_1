@@ -10,7 +10,7 @@ const OrderHistory = () => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // --- NEW: Pagination State ---
+  // --- Pagination State ---
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5; // Change this number to show more/less books per page
 
@@ -20,7 +20,7 @@ const OrderHistory = () => {
     }
   }, [currentUser]);
 
-  // --- NEW: Reset to page 1 when tab changes ---
+  // --- Reset to page 1 when tab changes ---
   useEffect(() => {
     setCurrentPage(1);
   }, [activeTab]);
@@ -54,7 +54,7 @@ const OrderHistory = () => {
 
   const filteredOrders = getFilteredOrders();
 
-  // --- NEW: Pagination Calculation ---
+  // --- Pagination Calculation ---
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentItems = filteredOrders.slice(indexOfFirstItem, indexOfLastItem);
@@ -78,7 +78,7 @@ const OrderHistory = () => {
       {/* Header */}
       <div className="d-flex justify-content-between align-items-center mb-4">
         <div>
-          <h2 className="fw-bold mb-1 mt-4">My Orders</h2>
+          <h2 className="fw-bold mb-1 mt-4 text-start">My Orders</h2>
           <p className="text-muted small">Manage your purchased books</p>
         </div>
       </div>
@@ -127,7 +127,7 @@ const OrderHistory = () => {
                     <div className="col">
                       <div className="d-flex justify-content-between align-items-start mb-2">
                         <div>
-                          <div className="d-flex align-items-center gap-2">
+                          <div className="d-flex align-items-center gap-5">
                             <h5 className="fw-bold mb-0">{book.title || 'Unknown Title'}</h5>
                             
                             {isDownloaded && (
