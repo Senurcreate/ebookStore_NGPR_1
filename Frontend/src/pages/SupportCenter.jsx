@@ -77,7 +77,7 @@ const SupportCenter = () => {
       </div>
       <div className="row g-4">
         {[
-          { icon: 'bi-file-earmark-text', title: 'Supported Formats', text: 'PDF, EPUB', color: 'purple' },
+          { icon: 'bi-file-earmark-text', title: 'Supported Formats', text: 'PDF', color: 'purple' },
           { icon: 'bi-envelope-check', title: 'Response Time', text: 'Within 24 hours', color: 'blue' },
           { icon: 'bi-check-circle', title: 'Available 24/7', text: 'Always here to help', color: 'green' }
         ].map((item, idx) => (
@@ -135,7 +135,7 @@ const SupportCenter = () => {
         <h5 className="fw-bold mb-4">Common Download Issues</h5>
         <div className="accordion accordion-flush" id="faqAccordion">
           {[
-            { q: "What formats are supported?", a: "We support PDF and EPUB formats for all our ebooks." },
+            { q: "What formats are supported?", a: "We support PDF format for all our ebooks." },
             { q: "Can I download the same ebook multiple times?", a: "Yes! There is no limit on the number of downloads." },
             { q: "How long do I have access to my purchased ebooks?", a: "Once purchased, you have lifetime access." }
           ].map((faq, i) => (

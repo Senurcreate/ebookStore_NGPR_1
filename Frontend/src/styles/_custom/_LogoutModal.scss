@@ -1,5 +1,3 @@
-
-
 .logout-modal-overlay {
   position: fixed;
   top: 0;
@@ -120,7 +118,7 @@
         flex: 1;
         padding: $btn-padding-y; 
         border-radius: $btn-border-radius; 
-        background: $dark; 
+        background: $primary; 
         color: white;
         border: none;
         font-weight: $font-weight-medium;
@@ -128,7 +126,7 @@
 
         &:hover {
           
-          background: darken($dark, 5%); 
+          background: darken($primary, 5%); 
           color: white;
         }
       }

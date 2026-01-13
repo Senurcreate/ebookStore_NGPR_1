@@ -36,7 +36,7 @@ const Purchases = () => {
     }
   };
 
-  // --- HELPER: Get Style & Icon based on status (Matches Dashboard) ---
+  // --- HELPER: Get Style & Icon based on status ---
   const getStatusConfig = (status) => {
       const lowerStatus = status?.toLowerCase() || 'completed';
       if (lowerStatus === 'completed') {
@@ -44,7 +44,7 @@ const Purchases = () => {
       } else if (lowerStatus === 'cancelled') {
           return { bg: '#dc3545', icon: 'bi-x-circle' };
       } else {
-          return { bg: '#6c757d', icon: 'bi-clock' }; // Default/Pending
+          return { bg: '#6c757d', icon: 'bi-clock' }; 
       }
   };
 
@@ -231,7 +231,6 @@ const Purchases = () => {
             <tbody>
               {paginatedPurchases.length > 0 ? (
                 paginatedPurchases.map((item, i) => {
-                  // Get status config for this item
                   const statusConfig = getStatusConfig(item.status);
 
                   return (
@@ -266,7 +265,7 @@ const Purchases = () => {
                     {/* Amount */}
                     <td className="fw-bold text-dark">Rs {item.amount?.toFixed(2)}</td>
                     
-                    {/* --- UPDATED STATUS BADGE (Matches Dashboard Style) --- */}
+                    {/* --- STATUS BADGE --- */}
                     <td className="text-center">
                       <div className="d-flex justify-content-center align-items-center">
                         <span 
@@ -278,7 +277,7 @@ const Purchases = () => {
                             borderRadius: '20px', 
                             fontSize: '12px',
                             fontWeight: '600',
-                            textTransform: 'uppercase', // Optional: Makes it look like badges usually do
+                            textTransform: 'uppercase',
                             display: 'inline-flex',
                             alignItems: 'center',
                             gap: '5px'

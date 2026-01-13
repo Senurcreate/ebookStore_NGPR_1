@@ -12,7 +12,7 @@ const AudioBookCard = ({ book, showDelete = false, onDelete = () => {} }) => {
 
   // Safety check
   if (!book) return null;
-  // Ensure we only render audiobooks
+  // render audiobooks
   if (book.type !== "audiobook") return null;
 
   const bookId = book.id || book._id;
@@ -83,9 +83,8 @@ const AudioBookCard = ({ book, showDelete = false, onDelete = () => {} }) => {
           </p>
 
           
-          <div className="d-flex gap-2">
-             <button
-               // Use 'action-btn' to match eBook style (36x36px)
+          <div className="d-flex gap-2 align-items-center">
+             <button        
                className={`audiocart-btn ${isInCart ? "btn-success" : ""}`}
                onClick={handleCartAction}
              >
@@ -93,8 +92,7 @@ const AudioBookCard = ({ book, showDelete = false, onDelete = () => {} }) => {
              </button>
 
              {showDelete && (
-                <button 
-                  // Use 'action-btn delete' to get the grey background and perfect alignment
+                <button
                   className="action-btn delete" 
                   onClick={(e) => {
                     e.stopPropagation(); 

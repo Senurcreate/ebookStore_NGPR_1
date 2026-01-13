@@ -6,16 +6,14 @@ import { useAuth } from '../../context/AuthContext';
 import { addToWishlist } from '../../services/wishlist.service';
 import "../../styles/main.scss";
 
-
-
 const Checkout = () => {
-  // 1. STATE: New User Status
+  // 1. New User Status
   const { currentUser } = useAuth();
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
 
-  // 1. Get Real Data from Redux
+  // Get Real Data from Redux
   const cartItems = useSelector((state) => state.cart.cartItems);
 
   // UI States
@@ -56,16 +54,16 @@ const Checkout = () => {
     }
 
     try {
-      // 1. Add loading state for this specific item
+      // Add loading state for this specific item
       setLoadingIds(prev => [...prev, item.id]);
 
-      // 2. Call the API
+      // Call the API
       await addToWishlist(item.id);
 
-      // 3. If successful, remove from Cart (Redux)
+      // If successful, remove from Cart (Redux)
       dispatch(removeFromCart(item.id));
       
-      // 4. Update local selection state
+      //Update local selection state
       setSelectedIds(selectedIds.filter(itemId => itemId !== item.id));
 
       
@@ -92,8 +90,8 @@ const Checkout = () => {
       return;
     }
 
-    // 1. Save selected items if needed (optional, or rely on Cart state)
-    // 2. Simply navigate to the next step
+    // Save selected items if needed (optional, or rely on Cart state)
+    // Simply navigate to the next step
     navigate('/paymentMethod');
   };
 

@@ -1,4 +1,3 @@
-// src/config/firebase.config.js
 const admin = require('firebase-admin');
 
 let firebaseApp;
@@ -6,7 +5,7 @@ let auth = null;
 let db = null;
 let isMock = false;
 
-// 1. Mock Auth (Backup)
+// Mock Auth (Backup)
 // If real Firebase fails, this allows the app to run and save data locally
 const mockAuth = {
   verifyIdToken: async (token) => {

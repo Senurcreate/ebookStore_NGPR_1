@@ -3,7 +3,7 @@ const router = express.Router();
 const userController = require('./user.controller');
 const { verifyFirebaseToken, requireAdmin, requireAdminOrModerator } = require('../middleware/firebase.middleware');
 
-// TEMPORARY FIX ROUTE - Put this at the very top of your routes file
+//  Put this at the very top of routes file
 // router.get('/fix-zombie', async (req, res) => {
 //   try {
 //     // FIX: Use './user.model' because it is in the same folder

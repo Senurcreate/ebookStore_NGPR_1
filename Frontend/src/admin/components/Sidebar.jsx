@@ -37,18 +37,14 @@ const Sidebar = () => {
         
         {/* --- Logo Section --- */}
         <div className="p-4 border-bottom d-flex align-items-center bg-white">
-  {/* 1. Logo: Set height, let width adjust automatically */}
+  
           <img
             src={Blogo}
             alt="brand logo"
             className="me-3"
             style={{ height: '40px', width: 'auto', objectFit: 'contain' }}
           />
-
-          {/* 2. Vertical Divider (Optional) */}
           <div className="vr me-3 text-secondary" style={{ height: '25px' }}></div>
-
-          {/* 3. Admin Text */}
           <div className="d-flex flex-column justify-content-center">
             
             <span className="text-muted small text-uppercase" style={{ fontSize: '0.7rem', letterSpacing: '1px' }}>

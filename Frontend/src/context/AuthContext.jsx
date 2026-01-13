@@ -26,21 +26,21 @@ export const AuthProvider = ({children}) => {
     const [userRole, setUserRole] = useState(null); 
     const [loading, setLoading] = useState(true);
 
-    // --- UPDATED SIGN UP FUNCTION (The Fix) ---
+    // --- UPDATED SIGN UP FUNCTION  ---
     const signUpUser = async (email, password, username) => {
-        // 1. Create the user in Firebase
+        // Create the user in Firebase
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         
         if (username) {
-            // 2. Update the profile on Firebase immediately
+            //Update the profile on Firebase immediately
             await updateProfile(userCredential.user, {
                 displayName: username
             });
 
-            // 3. CRITICAL: Reload the user instance to update local state
+            //CRITICAL: Reload the user instance to update local state
             await userCredential.user.reload();
 
-            // 4. CRITICAL: Force Token Refresh
+            //CRITICAL: Force Token Refresh
             // This destroys the old "nameless" token and gets a NEW one 
             // that includes the 'displayName'. The backend will now see the name.
             await userCredential.user.getIdToken(true);
@@ -72,13 +72,13 @@ export const AuthProvider = ({children}) => {
             
             if(user) {
                 try {
-                    // 1. Get the token (ensures backend accepts request)
+                    // Get the token (ensures backend accepts request)
                     const token = await user.getIdToken();
                     
-                    // 2. Fetch the user details from YOUR backend
+                    // Fetch the user details from YOUR backend
                     const response = await axios.get('/users/me');
                     
-                    // 3. Extract Role
+                    // Extract Role
                     const role = response.data.role || response.data.data?.role || "user";
                     
                     console.log("AuthContext: User Role set to ->", role);

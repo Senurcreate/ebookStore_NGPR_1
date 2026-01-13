@@ -11,7 +11,7 @@ const axiosInstance = axios.create({
   },
 });
 
-// Request Interceptor (Already correct)
+// Request Interceptor 
 axiosInstance.interceptors.request.use(
   async (config) => {
     try {
@@ -28,7 +28,7 @@ axiosInstance.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// --- NEW: Response Interceptor for Error Handling ---
+// --- Response Interceptor for Error Handling ---
 axiosInstance.interceptors.response.use(
   (response) => response, // Return successful responses directly
   (error) => {

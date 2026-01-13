@@ -1,9 +1,6 @@
-// utils/config.js
-
-// Base API URL - Defaults to Port 3000 as you requested
+// Base API URL - Defaults to Port 3000 
 const RAW_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
-// FIX: Just ensure we don't end with a slash
 export const API_BASE_URL = RAW_URL.replace(/\/$/, "");
 
 export const CLOUDINARY_CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || "";
@@ -12,7 +9,6 @@ export const DEFAULT_COVER_IMAGE = "https://plus.unsplash.com/premium_photo-1681
 export const BOOK_TYPES = { EBOOK: "ebook", AUDIOBOOK: "audiobook" };
 
 // Helper to prevent double "api/api"
-// If API_BASE_URL already has /api, don't add it again.
 const BASE_API = API_BASE_URL.endsWith('/api') ? API_BASE_URL : `${API_BASE_URL}/api`;
 
 export const API_ENDPOINTS = {

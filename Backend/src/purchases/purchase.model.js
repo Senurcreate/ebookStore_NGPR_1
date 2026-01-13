@@ -18,7 +18,7 @@ const purchaseSchema = new mongoose.Schema({
         type: { type: String, enum: ['ebook', 'audiobook'] },
         coverImage: String
     },
-    // For simulation - we'll generate a fake price
+    // For simulation - generate a fake price
     amount: {
         type: Number,
         required: true,
@@ -78,17 +78,17 @@ const purchaseSchema = new mongoose.Schema({
 // This runs automatically BEFORE saving to the database.
 // It guarantees 'purchasedAt' exists before calculating expiry.
 purchaseSchema.pre('save', function(next) {
-    // 1. Generate Order ID if missing
+    // Generate Order ID if missing
     if (!this.simulatedOrderId) {
         this.simulatedOrderId = `SIM-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     }
 
-    // 2. Set PurchasedAt if missing
+    // Set PurchasedAt if missing
     if (!this.purchasedAt) {
         this.purchasedAt = new Date();
     }
 
-    // 3. Calculate Download Expiry
+    // Calculate Download Expiry
     // If it's a new record OR expiry hasn't been set yet
     if (!this.downloadTracking.downloadExpiry) {
         const hours = this.downloadTracking.downloadWindowHours || 24;
@@ -110,28 +110,18 @@ purchaseSchema.methods.canDownload = function() {
     const now = new Date();
     
     // Check if download window expired
-    if (now > this.downloadTracking.downloadExpiry) {
+    if (this.status === 'completed') {
         return {
-            allowed: false,
-            reason: 'download_window_expired',
-            message: 'Download window has expired (24 hours from purchase)'
-        };
-    }
-    
-    // Check if max downloads reached
-    if (this.downloadTracking.downloadsUsed >= this.downloadTracking.maxDownloads) {
-        return {
-            allowed: false,
-            reason: 'max_downloads_reached',
-            message: `Maximum downloads reached (${this.downloadTracking.maxDownloads})`,
-            remaining: 0
+            allowed: true,
+            remaining: 'Unlimited',
+            expiresAt: null
         };
     }
     
     return {
-        allowed: true,
-        remaining: this.downloadTracking.maxDownloads - this.downloadTracking.downloadsUsed,
-        expiresAt: this.downloadTracking.downloadExpiry
+        allowed: false,
+        reason: 'payment_pending',
+        message: 'Payment not completed'
     };
 };
 

@@ -12,8 +12,6 @@ const BookCard = ({ book, showDelete = false, onDelete = () => {} }) => {
 
   // Safety check
   if (!book) return null;
-  // If you only want to show ebooks, keep this check. 
-  // However, usually, the parent component filters the list.
   if (book.type !== "ebook") return null;
 
   // Handle MongoDB _id vs Frontend id
@@ -45,9 +43,8 @@ const BookCard = ({ book, showDelete = false, onDelete = () => {} }) => {
     }
   };
 
-  // Safe property access for backend data vs static data
+
   const imageUrl = book.image || book.coverImage || "https://via.placeholder.com/150";
-  // Backend returns ratingStats.average, Frontend expects rating
   const ratingValue = book.rating || (book.ratingStats?.average) || 0;
 
   return (
@@ -61,7 +58,7 @@ const BookCard = ({ book, showDelete = false, onDelete = () => {} }) => {
       />
       <div className="card-body">
         <h5 className="card-title">{book.title}</h5>
-        <p className="text-muted mb-2">{book.author}</p>
+        <p className=" mb-2 card-author">{book.author}</p>
 
         <div className="rating">
           {Array.from({ length: 5 }, (_, i) => {

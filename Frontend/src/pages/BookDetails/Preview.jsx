@@ -16,11 +16,11 @@ const BookPreview = () => {
   const [error, setError] = useState(null);
   
   // --- ZOOM STATE ---
-  const [zoomLevel, setZoomLevel] = useState(1); // 1 = 100%
+  const [zoomLevel, setZoomLevel] = useState(1); 
 
   const isInCart = book ? cartItems.some((item) => item.id === book.id) : false;
 
-  // --- 1. FETCH BOOK ---
+  // ---  FETCH BOOK ---
   useEffect(() => {
     const loadBook = async () => {
       try {
@@ -31,7 +31,6 @@ const BookPreview = () => {
           // Optional: Redirect if it accidentally loads an audiobook
           if (response.book.type === 'audiobook') {
              console.warn("Audiobooks should use the Audio Player UI");
-             // navigate('/audio-player/' + id); // Uncomment if you have a route
           }
           setBook(response.book);
         } else {
@@ -53,19 +52,18 @@ const BookPreview = () => {
     if (isInCart) {
       dispatch(removeFromCart(book.id));
     } else {
-      // Ensure we pass the necessary book data to the cart
       dispatch(addToCart({
         id: book.id,
         title: book.title,
         author: book.author,
         price: book.price,
-        image: book.image || book.coverImage, // Handle data variations
+        image: book.image || book.coverImage, 
         type: book.type
       }));
     }
   };
 
-  // --- 2. HELPERS ---
+  // --- HELPERS ---
   const getPreviewUrl = (originalUrl) => {
     if (!originalUrl) return '';
     // If raw file, return as is
@@ -81,12 +79,12 @@ const BookPreview = () => {
     return originalUrl;
   };
 
-  // --- 3. ZOOM HANDLERS ---
+  // ---  ZOOM HANDLERS ---
   const handleZoomIn = () => setZoomLevel(prev => Math.min(prev + 0.1, 2.0));
   const handleZoomOut = () => setZoomLevel(prev => Math.max(prev - 0.1, 0.5));
   const handleZoomReset = () => setZoomLevel(1);
 
-  // --- 4. LOADING/ERROR UI ---
+  // ---  LOADING/ERROR UI ---
   if (loading) return <div style={styles.centerContainer}><div className="spinner-border text-primary"></div></div>;
   if (error || !book) return (
     <div style={styles.centerContainer}>

@@ -16,7 +16,7 @@ const Dashboard = () => {
   const [recentOrders, setRecentOrders] = useState([]);
   const [stats, setStats] = useState([]);
 
-  // --- 1. UPDATED CURRENCY FORMATTER TO 'Rs' ---
+  
   const formatCurrency = (amount) => {
     return `Rs ${new Intl.NumberFormat('en-US', {
       style: 'decimal',

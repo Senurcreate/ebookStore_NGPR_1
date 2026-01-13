@@ -1,7 +1,6 @@
 /* --- THE GRID WRAPPER --- */
 .audiobook-grid {
   display: grid;
-  /* Creates 2 columns that shrink to 1 column on mobile (below 550px) */
   grid-template-columns: repeat(auto-fit, minmax(550px, 1fr)); 
   gap: 2rem;
   padding: 2rem;
@@ -12,6 +11,17 @@
 .audiobookpage-card {
   width: 100%;
   height: 100%; 
+}
+
+@media (min-width: 992px) {
+  .audiobook-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (min-width: 1400px) {
+  .audiobook-grid {
+     grid-template-columns: repeat(2, 1fr);
+  }
 }
 
 /* TARGET AudioBookCard ROOT DIV */
@@ -41,7 +51,7 @@
 .audiobookpage-card img {
   width: 200px; 
   min-width: 200px;
-  height: 100%; 
+  height: auto; 
   min-height: 280px; 
   
   object-fit: cover; 
@@ -117,67 +127,4 @@
 
 
 
-/*.audiobook-grid {
-  display: grid;
-  //grid-template-columns: repeat(2, 1fr);
-  grid-template-columns: repeat(2, minmax(620px, 1fr)); //520px
-  gap: 2.5rem;
-  padding-bottom: 3rem;
-}
-
-/* Page-level wrapper 
-.audiobookpage-card {
-  width: 100%;
-}
-
-/* TARGET AudioBookCard WITHOUT touching it 
-.audiobookpage-card > div {
-  display: flex;
-  align-items: center;
-  gap: 1.5rem; 
-
-  width: 100%;
-  padding: 1.4rem;
-  border: 1px solid #e7e7e7;
-  border-radius: 14px;
-  background: #fff;
-  box-shadow: 0 0 14px rgba(0, 0, 0, 0.06);
-
-  //gap: 1.6rem;
-  //padding: 1.6rem 1.8rem;
-  //min-height: 230px;
-}
-
-/* IMAGE — THIS FIXES “NOT COVERED” ISSUE 
-.audiobookpage-card img {
-  width: 300px; //160px
-  height: 350px; //230px
-  object-fit: cover;
-  border-radius: 10px;
-  flex-shrink: 0;
-  //width: 135px;   
-  //height: 185px;
-}
-
-/* Text spacing 
-.audiobookpage-card h5 {
-  font-size: 1.15rem;  
-  font-weight: 600;
-
-  //margin-bottom: 0.4rem;
-}
-
-.audiobookpage-card .author {
-  font-size: 0.95rem; 
-  color: #6c757d;
-
-  //margin-bottom: 0.6rem;
-}
-
-.audiobookpage-card .price-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: 1rem;
-}*/
 

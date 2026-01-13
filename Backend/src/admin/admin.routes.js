@@ -9,7 +9,6 @@ const reviewController = require('../reviews/review.controller');
 // Apply admin authentication to all routes
 router.use(verifyFirebaseToken, requireAdmin);
 
-// ====================
 // DASHBOARD & OVERVIEW
 
 router.get('/dashboard', adminController.getDashboardStats);
@@ -23,9 +22,7 @@ router.delete('/moderation/reviews/:id/reports', adminController.clearReviewRepo
 router.get('/system/health', adminController.getSystemHealth);
 router.delete('/system/cache', adminController.clearCache);
 
-// ====================
 // DATA EXPORT (Optional)
-// ====================
 
 // @route   GET /api/admin/export/users
 // @desc    Export user data (CSV/JSON)
@@ -35,9 +32,6 @@ router.get('/export/users', async (req, res) => {
         const users = await User.find({})
             .select('-firebaseUID -__v -updatedAt')
             .lean();
-
-        // For CSV export, you would convert to CSV
-        // For now, return JSON
         res.status(200).json({
             success: true,
             data: users,
@@ -81,9 +75,9 @@ router.get('/export/sales', async (req, res) => {
     }
 });
 
-// ====================
+
 // ADMIN USER MANAGEMENT
-// ====================
+
 
 // @route   GET /api/admin/users
 // @desc    Get all users with pagination
@@ -176,9 +170,9 @@ router.put('/users/:id', async (req, res) => {
     }
 });
 
-// ====================
+
 // DEBUG & DEVELOPMENT
-// ====================
+
 
 if (process.env.NODE_ENV === 'development') {
     // @route   GET /api/admin/debug/models

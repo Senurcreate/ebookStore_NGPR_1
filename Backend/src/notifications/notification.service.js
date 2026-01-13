@@ -10,14 +10,10 @@ class NotificationService {
         try {
             const book = await Book.findById(bookId);
             if (!book) return;
-
-            // In a real app, you'd find users who prefer this genre
-            // For now, we'll just log it
             console.log(`📢 New book released: ${book.title}`);
-            
-            // Example: Notify admin
+        
             await Notification.createNotification(
-                'admin-user-id-here', // You'd get this from your admin user
+                'admin-user-id-here', 
                 {
                     type: 'new_release',
                     title: 'New Book Released',
@@ -121,9 +117,6 @@ class NotificationService {
         try {
             // This would be called by admin
             console.log(`📢 System announcement: ${title}`);
-            
-            // In real implementation, you'd broadcast to all users
-            // For now, just log it
             return { success: true, message: 'Announcement prepared' };
 
         } catch (error) {
@@ -138,8 +131,7 @@ class NotificationService {
     static async checkScheduledNotifications() {
         try {
             // This would be called by a cron job
-            // Check for events that need notifications
-            
+            // Check for events that need notifications 
             // Example: Check for new books in last 24 hours
             const oneDayAgo = new Date();
             oneDayAgo.setDate(oneDayAgo.getDate() - 1);

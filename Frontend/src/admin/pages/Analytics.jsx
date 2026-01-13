@@ -53,7 +53,7 @@ const Analytics = () => {
         // Type styling
         type: book.type === 'audiobook' ? 'Audio' : 'eBook',
         icon: book.type === 'audiobook' ? 'bi-headphones' : 'bi-book',
-        bg: book.type === 'audiobook' ? '#8b5cf6' : '#6366f1'
+        bg: book.type === 'audiobook' ? '#fc5b77' : '#6366f1'
       };
   }) || [];
   return (
@@ -112,7 +112,7 @@ const Analytics = () => {
                      style={{ width: '40px', height: '40px', minWidth: '40px', color: '#3b82f6', fontWeight: 'bold' }}>
                   {book.rank}
                 </div>
-                {/* ⬇️ IMAGES SHOWN HERE */}
+                {/* IMAGES SHOWN HERE */}
                 <img src={book.img} alt={book.title} className="rounded shadow-sm me-3" style={{ width: '45px', height: '65px', objectFit: 'cover' }} />
                 <div className="me-3">
                   <h6 className="fw-bold mb-0">{book.title}</h6>

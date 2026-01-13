@@ -1,6 +1,4 @@
 // This function takes a raw book from the database and converts it 
-
-
 export const formatBookData = (book) => {
     return {
         id: book._id, // MongoDB uses _id, Frontend uses id

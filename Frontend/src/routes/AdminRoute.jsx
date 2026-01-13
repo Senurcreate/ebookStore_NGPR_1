@@ -5,7 +5,7 @@ import { useAuth } from '../context/AuthContext';
 const AdminRoute = () => {
   const { currentUser, userRole, loading } = useAuth();
 
-  // 1. Show a loading state while Firebase checks auth
+  //  Show a loading state while Firebase checks auth
   if (loading) {
     return (
       <div className="d-flex justify-content-center align-items-center" style={{height: "100vh"}}>
@@ -16,13 +16,13 @@ const AdminRoute = () => {
     );
   }
 
-  // 2. Check if user exists AND if role is admin
+  // Check if user exists AND if role is admin
   // If not, redirect to login
   if (!currentUser || userRole !== 'admin') {
     return <Navigate to="/login" replace />;
   }
 
-  // 3. If authorized, render the child route (The AdminLayout)
+  // If authorized, render the child route (The AdminLayout)
   return <Outlet />;
 };
 

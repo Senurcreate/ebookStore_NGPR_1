@@ -22,13 +22,13 @@ const CardDetailsPage = () => {
     const { name, value } = e.target;
 
     if (name === 'cardNumber') {
-      // 1. Remove all non-digits
+      // Remove all non-digits
       const rawValue = value.replace(/\D/g, '');
       
-      // 2. Limit to 16 digits
+      // Limit to 16 digits
       const limitedValue = rawValue.slice(0, 16);
       
-      // 3. Add a space after every 4 digits using regex
+      // Add a space after every 4 digits using regex
       const formattedValue = limitedValue.match(/.{1,4}/g)?.join(' ') || '';
       
       setFormData({ ...formData, [name]: formattedValue });

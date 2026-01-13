@@ -25,15 +25,13 @@ const ReviewOrderPage = () => {
     setLoading(true);
 
     try {
-      // 1. Process items in parallel
+      // Process items in parallel
       const promises = orderItems.map(async (item) => {
         try {
           await simulatePurchase(item.id);
           return { success: true };
         } catch (err) {
-          // 2. CHECK STATUS CODE
-          // 400 usually means "Bad Request" (e.g., Already Purchased or Invalid ID)
-          // We treat 400 as a "Soft Error" and allow the user to proceed.
+          //  CHECK STATUS CODE
           if (err.response && err.response.status === 400) {
             console.warn(`⚠️ Item '${item.title}' skipped (Status 400 - Likely already owned).`);
             return { success: true, skipped: true }; 
@@ -45,19 +43,14 @@ const ReviewOrderPage = () => {
         }
       });
 
-      // Wait for all to finish
       await Promise.all(promises);
 
-      // 3. FORCE SUCCESS NAVIGATION
-      // We assume if you clicked "Pay", you want to see the success screen
-      // even if the backend complained about duplicates.
+      // FORCE SUCCESS NAVIGATION
       console.log("✅ navigating to success...");
       dispatch(clearCart());
       navigate('/paymentSuccess');
 
     } catch (error) {
-      // This catch block should logically never be reached with the setup above
-      // unless there is a syntax error or Redux failure.
       console.error("Critical System Error:", error);
       alert("System error. Check console.");
     } finally {

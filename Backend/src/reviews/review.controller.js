@@ -67,7 +67,6 @@ async function createReview(req, res) {
 }
 
 // Get Reviews for a Book
-// src/reviews/review.controller.js
 
 async function getBookReviews(req, res) {
     try {
@@ -191,7 +190,6 @@ async function voteOnReview(req, res) {
         const review = await Review.findById(id);
         if (!review) return res.status(404).json({ message: 'Review not found' });
 
-        // Determine if we are voting on the Main Review or a Reply
         let targetObj = review;
         if (replyId) {
             targetObj = review.replies.id(replyId);
@@ -309,7 +307,7 @@ async function updateReview(req, res) {
 
         await review.save();
 
-        // CRITICAL: Re-calculate the book stats immediately
+        // Re-calculate the book stats immediately
         // This ensures the 3.8 becomes the new correct average
         await Book.updateRatingStats(review.book);
 
@@ -367,16 +365,12 @@ async function deleteContent(req, res) {
     }
 }
 
-// src/reviews/review.controller.js
-
-// src/reviews/review.controller.js
 
 async function getAllReviewsAdmin(req, res) {
     try {
         const { page = 1, limit = 20 } = req.query;
         
         const reviews = await Review.find()
-            // 👇 FIX: Add 'createdAt' here so the User model virtual doesn't crash
             .populate('user', 'displayName email photoURL createdAt') 
             .populate('book', 'title')
             .sort({ createdAt: -1 })

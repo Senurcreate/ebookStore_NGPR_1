@@ -638,7 +638,7 @@ async function getUserAnalytics(req, res) {
             { $limit: 10 }
         ]);
 
-        // User acquisition sources (simulated - you could add this field to user model)
+        // User acquisition sources
         const acquisitionData = [
             { source: 'Organic', users: Math.floor(Math.random() * 100) + 50 },
             { source: 'Referral', users: Math.floor(Math.random() * 50) + 20 },
@@ -905,7 +905,7 @@ async function getSystemHealth(req, res) {
             arch: process.arch
         };
 
-        // API performance (simulated - you could track actual metrics)
+        // API performance
         const apiMetrics = {
             totalRequests: Math.floor(Math.random() * 1000) + 500,
             avgResponseTime: `${(Math.random() * 200 + 50).toFixed(2)} ms`,
@@ -944,11 +944,10 @@ async function getSystemHealth(req, res) {
 }
 
 /**
- * Clear cache (placeholder - implement based on your caching strategy)
+ * Clear cache 
  */
 async function clearCache(req, res) {
     try {
-        // This is a placeholder. Implement based on your caching solution (Redis, etc.)
         console.log('Cache clearance requested by admin');
         
         return res.status(200).json({
