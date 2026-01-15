@@ -296,7 +296,7 @@
       width: 32px;
       height: 32px;
       border: 0.5px solid;
-      z-index: 2;
+      //z-index: 2;
     }
 
     .left { left: 0; }
@@ -319,7 +319,39 @@
       gap: 1.5rem;
       align-items: flex-start;
     }
+
+    .scroll-btn {
+      position: absolute;
+      top: 40%;
+      transform: translateY(-50%);
+      background-color: white;
+      border: 1.5px solid #cdd7ff;
+      border-radius: 6px;
+      font-size: 1.2rem;
+      color: #1a3da8;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+
+      &:hover {
+        background-color: #1a3da8;
+        color: white;
+      }
+    }
+
+    .left {
+      left: -40px;
+    }
+
+    .right {
+      right: -40px;
+    }
   }
+  
 }
 
 
