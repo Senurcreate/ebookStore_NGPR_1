@@ -1,5 +1,6 @@
 import { configureStore } from '@reduxjs/toolkit'
 import cartReducer from '../redux/features/cart/cartSlice'
+import purchaseReducer from '../redux/features/purchases/purchaseSlice'
 
 //  Load state from localStorage
 const loadState = () => {
@@ -31,7 +32,8 @@ const preloadedState = {
 
 export const store = configureStore({
   reducer: {
-    cart: cartReducer
+    cart: cartReducer,
+    purchases: purchaseReducer
   },
   preloadedState // Inject saved state
 });

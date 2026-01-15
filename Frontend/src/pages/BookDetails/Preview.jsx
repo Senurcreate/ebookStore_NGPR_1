@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { addToCart, removeFromCart } from '../../redux/features/cart/cartSlice'; 
 import { fetchBookById } from '../../services/book.service'; 
+import { fetchMyPurchases } from '../../services/purchase.service';
 
 const BookPreview = () => {
   const { id } = useParams();
@@ -14,11 +15,16 @@ const BookPreview = () => {
   const [book, setBook] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [isPurchased, setIsPurchased] = useState(false);
   
   // --- ZOOM STATE ---
   const [zoomLevel, setZoomLevel] = useState(1); 
 
-  const isInCart = book ? cartItems.some((item) => item.id === book.id) : false;
+  const isInCart = book ? cartItems.some((item) => {
+        const cartItemId = String(item.id || item._id);
+        const currentBookId = String(book.id || book._id);
+        return cartItemId === currentBookId;
+    }) : false;
 
   // ---  FETCH BOOK ---
   useEffect(() => {
@@ -46,23 +52,49 @@ const BookPreview = () => {
     if (id) loadBook();
   }, [id, navigate]);
 
+  useEffect(() => {
+    const checkOwnership = async () => {
+      try {
+        const response = await fetchMyPurchases();
+        const hasBought = response.some(p => 
+            (typeof p.book === 'object' ? p.book._id === id : p.book === id)
+        );
+        
+        setIsPurchased(hasBought);
+      } catch (err) {
+        setIsPurchased(false);
+      }
+    };
+
+    if (id) {
+        checkOwnership();
+    }
+  }, [id]);
+
   const handleCartAction = () => {
+    if (!currentUser) {
+      navigate('/login', { 
+        state: { message: "Please log in to add this book to your cart." } 
+      });
+      return;
+    }
+
     if (!book) return;
-    
+    const safeId = book.id || book._id;
+
     if (isInCart) {
-      dispatch(removeFromCart(book.id));
+        dispatch(removeFromCart(safeId));
     } else {
-      dispatch(addToCart({
-        id: book.id,
-        title: book.title,
-        author: book.author,
-        price: book.price,
-        image: book.image || book.coverImage, 
-        type: book.type
-      }));
+        dispatch(addToCart({
+            id: safeId, 
+            title: book.title,
+            author: book.author,
+            price: book.price,
+            image: book.image || book.coverImage, 
+            type: book.type
+        }));
     }
   };
-
   // --- HELPERS ---
   const getPreviewUrl = (originalUrl) => {
     if (!originalUrl) return '';
@@ -95,17 +127,17 @@ const BookPreview = () => {
 
   const previewUrl = getPreviewUrl(book.downloadUrl);
   const downloadUrl = getDownloadUrl(book.downloadUrl);
-  const isFreeOrOwned = book.price === 0 || book.accessInfo?.canDownload;
+  const isFreeOrOwned = book.price === 0 || book.accessInfo?.canDownload || isPurchased;
 
   return (
     <div className="d-flex flex-column min-vh-100 position-relative" style={styles.pageBackground}>
       
       {/* --- HEADER --- */}
       <header className="bg-white border-bottom py-2 px-4 d-flex align-items-center justify-content-between sticky-top shadow-sm" style={styles.header}>
-        <button onClick={() => navigate(-1)} className="btn btn-link text-decoration-none text-secondary d-flex align-items-center gap-2 p-0">
+        {/*<button onClick={() => navigate(-1)} className="btn btn-link text-decoration-none text-secondary d-flex align-items-center gap-2 p-0">
           <i className="bi bi-x-lg" style={{ fontSize: '1.1rem' }}></i>
           <span className="fw-medium">Close Preview</span>
-        </button>
+        </button>*/}
 
         <div className="d-none d-md-flex align-items-center gap-3">
             <span className="text-muted fs-5">📖</span>

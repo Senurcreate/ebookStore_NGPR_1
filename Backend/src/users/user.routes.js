@@ -3,25 +3,6 @@ const router = express.Router();
 const userController = require('./user.controller');
 const { verifyFirebaseToken, requireAdmin, requireAdminOrModerator } = require('../middleware/firebase.middleware');
 
-//  Put this at the very top of routes file
-// router.get('/fix-zombie', async (req, res) => {
-//   try {
-//     // FIX: Use './user.model' because it is in the same folder
-//     const User = require('./user.model'); 
-    
-//     // Delete the specific conflicting email
-//     const result = await User.deleteOne({ email: "s23002072@ousl.lk" });
-    
-//     if (result.deletedCount > 0) {
-//         res.send("SUCCESS: Zombie user deleted. Go back and Login/Register.");
-//     } else {
-//         res.send("Not Found: No user found with that email. You might be safe to login.");
-//     }
-//   } catch (error) {
-//     res.status(500).send("Error: " + error.message);
-//   }
-// });
-// Apply Firebase authentication to all routes
 router.use(verifyFirebaseToken);
 
 

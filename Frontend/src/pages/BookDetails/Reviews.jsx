@@ -3,14 +3,13 @@ import axios from 'axios';
 import { useAuth } from '../../context/AuthContext';
 import { auth } from '../../firebase/firebase.config'; 
 import { API_ENDPOINTS } from '../../config/config'; 
-import PP from "../../assets/ProfilePic.jfif"
+import PP from "../../assets/PP.png"
 import "../../styles/main.scss"; 
 
 const DEFAULT_PROFILE_PIC = PP;
 
-// ... [Keep StarRating Component exactly as is] ...
+// --- STAR RATING COMPONENT ---
 const StarRating = ({ rating, editable = false, onRatingChange, hoverRating = 0, onHoverChange, showNumber = true }) => {
-  // ... [Keep existing code] ...
   const displayRating = hoverRating || rating;
   const getRatingFromEvent = (e, starIndex) => {
     const { left, width } = e.currentTarget.getBoundingClientRect();
@@ -34,9 +33,11 @@ const StarRating = ({ rating, editable = false, onRatingChange, hoverRating = 0,
   return <div className="star-rating-container d-flex align-items-center"><div className="star-rating">{stars}</div>{showNumber && rating > 0 && <span className="rating-number ms-2">{rating.toFixed(1)}</span>}</div>;
 };
 
+// --- MAIN COMPONENT ---
 const CommentSection = ({ bookId, onReviewAdded }) => {
   const { currentUser } = useAuth();
   
+  // --- STATE ---
   const [mongoUser, setMongoUser] = useState(null); 
   const [reviews, setReviews] = useState([]);
   const [newReview, setNewReview] = useState({ comment: "", rating: 0, hoverRating: 0 });
@@ -45,7 +46,7 @@ const CommentSection = ({ bookId, onReviewAdded }) => {
   const [isPosting, setIsPosting] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  // --- NEW STATE: Track locally hidden content ---
+  // --- NEW STATE: Track locally hidden content (Preserved from Current Version) ---
   const [hiddenContentIds, setHiddenContentIds] = useState([]); 
 
   const [editingId, setEditingId] = useState(null);
@@ -64,6 +65,7 @@ const CommentSection = ({ bookId, onReviewAdded }) => {
   const popupRef = useRef(null);
   const MAX_VISIBLE_REVIEWS = 2; 
 
+  // --- AUTH HEADER HELPER ---
   const getAuthHeader = async () => {
     if (!auth.currentUser) return {};
     try {
@@ -72,10 +74,16 @@ const CommentSection = ({ bookId, onReviewAdded }) => {
     } catch (error) { return {}; }
   };
 
-  // ... [Keep useEffects for fetching user and reviews exactly as is] ...
+  // --- FETCH USER ---
   useEffect(() => {
-    if (!bookId) { setLoading(false); return; }
-    const fetchMongoUser = async () => { /* ... existing code ... */ };
+    const fetchMongoUser = async () => {
+        if (!currentUser) { setMongoUser(null); return; }
+        try {
+            const headers = await getAuthHeader();
+            const res = await axios.get(`${API_ENDPOINTS.BOOKS.replace('/books', '/users/me')}`, { headers });
+            if (res.data.success) setMongoUser(res.data.data);
+        } catch (err) { console.error("Failed to sync user", err); }
+    };
     fetchMongoUser();
   }, [currentUser]);
 
@@ -91,6 +99,7 @@ const CommentSection = ({ bookId, onReviewAdded }) => {
       isAdmin: false
   } : null);
 
+  // --- FETCH REVIEWS ---
   useEffect(() => {
     if (!bookId) { setLoading(false); return; }
     const fetchReviews = async () => {
@@ -105,6 +114,7 @@ const CommentSection = ({ bookId, onReviewAdded }) => {
     fetchReviews();
   }, [bookId, currentUser]); 
 
+  // --- POPUP CLICK OUTSIDE ---
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (popupRef.current && !popupRef.current.contains(event.target)) {
@@ -116,19 +126,136 @@ const CommentSection = ({ bookId, onReviewAdded }) => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [flagPopup.show]);
 
-  // ... [Keep handlers for Edit, Post, Vote exactly as is] ...
-  const handleStartEdit = (review) => { /*...*/ setEditingId(review.id); setEditForm({ comment: review.comment, rating: review.rating, hoverRating: 0 }); };
-  const handleCancelEdit = () => { setEditingId(null); setEditForm({ comment: "", rating: 0, hoverRating: 0 }); };
-  const handleSaveEdit = async (reviewId) => { /*...existing code...*/ };
-  const handlePostReview = async () => { /*...existing code...*/ };
-  const handleVote = async (reviewId, replyId, action) => { /*...existing code...*/ };
+  // --- HANDLERS (RESTORED FROM OLD VERSION) ---
+
+  const handleStartEdit = (review) => { 
+      setEditingId(review.id); 
+      setEditForm({ comment: review.comment, rating: review.rating, hoverRating: 0 }); 
+  };
+  
+  const handleCancelEdit = () => { 
+      setEditingId(null); 
+      setEditForm({ comment: "", rating: 0, hoverRating: 0 }); 
+  };
+
+  // Restored handleSaveEdit
+  const handleSaveEdit = async (reviewId) => {
+    if (!editForm.comment.trim() || editForm.rating === 0) return alert("Rating and comment are required.");
+    
+    setIsSaving(true);
+    try {
+      const headers = await getAuthHeader();
+      const res = await axios.put(API_ENDPOINTS.EDIT_REVIEW(reviewId), {
+        rating: editForm.rating,
+        comment: editForm.comment
+      }, { headers });
+
+      if (res.data.success) {
+        setReviews(prevReviews => prevReviews.map(r => {
+           if (r.id === reviewId) {
+             return { 
+               ...r, 
+               rating: res.data.review.rating || editForm.rating, 
+               comment: res.data.review.comment || editForm.comment,
+               time: "Edited just now" 
+             };
+           }
+           return r;
+        }));
+        
+        handleCancelEdit(); 
+        if (onReviewAdded) onReviewAdded();
+      }
+    } catch (err) {
+      console.error(err);
+      alert(err.response?.data?.message || "Failed to update review");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  // Restored handlePostReview
+  const handlePostReview = async () => {
+    if (!loggedInUser) return alert("Please log in to write a review");
+    if (!newReview.comment.trim() || newReview.rating === 0) return alert("Please write a review and provide a rating");
+
+    setIsPosting(true);
+    try {
+      const headers = await getAuthHeader();
+      const res = await axios.post(API_ENDPOINTS.ADD_REVIEW(bookId), {
+        rating: newReview.rating,
+        comment: newReview.comment
+      }, { headers });
+
+      if (res.data.success) {
+        const reviewWithPhoto = {
+            ...res.data.review,
+            photo: loggedInUser.photo
+        };
+        setReviews([reviewWithPhoto, ...reviews]);
+        setNewReview({ comment: "", rating: 0, hoverRating: 0 });
+        if (onReviewAdded) onReviewAdded();
+      }
+    } catch (err) {
+      alert(err.response?.data?.message || "Failed to post review");
+    } finally {
+      setIsPosting(false);
+    }
+  };
+
+  // Restored handleVote logic (Crucial for Likes/Dislikes)
+  const handleVote = async (reviewId, replyId, action) => {
+    if (!loggedInUser) return alert("Please log in to vote");
+
+    setReviews(prevReviews => prevReviews.map(r => {
+        if (r.id !== reviewId) return r;
+
+        const updateItem = (item) => {
+            let { likes, dislikes, userLiked, userDisliked } = item;
+            if (action === 'like') {
+                if (userLiked) { likes--; userLiked = false; }
+                else { 
+                    likes++; userLiked = true; 
+                    if (userDisliked) { dislikes--; userDisliked = false; } 
+                }
+            } else {
+                if (userDisliked) { dislikes--; userDisliked = false; }
+                else { 
+                    dislikes++; userDisliked = true; 
+                    if (userLiked) { likes--; userLiked = false; } 
+                }
+            }
+            return { ...item, likes, dislikes, userLiked, userDisliked };
+        };
+
+        if (replyId) {
+            return {
+                ...r,
+                replies: r.replies.map(rep => rep.id === replyId ? updateItem(rep) : rep)
+            };
+        }
+        return updateItem(r);
+    }));
+
+    try {
+        const headers = await getAuthHeader();
+        await axios.post(API_ENDPOINTS.VOTE_REVIEW(reviewId), {
+            action,
+            replyId
+        }, { headers });
+    } catch (err) {
+        console.error("Vote failed:", err);
+    }
+  };
+
   const handleLike = (reviewId, replyId = null) => handleVote(reviewId, replyId, 'like');
   const handleDislike = (reviewId, replyId = null) => handleVote(reviewId, replyId, 'dislike');
   
+  // Flag Click Handler
   const handleFlagClick = (event, reviewId, replyId = null, userName, type) => {
     event.stopPropagation();
     if (!loggedInUser) return alert("Please log in to report content");
-    // ... [Calculation logic for popup position stays same] ...
+    
     const button = event.currentTarget;
     const rect = button.getBoundingClientRect();
     const viewportWidth = window.innerWidth;
@@ -145,7 +272,7 @@ const CommentSection = ({ bookId, onReviewAdded }) => {
     setFlagPopup({ show: true, reviewId, replyId, userName, type: type || (replyId ? 'reply' : 'review'), position: { top, left, arrowPosition } });
   };
 
-  // --- UPDATED CONFIRM FLAG ---
+  // --- CONFIRM FLAG (KEPT FROM NEW VERSION WITH HIDE LOGIC) ---
   const confirmFlag = async () => {
     const { reviewId, replyId } = flagPopup;
     try {
@@ -164,9 +291,57 @@ const CommentSection = ({ bookId, onReviewAdded }) => {
   };
 
   const cancelFlag = () => setFlagPopup({ ...flagPopup, show: false });
-  const handleDelete = async (reviewId, replyId = null) => { /*...existing code...*/ };
-  const handlePostReply = async (reviewId) => { /*...existing code...*/ };
-  const toggleReplies = (reviewId) => { /*...existing code...*/ };
+
+  // Restored handleDelete
+  const handleDelete = async (reviewId, replyId = null) => {
+    if (!window.confirm("Are you sure?")) return;
+    try {
+        const headers = await getAuthHeader();
+        const url = replyId 
+            ? `${API_ENDPOINTS.DELETE_REVIEW(reviewId)}?replyId=${replyId}`
+            : API_ENDPOINTS.DELETE_REVIEW(reviewId);
+            
+        await axios.delete(url, { headers });
+        
+        if (replyId) {
+            setReviews(reviews.map(r => r.id === reviewId ? { ...r, replies: r.replies.filter(rep => rep.id !== replyId) } : r));
+        } else {
+            setReviews(reviews.filter(r => r.id !== reviewId));
+            if (onReviewAdded) onReviewAdded(); 
+        }
+    } catch (err) { alert("Failed to delete."); }
+  };
+
+  // Restored handlePostReply
+  const handlePostReply = async (reviewId) => {
+    if (!loggedInUser) return alert("Please log in to reply");
+    const replyText = replyInput[reviewId];
+    if (!replyText?.trim()) return;
+
+    try {
+      const headers = await getAuthHeader();
+      const res = await axios.post(API_ENDPOINTS.ADD_REPLY(reviewId), {
+        comment: replyText
+      }, { headers });
+
+      if (res.data.success) {
+        // Optimistically add photo
+        const replyWithPhoto = {
+            ...res.data.reply,
+            photo: loggedInUser.photo
+        };
+        setReviews(reviews.map(r => r.id === reviewId ? { ...r, replies: [...r.replies, replyWithPhoto], showReplies: true } : r));
+        setReplyInput({ ...replyInput, [reviewId]: "" });
+      }
+    } catch (err) {
+      alert("Failed to post reply");
+    }
+  };
+
+  // Restored toggleReplies
+  const toggleReplies = (reviewId) => {
+    setReviews(reviews.map(review => review.id === reviewId ? { ...review, showReplies: !review.showReplies } : review));
+  };
 
   const visibleReviews = showAllReviews ? reviews : reviews.slice(0, MAX_VISIBLE_REVIEWS);
   const canDelete = (userId) => loggedInUser && (userId === loggedInUser.id || loggedInUser.isAdmin);
@@ -189,7 +364,7 @@ const CommentSection = ({ bookId, onReviewAdded }) => {
         <div ref={popupRef} className="flag-popup" style={{ top: `${flagPopup.position.top}px`, left: `${flagPopup.position.left}px` }} onClick={(e) => e.stopPropagation()}>
           <div className="popup-header"><i className="bi bi-flag-fill text-danger me-2"></i><span>Report {flagPopup.type}</span><button type="button" className="popup-close" onClick={cancelFlag}><i className="bi bi-x"></i></button></div>
           <div className="popup-body"><p className="mb-2">Report this {flagPopup.type} by <strong>{flagPopup.userName}</strong>?</p><p className="text-muted small mb-0"><i className="bi bi-info-circle me-1"></i> Moderators will review this content.</p></div>
-          <div className="popup-footer"><button type="button" className="btn btn-outline-secondary" onClick={cancelFlag}>Cancel</button><button type="button" className="btn btn-sm btn-danger" onClick={confirmFlag}><i className="bi bi-flag-fill me-1"></i> Report</button></div>
+          <div className="popup-footer"><button type="button" className="btn btn-outline-secondary" onClick={cancelFlag}>Cancel</button><button type="button" className="btn  btn-danger" onClick={confirmFlag}><i className="bi bi-flag-fill me-1"></i> Report</button></div>
         </div>
       )}
 
@@ -249,7 +424,7 @@ const CommentSection = ({ bookId, onReviewAdded }) => {
                    {/* ... Edit form inputs ... */}
                    <div className="mb-2"><label className="form-label small text-muted">Update Rating</label><StarRating rating={editForm.rating} editable={true} hoverRating={editForm.hoverRating} onRatingChange={(r) => setEditForm(prev => ({...prev, rating: r}))} onHoverChange={(r) => setEditForm(prev => ({...prev, hoverRating: r}))} showNumber={false} /></div>
                    <div className="mb-3"><label className="form-label small text-muted">Update Comment</label><textarea className="form-control" rows="3" value={editForm.comment} onChange={(e) => setEditForm(prev => ({...prev, comment: e.target.value}))} ></textarea></div>
-                   <div className="d-flex gap-2"><button className="btn btn-sm btn-success" onClick={() => handleSaveEdit(review.id)} disabled={isSaving}>{isSaving ? 'Saving...' : 'Save Changes'}</button><button className="btn btn-sm btn-outline-secondary" onClick={handleCancelEdit} disabled={isSaving}>Cancel</button></div>
+                   <div className="d-flex gap-2"><button className="btn btn-sm btn-success" onClick={() => handleSaveEdit(review.id)} disabled={isSaving}>{isSaving ? 'Saving...' : 'Save Changes'}</button><button className="btn btn-outline-secondary" onClick={handleCancelEdit} disabled={isSaving}>Cancel</button></div>
                 </div>
               ) : (
                 <> <div className="mb-2"><StarRating rating={review.rating} showNumber={true} /></div> <p className="mb-3 comment-text">{review.comment}</p> </>

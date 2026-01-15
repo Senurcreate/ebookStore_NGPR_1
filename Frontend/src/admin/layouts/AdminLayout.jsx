@@ -5,7 +5,7 @@ import AdminNavbar from '../components/AdminNavbar';
 const AdminLayout = ({ children }) => {
   return (
     <div className="d-flex" style={{ minHeight: '100vh', backgroundColor: '#f8f9fa' }}>
-      {/* Sidebar - Fixed Width */}
+      {/* Sidebar  */}
       <div style={{ width: '250px', borderRight: '1px solid #dee2e6', backgroundColor: '#fff' }}>
         <Sidebar />
       </div>

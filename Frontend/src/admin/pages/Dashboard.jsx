@@ -43,6 +43,7 @@ const Dashboard = () => {
         const dbStats = dashboardRes.stats;
         const salesStats = salesRes.analytics;
 
+        // 1. STATS CARDS DATA
         const newStats = [
             { 
                 title: "Total Revenue", 
@@ -83,12 +84,27 @@ const Dashboard = () => {
         ];
         setStats(newStats);
 
-        const chartData = salesStats.salesOverTime.map(item => ({
-            name: new Date(item._id).toLocaleDateString('en-US', { month: 'short' }),
+        // 2. REVENUE GRAPH DATA (Fixed Sorting & Unique Labels)
+        // First, sort by date so the line is chronological
+        const sortedSales = [...salesStats.salesOverTime].sort((a, b) => 
+            new Date(a._id) - new Date(b._id)
+        );
+
+        const chartData = sortedSales.map(item => ({
+            // FIX: Use 'month' and 'day' to ensure every point has a unique name.
+            // This fixes the bug where the tooltip showed the wrong number.
+            name: new Date(item._id).toLocaleDateString('en-US', { 
+                month: 'short', 
+                day: 'numeric' 
+            }),
             revenue: item.revenue
-        })).slice(-6);
+        }))
+        // Showing last 10 points to give better context since we are showing days now
+        .slice(-10); 
+        
         setRevenueData(chartData);
 
+        // 3. PIE CHART DATA
         const pieColors = ['#3b82f6', '#10b981', '#8b5cf6', '#f59e0b', '#ef4444'];
         const pieData = salesStats.revenueByType.map((item, index) => ({
             name: item._id === 'ebook' ? 'eBooks' : 'Audiobooks',
@@ -97,6 +113,7 @@ const Dashboard = () => {
         }));
         setCategoryData(pieData.length > 0 ? pieData : [{name: 'No Data', value: 100, color: '#e5e7eb'}]);
 
+        // 4. RECENT ORDERS TABLE
         const processedOrders = dbStats.recentActivity.purchases.map(order => ({
             id: `#ORD-${order._id.slice(-6).toUpperCase()}`,
             name: order.user ? (order.user.displayName || order.user.email) : 'Unknown User',

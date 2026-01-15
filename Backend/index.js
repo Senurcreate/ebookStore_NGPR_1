@@ -62,7 +62,7 @@ const downloadRoutes = require('./src/downloads/download.routes');
 const adminRoutes = require('./src/admin/admin.routes');
 const purchaseRoutes = require('./src/purchases/purchase.routes');
 const reviewRoutes = require('./src/reviews/review.routes');
-const notificationRoutes = require('./src/notifications/notification.routes');
+//const notificationRoutes = require('./src/notifications/notification.routes');
 const wishlistRoutes = require('./src/wishlist/wishlist.routes');
 
 app.use("/api/books", bookRoutes);
@@ -71,7 +71,7 @@ app.use("/api/downloads" , downloadRoutes);
 app.use("/api/admin" , adminRoutes);
 app.use("/api/purchases" , purchaseRoutes);
 app.use("/api/reviews" , reviewRoutes);
-app.use("/api/notifications" , notificationRoutes);
+//app.use("/api/notifications" , notificationRoutes);
 app.use("/api/wishlist" , wishlistRoutes);
 
 

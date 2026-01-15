@@ -225,7 +225,7 @@ const DownloadHistory = () => {
 
                     <div className="d-flex gap-2">
                       <button 
-                        className="btn btn-primary btn-sm px-4 py-2 fw-medium shadow-sm" 
+                        className="btn btn-primary px-4 py-2 fw-medium shadow-sm" 
                         style={{ backgroundColor: '#2563eb' }}
                         // UPDATED: Pass book details to handleRedownload
                         onClick={() => handleRedownload(book._id, book.title, book.type)}

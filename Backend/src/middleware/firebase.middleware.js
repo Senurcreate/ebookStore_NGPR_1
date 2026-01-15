@@ -55,7 +55,7 @@ const verifyFirebaseToken = async (req, res, next) => {
     let user = await User.findOne({ firebaseUID: firebaseUser.uid });
     
     if (user) {
-      // SCENARIO A: Normal Login
+      //  Normal Login
       // User exists and UIDs match. Just update metadata.
       user.lastLoginAt = new Date();
       if (user.displayName !== firebaseUser.displayName || user.photoURL !== firebaseUser.photoURL) {
@@ -71,7 +71,7 @@ const verifyFirebaseToken = async (req, res, next) => {
       const existingUserByEmail = await User.findOne({ email: firebaseUser.email });
 
       if (existingUserByEmail) {
-        // SCENARIO B: The "Zombie" Account (Auto-Heal)
+        // The "Zombie" Account (Auto-Heal)
         console.log(`🩹 Auto-healing account for ${firebaseUser.email}. Updating UID.`);
         existingUserByEmail.firebaseUID = firebaseUser.uid;
         existingUserByEmail.lastLoginAt = new Date();
@@ -80,7 +80,7 @@ const verifyFirebaseToken = async (req, res, next) => {
         user = await existingUserByEmail.save();
 
       } else {
-        // SCENARIO C: Brand New User
+        //  Brand New User
         user = new User({
           firebaseUID: firebaseUser.uid,
           email: firebaseUser.email,

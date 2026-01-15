@@ -29,7 +29,7 @@ class CloudinaryService {
 
             // For PDF files
             if (file.mimetype === 'application/pdf') {
-                uploadOptions.resource_type = 'raw';
+                uploadOptions.resource_type = 'auto';
             }
 
             const result = await cloudinary.uploader.upload(file.path, uploadOptions);

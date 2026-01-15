@@ -73,7 +73,7 @@ const userSchema = new mongoose.Schema({
   lastLoginAt: {
     type: Date
   },
-  // ADD: Additional useful fields
+  // Additional useful fields
   accountCreatedAt: {
     type: Date,
     default: Date.now
@@ -101,6 +101,8 @@ const userSchema = new mongoose.Schema({
 // Compound index for common queries
 userSchema.index({ email: 1, role: 1 });
 userSchema.index({ lastLoginAt: -1 });
+userSchema.index({ createdAt: 1 });
+userSchema.index({ displayName: 'text', email: 'text' });
 
 // Virtual for formatted createdAt
 userSchema.virtual('joinedDate').get(function() {

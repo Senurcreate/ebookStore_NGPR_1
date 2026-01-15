@@ -140,7 +140,7 @@ const ForgotPassword = () => {
         </p>
         <p className="text-secondary small mt-4">
           Need help? <br />
-          <a href="#" className="text-primary text-decoration-none small">
+          <a href="/help" className="text-primary text-decoration-none small">
             Visit our Help Center <i className="bi bi-arrow-up-right small"></i>
           </a>
         </p>
