@@ -11,6 +11,7 @@ import { downloadBookFile } from "../../services/purchase.service";
 import { addToWishlist, removeByBookId, checkInWishlist } from "../../services/wishlist.service";
 import { formatBookData } from "../../utils/bookFormatter";
 import { useAuth } from "../../context/AuthContext";
+import { fetchPurchasedBooks } from "../../redux/features/purchases/purchaseSlice";
 
 const BookHeaderSection = () => {
     const { id } = useParams();
@@ -53,6 +54,9 @@ const BookHeaderSection = () => {
         const loadData = async () => {
             try {
                 setLoading(true);
+                if (currentUser) {
+                    dispatch(fetchPurchasedBooks());
+                }
                 
                 // 1. Run independent fetches in parallel (Faster)
                 // We only check Book Data and Wishlist. Purchase status is handled by Redux.
