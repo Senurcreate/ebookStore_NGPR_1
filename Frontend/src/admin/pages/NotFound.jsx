@@ -1,7 +1,7 @@
 import React from 'react'; 
 import { Link } from 'react-router-dom'; 
-import Navbar from '../components/Navbar'; 
-import '../styles/_custom/notfound.scss'; 
+import Navbar from '../../components/Navbar'; 
+ 
  
 function NotFound() { 
   return ( 
