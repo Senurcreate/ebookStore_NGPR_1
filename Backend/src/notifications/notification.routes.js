@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const notificationController = require('./notification.controller');
 const adminNotificationController = require('./notification.admin.controller');
-const { verifyFirebaseToken, requireAdmin, requireAdminOrModerator } = require('../middleware/firebase.middleware');
+//const { verifyFirebaseToken, requireAdmin, requireAdminOrModerator } = require('../middleware/firebase.middleware');
 
 // ====================
 // USER NOTIFICATION ROUTES

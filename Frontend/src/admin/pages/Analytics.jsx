@@ -32,7 +32,7 @@ const Analytics = () => {
   const orderData = data.userGrowth?.map(item => ({ name: item._id, orders: item.count })) || [];
   const revenueData = orderData.map(item => ({ name: item.name, revenue: item.orders * 15 })); 
 
-  // --- 🛠️ MAP IMAGES HERE ---
+  
   const topBooks = data.topSellingBooks?.map((item, i) => {
       const book = item.bookInfo || {};
       
@@ -42,7 +42,7 @@ const Analytics = () => {
         author: book.author || "Unknown Author",
         
         // Use the total revenue calculated by the backend
-        revenue: item.revenue ? `$${item.revenue.toFixed(2)}` : '$0.00',
+        revenue: item.revenue ? `Rs ${item.revenue.toFixed(2)}` : '$0.00',
         
         // Show the actual count of sales
         sales: `${item.count} sales`,
@@ -112,7 +112,7 @@ const Analytics = () => {
                      style={{ width: '40px', height: '40px', minWidth: '40px', color: '#3b82f6', fontWeight: 'bold' }}>
                   {book.rank}
                 </div>
-                {/* IMAGES SHOWN HERE */}
+                {/* images */}
                 <img src={book.img} alt={book.title} className="rounded shadow-sm me-3" style={{ width: '45px', height: '65px', objectFit: 'cover' }} />
                 <div className="me-3">
                   <h6 className="fw-bold mb-0">{book.title}</h6>

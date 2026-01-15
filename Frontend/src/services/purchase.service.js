@@ -1,4 +1,7 @@
 import axios from '../utils/axios'; 
+let purchasesCache = null;
+let lastFetchTime = 0;
+const CACHE_DURATION = 5000;
 
 // 1. Simulate a Purchase
 export const simulatePurchase = async (bookId) => {
@@ -24,15 +27,21 @@ export const fetchDownloadHistory = async () => {
 
 // 3. Get My Purchases (Library)
 export const fetchMyPurchases = async () => {
+    const now = Date.now();
+    if (purchasesCache && (now - lastFetchTime < CACHE_DURATION)) {
+        return purchasesCache; 
+    }
     try {
         const response = await axios.get('/users/me/purchases');
+        purchasesCache = response.data;
+        lastFetchTime = now;
+        
         return response.data;
     } catch (error) {
         console.error("Error fetching purchases:", error);
         throw error.response?.data || error.message;
     }
 };
-
 // 4. Secure Download Trigger
 export const downloadBookFile = async (bookId) => {
     try {

@@ -75,6 +75,10 @@ const purchaseSchema = new mongoose.Schema({
     timestamps: true
 });
 
+purchaseSchema.index({ user: 1, purchasedAt: -1 });
+purchaseSchema.index({ simulatedOrderId: 1 });
+purchaseSchema.index({ book: 1, status: 1 });
+
 // This runs automatically BEFORE saving to the database.
 // It guarantees 'purchasedAt' exists before calculating expiry.
 purchaseSchema.pre('save', function(next) {
@@ -144,9 +148,8 @@ purchaseSchema.methods.registerDownload = function(deviceInfo = {}) {
 // Compound index to prevent duplicate purchases (user can't buy same book twice)
 purchaseSchema.index({ user: 1, book: 1 }, { unique: true });
 
-// Index for faster queries
-purchaseSchema.index({ user: 1, purchasedAt: -1 });
-purchaseSchema.index({ simulatedOrderId: 1 });
+
+
 
 // Generate a simulated order ID before saving
 purchaseSchema.pre('save', function(next) {

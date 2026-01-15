@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import PP from "../assets/ProfilePic.jfif"
+import PP from "../assets/PP.png"
 import { auth} from "../firebase/firebase.config";
 import { useAuth } from '../context/AuthContext';
 import { 

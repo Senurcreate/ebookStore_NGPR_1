@@ -152,7 +152,7 @@ const OrderHistory = () => {
                       {/* Actions */}
                       <div className="d-flex gap-2">
                         {order.status === 'completed' && (
-                          <Link to={`/books/${book._id}`} className="btn btn-primary btn-sm px-4 fw-medium">
+                          <Link to={`/books/${book._id}`} className="btn btn-primary px-4 fw-medium">
                             {isDownloaded ? (
                               <><i className="bi bi-cloud-download me-2"></i>Download Again</>
                             ) : (

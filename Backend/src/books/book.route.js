@@ -15,7 +15,6 @@ router.get('/:id', bookController.getBookById);
 
 
 // --- PROTECTED ROUTES (Token Required) ---
-// Apply middleware only to routes below this line
 router.use(verifyFirebaseToken);
 
 router.post('/create-book', bookController.createBook);

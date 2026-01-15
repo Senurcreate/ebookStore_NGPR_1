@@ -6,14 +6,14 @@ const LogoutModal = ({ show, onClose, onConfirm }) => {
 
   return (
     <>
-      {/* 1. Backdrop Overlay (Dims the background) */}
+      {/* Backdrop Overlay (Dims the background) */}
       <div 
         className="modal-backdrop fade show" 
         style={{ zIndex: 1040 }}
         onClick={onClose} // Clicking outside closes it
       ></div>
 
-      {/* 2. Modal Dialog */}
+      {/*  Modal Dialog */}
       <div 
         className="modal fade show d-block" 
         tabIndex="-1" 

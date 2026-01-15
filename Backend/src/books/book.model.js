@@ -307,6 +307,7 @@ bookSchema.index({ trending: -1, createdAt: -1 });
 bookSchema.index({ type: 1, createdAt: -1 });
 bookSchema.index({ narrators: 1 });
 
+
 // Virtual for formatted publication date
 bookSchema.virtual('formattedPublicationDate').get(function() {
     if (!this.publication_date) return 'Unknown';

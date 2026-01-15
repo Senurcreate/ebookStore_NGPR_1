@@ -22,10 +22,10 @@ const Footer = () => {
 
         {/* Middle Section */}
         <div className="footer-nav">
-          <a href="#">Home</a>
-          <a href="#">E-Books</a>
-          <a href="#">Audiobooks</a>
-          <a href="#">Help</a>
+          <a href="/">Home</a>
+          <a href="/e-books">E-Books</a>
+          <a href="/audiobooks">Audiobooks</a>
+          <a href="/help">Help</a>
         </div>
 
         {/* Right Section */}

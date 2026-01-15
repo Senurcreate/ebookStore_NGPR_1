@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import FormCheck from "react-bootstrap/FormCheck";
 import { useAuth } from "../context/AuthContext";
-import { useNavigate } from "react-router-dom";
+import { useNavigate , useLocation } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import Gicon from "../assets/Gicon.svg";
 import Blogo from "../assets/BrandLogo.svg";
@@ -18,6 +18,9 @@ const LoginPage = () => {
 
   const { loginUser, signInWithGoogle } = useAuth();
   const navigate = useNavigate();
+
+  const location = useLocation(); 
+  const redirectMessage = location.state?.message;
 
   const {
     register,
@@ -94,6 +97,12 @@ const LoginPage = () => {
             Sign in to your ebookstore account
           </p>
 
+          {redirectMessage && !message && (
+            <div className="alert alert-warning text-center p-2 mb-3">
+              <i className="bi bi-exclamation-circle me-2"></i>
+              {redirectMessage}
+            </div>
+          )}
           {message && (
             <div className="alert alert-danger text-center p-2">{message}</div>
           )}

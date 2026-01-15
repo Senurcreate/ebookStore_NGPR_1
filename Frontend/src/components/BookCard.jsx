@@ -1,36 +1,44 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { addToCart, removeFromCart } from "../redux/features/cart/cartSlice";
+import { useAuth } from "../context/AuthContext"; 
 
 const BookCard = ({ book, showDelete = false, onDelete = () => {} }) => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-
-  // Get cart items from Redux store
-  const cartItems = useSelector((state) => state.cart.cartItems);
+  const { currentUser } = useAuth();
 
   // Safety check
   if (!book) return null;
   if (book.type !== "ebook") return null;
 
-  // Handle MongoDB _id vs Frontend id
   const bookId = book.id || book._id;
 
-  // Check if current book is in cart
+  // Get cart items from Redux store
+  const cartItems = useSelector((state) => state.cart.cartItems);
+  const purchasedBookIds = useSelector((state) => state.purchases.purchasedBookIds);
+
   const isInCart = cartItems.some((item) => item.id === bookId);
+  const isPurchased = purchasedBookIds.includes(String(bookId));
 
   const handleClick = () => {
     navigate(`/books/${bookId}`);
   };
 
   const handleCartAction = (e) => {
-    e.stopPropagation(); // Prevent navigating to details when clicking cart button
+    e.stopPropagation(); 
+
+    if (!currentUser) {
+      navigate('/login', { 
+        state: { message: "Please log in to add items to your cart." } 
+      });
+      return;
+    }
     
     if (isInCart) {
       dispatch(removeFromCart(bookId));
     } else {
-      // Create a clean object for the cart to avoid storing too much data
       const cartItem = {
         id: bookId,
         title: book.title,
@@ -43,10 +51,11 @@ const BookCard = ({ book, showDelete = false, onDelete = () => {} }) => {
     }
   };
 
-
   const imageUrl = book.image || book.coverImage || "https://via.placeholder.com/150";
   const ratingValue = book.rating || (book.ratingStats?.average) || 0;
+  const isOwned = isPurchased || book.price === 0;
 
+  
   return (
     <div className="book-card">
       <img
@@ -79,19 +88,37 @@ const BookCard = ({ book, showDelete = false, onDelete = () => {} }) => {
             {book.price === 0 ? "Free" : `Rs ${book.price}`}
           </p>
           <div className="actions">
-            <button
-              className={`cart-btn btn btn-sm border-0 ${
-                isInCart ? "btn-success" : "btn-outline-primary"
-              }`}
-              onClick={handleCartAction}
-              style={{
-                transition: "all 0.3s",
-                position: "relative",
-                overflow: "hidden",
-              }}
-            >
-              <i className={`bi ${isInCart ? "bi-check-lg" : "bi-cart3"}`}></i>
-            </button>
+            {isOwned ? (
+               <button 
+                  className="cart-btn btn btn-sm border-0" 
+                  disabled
+                  style={{ 
+                    backgroundColor: '#198754', 
+                    opacity: 1, 
+                    cursor: 'default',
+                    color: 'white',
+                    pointerEvents: 'none'
+                  }}
+                  title="Owned" 
+               >
+
+                  <i className="bi bi-check-lg" style={{ fontSize: '1.2rem', fontWeight: 'bold' }}></i>
+               </button>
+            ) : (
+                <button
+                className={`cart-btn btn btn-sm border-0 ${
+                    isInCart ? "btn-success" : "btn-outline-primary"
+                }`}
+                onClick={handleCartAction}
+                style={{
+                    transition: "all 0.3s",
+                    position: "relative",
+                    overflow: "hidden",
+                }}
+                >
+                <i className={`bi ${isInCart ? "bi-check-lg" : "bi-cart3"}`}></i>
+                </button>
+            )}
 
             {/* Delete button only for wishlist */}
             {showDelete && (

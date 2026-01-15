@@ -94,3 +94,13 @@ $theme-colors: map-merge($theme-colors, $ebook-colors);
 @import "./_component/audiobookpage";
 @import "./_component/wishlist";
 
+.App {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh; 
+}
+
+main {
+  flex: 1;
+  width: 100%; 
+}

@@ -7,7 +7,7 @@ import { addToCart, removeFromCart } from "../../redux/features/cart/cartSlice";
 
 // Import Services & Auth
 import { fetchBookById } from "../../services/book.service";
-import { downloadBookFile, fetchMyPurchases } from "../../services/purchase.service";
+import { downloadBookFile } from "../../services/purchase.service";
 import { addToWishlist, removeByBookId, checkInWishlist } from "../../services/wishlist.service";
 import { formatBookData } from "../../utils/bookFormatter";
 import { useAuth } from "../../context/AuthContext";
@@ -17,14 +17,16 @@ const BookHeaderSection = () => {
     const navigate = useNavigate();
     const { currentUser } = useAuth();
 
+    const dispatch = useDispatch();
+    const cartItems = useSelector((state) => state.cart.cartItems);
+
+    const purchasedBookIds = useSelector((state) => state.purchases.purchasedBookIds);
+
     // State
     const [book, setBook] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [downloading, setDownloading] = useState(false);
-    
-    //  State to track if user bought the book
-    const [isPurchased, setIsPurchased] = useState(false);
 
     // Audio/UI states
     const [isWishlisted, setIsWishlisted] = useState(false);
@@ -39,10 +41,62 @@ const BookHeaderSection = () => {
     const progressRef = useRef(null);
     const animationRef = useRef(null);
 
-    const dispatch = useDispatch();
-    const cartItems = useSelector((state) => state.cart.cartItems);
+    const isInCart = book ? cartItems.some((item) => {
+    const itemId = String(item.id || item._id);
+    const bookId = String(book.id || book._id);
+    return itemId === bookId;
+}) : false;
 
-    const isInCart = book ? cartItems.some((item) => item.id === book.id) : false;
+    const isPurchased = book ? purchasedBookIds.includes(String(book.id || book._id)) : false;
+
+    useEffect(() => {
+        const loadData = async () => {
+            try {
+                setLoading(true);
+                
+                // 1. Run independent fetches in parallel (Faster)
+                // We only check Book Data and Wishlist. Purchase status is handled by Redux.
+                const [bookResponse, wishlistStatus] = await Promise.all([
+                    fetchBookById(id),
+                    currentUser ? checkInWishlist(id) : Promise.resolve({ isInWishlist: false })
+                ]);
+
+                // 2. Handle Wishlist
+                setIsWishlisted(wishlistStatus.isInWishlist);
+
+                // 3. Handle Book Details
+                if (bookResponse.success || bookResponse.book) {
+                    const rawBook = bookResponse.book || bookResponse.data;
+                    const previewLink = rawBook.previewUrl || rawBook.cloudinaryUrl;
+
+                    const formatted = {
+                        ...formatBookData(rawBook),
+                        description: rawBook.description,
+                        currency: "Rs",
+                        duration: rawBook.audioLength || "00:00",
+                        format: rawBook.type === 'ebook' ? 'PDF' : 'MP3',
+                        narrator: rawBook.narrators?.[0]?.name || "Unknown",
+                        audioUrl: rawBook.cloudinaryUrl,
+                        previewUrl: previewLink,
+                        canDownload: rawBook.accessInfo?.canDownload || false
+                    };
+                    setBook(formatted);
+                } else {
+                    setError("Could not load book details.");
+                }
+
+            } catch (err) {
+                console.error(err);
+                setError("Could not load book details.");
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        if (id) {
+            loadData();
+        }
+    }, [id, currentUser]);
 
     // --- HELPER: ID Matcher  ---
     const checkMatch = (purchase, currentBookId) => {
@@ -206,16 +260,30 @@ const BookHeaderSection = () => {
     }
 };
     const handlePreview = () => {
-        navigate(`/preview/${id}`);
+        const url = `/preview/${id}`;
+        window.open(url, '_blank', 'noopener,noreferrer');
     };
 
-    const handleCartAction = () => {
-        if (isInCart) {
-            dispatch(removeFromCart(book.id));
-        } else {
-            dispatch(addToCart(book));
-        }
-    };
+
+
+const handleCartAction = () => {
+    if (!currentUser) {
+        navigate('/login', { 
+          state: { message: "Please log in to purchase this book." } 
+        });
+        return;
+    }
+    const safeId = book.id || book._id;
+
+    if (isInCart) {
+        dispatch(removeFromCart(safeId));
+    } else {
+        dispatch(addToCart({
+            ...book,
+            id: safeId 
+        }));
+    }
+  };
 
     const toggleWishlist = async () => {
         if (!currentUser) {
@@ -263,7 +331,7 @@ const BookHeaderSection = () => {
     const isPremium = book.price > 0;
     
     //  Final check for access
-    const hasAccess = book.canDownload || isPurchased;
+    const hasAccess = book.price === 0 || isPurchased || book.canDownload;
 
     //  HELPER FOR BUTTONS
     const renderActionButtons = () => (
@@ -271,11 +339,11 @@ const BookHeaderSection = () => {
             {/* If NO access, show "Add to Cart" */}
             {!hasAccess && (
                 <button 
-                    className={`btn px-3 small-btn ${isInCart ? 'btn-success' : 'btn-primary'}`}
+                    className={`btn px-3 small-btn ${isInCart ? 'btn-primary' : 'btn-primary'}`}
                     onClick={handleCartAction}
                 >
                     <i className={`bi ${isInCart ? 'bi-check-lg' : 'bi-cart-plus me-1'}`}></i> 
-                    {isInCart ? "In Cart" : "Add to Cart"}
+                    {isInCart ? " In Cart" : "Add to Cart"}
                 </button>
             )}
 

@@ -8,7 +8,7 @@ const Review = require('./review.model');
 // Apply authentication middleware to all routes
 
 // PUBLIC REVIEW ROUTES (No auth needed for reading)
-// ====================
+
 // Get reviews for a book (public - no auth required)
 router.get('/books/:bookId', reviewController.getBookReviews);
 
@@ -17,9 +17,9 @@ router.use(verifyFirebaseToken);
 // Get a specific review (public - no auth required)
 //router.get('/:id', reviewController.getReviewById);
 
-// ====================
+
 // USER REVIEW ROUTES (Require auth)
-// ====================
+
 
 // Create a review for a book
 router.post('/books/:bookId', reviewController.createReview);

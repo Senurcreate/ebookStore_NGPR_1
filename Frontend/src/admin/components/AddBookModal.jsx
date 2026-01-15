@@ -15,7 +15,7 @@ const AddBookModal = ({ show, onClose, onSave, initialData = null }) => {
 
   const [formData, setFormData] = useState(defaultState);
 
-  // Effect: Populate form when opening in Edit Mode
+  // Populate form when opening in Edit Mode
   useEffect(() => {
     if (show && initialData) {
         // Format incoming data to match form state
