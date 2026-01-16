@@ -41,7 +41,7 @@ const DownloadHistory = () => {
     }
   };
 
-  // 2. Handle Re-Download (UPDATED: INSTANT DOWNLOAD)
+  // 2. Handle Re-Download 
   const handleRedownload = async (bookId, bookTitle, fileType) => {
     try {
       setProcessingId(bookId);
@@ -245,7 +245,6 @@ const DownloadHistory = () => {
                       <button 
                         className="btn btn-primary px-4 py-2 fw-medium shadow-sm" 
                         style={{ backgroundColor: '#2563eb' }}
-                        // UPDATED: Pass book details to handleRedownload
                         onClick={() => handleRedownload(book._id, book.title, book.type)}
                         disabled={processingId === book._id}
                       >

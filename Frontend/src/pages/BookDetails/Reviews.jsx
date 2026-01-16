@@ -412,14 +412,14 @@ const CommentSection = ({ bookId, onReviewAdded }) => {
           </div> 
           </> 
         ) : ( 
-        <div>Please 
-          <a href="/login">log in</a> to write a review.</div> 
+        <div>Please  
+          <Link to="/login"> log in</Link> to write a review.</div> 
         )}
       </div>
 
       
 
-{loggedInUser ? (
+{loggedInUser && (
 
     hasPurchased ? (
         <div className="review-card mb-4"> 
@@ -450,11 +450,6 @@ const CommentSection = ({ bookId, onReviewAdded }) => {
             </div>
         </div>
     )
-) : (
-
-    <div className="alert alert-info d-flex align-items-center mb-4">
-        <div>Please <a href="/login">log in</a> to write a review.</div>
-    </div>
 )}
 
       {loading ? 
