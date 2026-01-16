@@ -14,9 +14,12 @@ const Reviews = () => {
   const [filter, setFilter] = useState('All Reviews');
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(10);
 
   useEffect(() => {
     loadReviews();
+    setCurrentPage(1)
   }, [filter]);
 
   const loadReviews = async () => {
@@ -48,14 +51,31 @@ const Reviews = () => {
 
   // --- ACTIONS ---
 
-  const handleApprove = async (id) => {
-    if(!window.confirm("Clear all reports for this review?")) return;
+  const handleApprove = async (reviewId, replyId = null) => {
+    const itemType = replyId ? "reply" : "review";
+    if(!window.confirm(`Clear all reports for this ${itemType}?`)) return;
+    
     try {
-        await approveReview(id);
-        setReviews(prev => prev.map(r => r._id === id ? { ...r, reports: [] } : r));
+        // Pass replyId if it exists (assuming backend handles it)
+        await approveReview(reviewId, replyId);
+        
+        setReviews(prev => prev.map(r => {
+            if (r._id === reviewId) {
+                // If approving a Reply
+                if (replyId) {
+                    return {
+                        ...r,
+                        replies: r.replies.map(rep => rep._id === replyId ? { ...rep, reports: [] } : rep)
+                    };
+                }
+                // If approving Main Review
+                return { ...r, reports: [] };
+            }
+            return r;
+        }));
         setOpenMenuIndex(null);
     } catch (error) {
-        alert("Failed to approve review");
+        alert(`Failed to approve ${itemType}`);
     }
   };
 
@@ -126,6 +146,16 @@ const Reviews = () => {
       if (filter === 'Hidden') return review.isHidden;
       return true; 
   });
+
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentReviews = filteredReviews.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(filteredReviews.length / itemsPerPage);
+
+  const handlePageChange = (pageNumber) => {
+      setCurrentPage(pageNumber);
+      window.scrollTo(0, 0); 
+  };
 
   if (loading) return <div className="p-5 text-center text-muted">Loading Reviews...</div>;
 
@@ -275,6 +305,55 @@ const Reviews = () => {
             </div>
         )}
       </div>
+      {filteredReviews.length > itemsPerPage && (
+        <div className="d-flex justify-content-between align-items-center p-4 mt-3 bg-white rounded-3 shadow-sm border">
+            <span className="text-muted small">
+                Showing <strong>{indexOfFirstItem + 1}</strong> to <strong>{Math.min(indexOfLastItem, filteredReviews.length)}</strong> of <strong>{filteredReviews.length}</strong> reviews
+            </span>
+            <nav>
+                <ul className="pagination mb-0 shadow-sm">
+                    <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
+                        <button 
+                            className="page-link border-0 text-dark fw-medium" 
+                            onClick={() => handlePageChange(currentPage - 1)}
+                            disabled={currentPage === 1}
+                        >
+                            <i className="bi bi-chevron-left small me-1"></i> Prev
+                        </button>
+                    </li>
+                    
+                    {[...Array(totalPages)].map((_, idx) => {
+                        const pageNum = idx + 1;
+                        if (pageNum === 1 || pageNum === totalPages || (pageNum >= currentPage - 1 && pageNum <= currentPage + 1)) {
+                            return (
+                                <li key={pageNum} className={`page-item ${currentPage === pageNum ? 'active' : ''}`}>
+                                    <button 
+                                        className={`page-link border-0 fw-bold ${currentPage === pageNum ? 'bg-dark border-dark' : 'text-muted'}`}
+                                        onClick={() => handlePageChange(pageNum)}
+                                    >
+                                        {pageNum}
+                                    </button>
+                                </li>
+                            );
+                        } else if (pageNum === currentPage - 2 || pageNum === currentPage + 2) {
+                            return <li key={pageNum} className="page-item disabled"><span className="page-link border-0 text-muted">...</span></li>;
+                        }
+                        return null;
+                    })}
+
+                    <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
+                        <button 
+                            className="page-link border-0 text-dark fw-medium" 
+                            onClick={() => handlePageChange(currentPage + 1)}
+                            disabled={currentPage === totalPages}
+                        >
+                            Next <i className="bi bi-chevron-right small ms-1"></i>
+                        </button>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+      )}
     </div>
   );
 };

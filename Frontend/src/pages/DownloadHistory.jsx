@@ -13,12 +13,19 @@ const DownloadHistory = () => {
   const [loading, setLoading] = useState(true);
   const [processingId, setProcessingId] = useState(null);
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
+
   // 1. Fetch Real Data
   useEffect(() => {
     if (currentUser) {
       loadHistory();
     }
   }, [currentUser]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [activeTab]);
 
   const loadHistory = async () => {
     try {
@@ -34,7 +41,7 @@ const DownloadHistory = () => {
     }
   };
 
-  // 2. Handle Re-Download (UPDATED: INSTANT DOWNLOAD)
+  // 2. Handle Re-Download 
   const handleRedownload = async (bookId, bookTitle, fileType) => {
     try {
       setProcessingId(bookId);
@@ -135,8 +142,18 @@ const DownloadHistory = () => {
 
     return filtered;
   };
-
   const filteredBooks = getFilteredBooks();
+
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentBooks = filteredBooks.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(filteredBooks.length / itemsPerPage);
+
+  // Scroll to top helper
+  const paginate = (pageNumber) => {
+    setCurrentPage(pageNumber);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   const stats = {
     total: downloads.length,
@@ -180,9 +197,10 @@ const DownloadHistory = () => {
       </div>
 
       {/* Main Content Area */}
-      {filteredBooks.length > 0 ? (
+      {currentBooks.length > 0 ? (
+        <>
         <div className="d-flex flex-column gap-3">
-          {filteredBooks.map((item) => {
+          {currentBooks.map((item) => {
             const book = item.book || {};
             const isPaid = item.downloadType === 'purchased';
             
@@ -227,7 +245,6 @@ const DownloadHistory = () => {
                       <button 
                         className="btn btn-primary px-4 py-2 fw-medium shadow-sm" 
                         style={{ backgroundColor: '#2563eb' }}
-                        // UPDATED: Pass book details to handleRedownload
                         onClick={() => handleRedownload(book._id, book.title, book.type)}
                         disabled={processingId === book._id}
                       >
@@ -247,6 +264,39 @@ const DownloadHistory = () => {
             );
           })}
         </div>
+      
+        
+
+
+        {filteredBooks.length > itemsPerPage && (
+            <nav className="mt-4 d-flex justify-content-center">
+              <ul className="pagination">
+                {/* Previous Button */}
+                <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
+                  <button className="page-link" onClick={() => paginate(currentPage - 1)} aria-label="Previous">
+                    <span aria-hidden="true">&laquo;</span>
+                  </button>
+                </li>
+
+                {/* Page Numbers */}
+                {[...Array(totalPages)].map((_, index) => (
+                  <li key={index + 1} className={`page-item ${currentPage === index + 1 ? 'active' : ''}`}>
+                    <button className="page-link" onClick={() => paginate(index + 1)}>
+                      {index + 1}
+                    </button>
+                  </li>
+                ))}
+
+                {/* Next Button */}
+                <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
+                  <button className="page-link" onClick={() => paginate(currentPage + 1)} aria-label="Next">
+                    <span aria-hidden="true">&raquo;</span>
+                  </button>
+                </li>
+              </ul>
+            </nav>
+          )}
+        </>
       ) : (
         <div className="text-center py-5 mt-5">
           <i className="bi bi-cloud-slash display-1 text-muted opacity-25"></i>

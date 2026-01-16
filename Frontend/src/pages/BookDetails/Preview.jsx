@@ -1,16 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useDispatch, useSelector } from 'react-redux';
-import { addToCart, removeFromCart } from '../../redux/features/cart/cartSlice'; 
 import { fetchBookById } from '../../services/book.service'; 
 import { fetchMyPurchases } from '../../services/purchase.service';
+import { useAuth } from "../../context/AuthContext";
 
 const BookPreview = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { currentUser } = useAuth();
 
-  const dispatch = useDispatch();
-  const cartItems = useSelector((state) => state.cart.cartItems);
   
   const [book, setBook] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -19,12 +17,6 @@ const BookPreview = () => {
   
   // --- ZOOM STATE ---
   const [zoomLevel, setZoomLevel] = useState(1); 
-
-  const isInCart = book ? cartItems.some((item) => {
-        const cartItemId = String(item.id || item._id);
-        const currentBookId = String(book.id || book._id);
-        return cartItemId === currentBookId;
-    }) : false;
 
   // ---  FETCH BOOK ---
   useEffect(() => {
@@ -54,6 +46,7 @@ const BookPreview = () => {
 
   useEffect(() => {
     const checkOwnership = async () => {
+      if (!currentUser) return;
       try {
         const response = await fetchMyPurchases();
         const hasBought = response.some(p => 
@@ -71,30 +64,6 @@ const BookPreview = () => {
     }
   }, [id]);
 
-  const handleCartAction = () => {
-    if (!currentUser) {
-      navigate('/login', { 
-        state: { message: "Please log in to add this book to your cart." } 
-      });
-      return;
-    }
-
-    if (!book) return;
-    const safeId = book.id || book._id;
-
-    if (isInCart) {
-        dispatch(removeFromCart(safeId));
-    } else {
-        dispatch(addToCart({
-            id: safeId, 
-            title: book.title,
-            author: book.author,
-            price: book.price,
-            image: book.image || book.coverImage, 
-            type: book.type
-        }));
-    }
-  };
   // --- HELPERS ---
   const getPreviewUrl = (originalUrl) => {
     if (!originalUrl) return '';
@@ -146,23 +115,12 @@ const BookPreview = () => {
             </span>
         </div>
 
-        {isFreeOrOwned ? (
+        {isFreeOrOwned && (
              <a href={downloadUrl} className="btn btn-success d-flex align-items-center gap-2 px-4">
                <i className="bi bi-download"></i> Download
              </a>
-        ) : (
-            <button 
-                className={`btn d-flex align-items-center gap-2 px-4 ${isInCart ? 'btn-success' : 'btn-primary'}`}
-                onClick={handleCartAction}
-            >
-               <i className={`bi ${isInCart ? 'bi-check-lg' : 'bi-cart'}`}></i> 
-               {isInCart ? "In Cart" : "Add to Cart"}
-            </button>
         )}
       </header>
-
-      
-      
 
       {/* --- MAIN CONTENT --- */}
       <main className="flex-grow-1 d-flex flex-column align-items-center pt-4 pb-5 overflow-auto">

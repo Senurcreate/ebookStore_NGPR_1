@@ -99,7 +99,7 @@ const Checkout = () => {
   // --- RENDER ---
   if (cartItems.length === 0) {
     return (
-      <div className="container py-5 text-center">
+      <div className="container py-5 mt-6 text-center">
         <div className="mb-4">
            <i className="bi bi-cart-x display-1 text-muted opacity-50"></i>
         </div>

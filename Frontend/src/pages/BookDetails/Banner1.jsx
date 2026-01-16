@@ -7,7 +7,7 @@ import { addToCart, removeFromCart } from "../../redux/features/cart/cartSlice";
 
 // Import Services & Auth
 import { fetchBookById } from "../../services/book.service";
-import { downloadBookFile } from "../../services/purchase.service";
+import { downloadBookFile, fetchMyPurchases } from "../../services/purchase.service";
 import { addToWishlist, removeByBookId, checkInWishlist } from "../../services/wishlist.service";
 import { formatBookData } from "../../utils/bookFormatter";
 import { useAuth } from "../../context/AuthContext";
@@ -134,135 +134,131 @@ const BookHeaderSection = () => {
 
     // --- MAIN DATA LOADING ---
     useEffect(() => {
-        const loadBookDetails = async () => {
-            try {
-                setLoading(true);
-                const response = await fetchBookById(id);
-                let canDownloadAPI = false;
 
-                if (response.success || response.book) {
-                    const rawBook = response.book || response.data;
-                    canDownloadAPI = rawBook.accessInfo?.canDownload || false;
-                    const previewLink = rawBook.previewUrl || rawBook.cloudinaryUrl;
 
-                    const formatted = {
-                        ...formatBookData(rawBook),
-                        description: rawBook.description,
-                        currency: "Rs",
-                        duration: rawBook.audioLength || "00:00",
-                        format: rawBook.type === 'ebook' ? 'PDF' : 'MP3',
-                        narrator: rawBook.narrators?.[0]?.name || "Unknown",
-                        audioUrl: rawBook.cloudinaryUrl,
-                        previewUrl: previewLink,
-                        canDownload: canDownloadAPI
-                    };
-                    setBook(formatted);
-                }
+    const loadBookDetails = async () => {
+        try {
+            setLoading(true);
+            const response = await fetchBookById(id);
+            let canDownloadAPI = false;
 
-                //  Verify Purchase History
-                if (currentUser) {
-                    try {
-                        const purchasesResponse = await fetchMyPurchases();
-                        const myBooks = purchasesResponse.data || purchasesResponse;
-                        
-                        // Check if we own this book
-                        const found = myBooks.some(p => checkMatch(p, id));
-                        
-                        if (found) {
-                            setIsPurchased(true);
-                        } else if (canDownloadAPI) {
-                            setIsPurchased(true);
-                        }
-                    } catch (err) {
-                        console.error("Error verifying purchase:", err);
-                    }
-                } else if (canDownloadAPI) {
-                    setIsPurchased(true);
-                }
+            if (response.success || response.book) {
+                const rawBook = response.book || response.data;
+                
+                canDownloadAPI = rawBook.accessInfo?.canDownload || false; 
+                
+                const previewLink = rawBook.previewUrl || rawBook.cloudinaryUrl;
 
-            } catch (err) {
-                console.error(err);
-                setError("Could not load book details.");
-            } finally {
-                setLoading(false);
+                const formatted = {
+                    ...formatBookData(rawBook),
+                    description: rawBook.description,
+                    currency: "Rs",
+                    duration: rawBook.audioLength || "00:00",
+                    format: rawBook.type === 'ebook' ? 'PDF' : 'MP3',
+                    narrator: rawBook.narrators?.[0]?.name || "Unknown",
+                    audioUrl: rawBook.cloudinaryUrl,
+                    previewUrl: previewLink,
+                    canDownload: canDownloadAPI 
+                };
+                setBook(formatted);
             }
-        };
+
+            if (currentUser) {
+                try {
+
+                    await fetchMyPurchases(); 
+                    
+                } catch (err) {
+                    console.error("Error verifying purchase:", err);
+                }
+            } 
+
+
+        } catch (err) {
+            console.error(err);
+            setError("Could not load book details.");
+        } finally {
+            setLoading(false);
+        }
+    };
 
         if (id) {
             loadBookDetails();
         }
     }, [id, currentUser]);
 
-    // --- HANDLERS ---
-    // --- HANDLER: Force Instant Download ---
     const handleDownload = async () => {
-    try {
-        setDownloading(true);
-        
-        // 1. Get the URL from your backend or use the book object directly
-        // If you don't have an API for this, you can likely use book.downloadUrl or book.fileInfo.downloadUrl
-        let fileUrl = "";
-        
-        // Option A: If you use the API (keep this if your backend handles permissions)
-        const result = await downloadBookFile(id);
-        if (result.success) {
-            fileUrl = result.data.downloadUrl;
-        } else {
-            throw new Error("Could not get download URL");
-        }
+        try {
+            setDownloading(true);
+            
+            let fileUrl = "";
 
-        // Option B: If you just want to use the link from the book object directly:
-        // fileUrl = book.downloadUrl || book.cloudinaryUrl;
+            const isFreeOrDownloadable = book.price === 0 || book.canDownload;
 
-        if (fileUrl) {
-            const fileName = `${book.title}.${isEbook ? 'pdf' : 'mp3'}`;
+            if (isFreeOrDownloadable && book.audioUrl) {
+                fileUrl = book.audioUrl;
+            } 
+            else if (currentUser) {
+                const result = await downloadBookFile(id);
+                if (result.success) {
+                    fileUrl = result.data.downloadUrl;
+                } else {
+                    throw new Error("Could not get download URL");
+                }
+            } else {
 
-            // --- ATTEMPT 1: Secure Blob Download (Best User Experience) ---
-            try {
-                const response = await fetch(fileUrl);
-                
-                // If CORS blocks this, response.ok will be false or it will throw an error immediately
-                if (!response.ok) throw new Error(`Fetch failed: ${response.status}`);
-                
-                const blob = await response.blob();
-                const url = window.URL.createObjectURL(blob);
-                
-                const link = document.createElement('a');
-                link.href = url;
-                link.setAttribute('download', fileName);
-                document.body.appendChild(link);
-                link.click();
-                
-                // Cleanup
-                link.parentNode.removeChild(link);
-                window.URL.revokeObjectURL(url);
-                
-            } catch (fetchError) {
-                // --- ATTEMPT 2: Fallback to Direct Link (The Fix) ---
-                console.warn("CORS block detected, switching to direct download...", fetchError);
-                
-                // This method bypasses the React/CORS restriction
-                const link = document.createElement('a');
-                link.href = fileUrl;
-                link.setAttribute('target', '_blank'); // Open in new tab just in case
-                link.setAttribute('download', fileName);
-                document.body.appendChild(link);
-                link.click();
-                link.parentNode.removeChild(link);
+                navigate('/login', { state: { message: "Please login to download this book." } });
+                return;
             }
+
+            if (fileUrl) {
+                const fileExtension = isEbook ? 'pdf' : 'mp3';
+                const fileName = `${book.title}.${fileExtension}`;
+                try {
+                    const response = await fetch(fileUrl);
+
+                    if (!response.ok) throw new Error(`Fetch failed: ${response.status}`);
+                    
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.setAttribute('download', fileName);
+                    document.body.appendChild(link);
+                    link.click();
+                    
+                    // Cleanup
+                    link.parentNode.removeChild(link);
+                    window.URL.revokeObjectURL(url);
+                    
+                } catch (fetchError) {
+                    console.warn("Switching to direct download...", fetchError);
+                    
+                    const link = document.createElement('a');
+                    link.href = fileUrl;
+                    link.setAttribute('target', '_blank');
+                    link.setAttribute('download', fileName);
+                    document.body.appendChild(link);
+                    link.click();
+                    link.parentNode.removeChild(link);
+                }
+            }
+        } catch (err) {
+            console.error("Download Error:", err);
+
+            if (err.response && err.response.status === 401 && book.price > 0) {
+                alert("You need to login to access this.");
+                navigate('/login');
+            } else {
+                alert("Download failed. Please try again.");
+            }
+        } finally {
+            setDownloading(false);
         }
-    } catch (err) {
-        console.error("Download Error:", err);
-        if (err.requiresLogin || err.status === 401) {
-            alert("You need to login to access this.");
-            navigate('/login');
-        } else {
-            alert("Download failed. Please try again.");
-        }
-    } finally {
-        setDownloading(false);
-    }
-};
+    };
+
+
     const handlePreview = () => {
         const url = `/preview/${id}`;
         window.open(url, '_blank', 'noopener,noreferrer');
@@ -296,6 +292,13 @@ const handleCartAction = () => {
             return;
         }
 
+        const bookId = book?._id || book?.id;
+
+        if (!bookId) {
+        console.error("Cannot toggle wishlist: Book ID is missing.", book);
+        return;
+        }
+
         if (wishlistLoading) return; 
         setWishlistLoading(true);
 
@@ -304,9 +307,11 @@ const handleCartAction = () => {
 
         try {
             if (previousState) {
-                await removeByBookId(id); 
+                await removeByBookId(bookId); 
+                alert("Removed from wishlist");
             } else {
-                await addToWishlist(id); 
+                await addToWishlist(bookId); 
+                alert("Added to wishlist");
             }
         } catch (err) {
             console.error("Wishlist action failed", err);
@@ -452,6 +457,18 @@ const handleCartAction = () => {
                                         <div className="mb-5">
                                             <h2 className="book-title-right">{book.title}</h2>
                                             <h4 className="book-author-right text-mb-3">{book.author}</h4>
+                                        </div>
+
+                                        <div className="mb-5">
+                                            <span className="rating-badge me-2">
+                                                <i className="bi bi-star-fill text-warning small"></i>
+                                                <span className="ms-1 fw-bold small">{book.rating}</span>
+                                                <span className="text-muted ms-1 small">Ratings</span>
+                                            </span>
+                                            <button className={`wishlist-btn ${isWishlisted ? 'wishlisted' : ''}`} onClick={toggleWishlist}>
+                                                <i className={`bi ${isWishlisted ? 'bi-heart-fill' : 'bi-heart'} wishlist-icon`}></i>
+                                                <span className="wishlist-text ms-1">{isWishlisted ? 'Added to Wishlist' : 'Add to Wishlist'}</span>
+                                            </button>
                                         </div>
                                         <div className="mb-5">
                                             <h5 className="mb-2 fw-bold book-description-heading ">Description</h5>
@@ -643,6 +660,17 @@ const handleCartAction = () => {
                                     <div className="mb-5">
                                         <h2 className="book-title-right">{book.title}</h2>
                                         <h4 className="book-author-right text-mb-3">{book.author}</h4>
+                                    </div>
+                                    <div className="mb-4">
+                                        <span className="rating-badge me-2">
+                                            <i className="bi bi-star-fill text-warning small"></i>
+                                            <span className="ms-1 fw-bold small">{book.rating}</span>
+                                            <span className="text-muted ms-1 small">Ratings</span>
+                                        </span>
+                                        <button className={`wishlist-btn ${isWishlisted ? 'wishlisted' : ''}`} onClick={toggleWishlist}>
+                                            <i className={`bi ${isWishlisted ? 'bi-heart-fill' : 'bi-heart'} wishlist-icon`}></i>
+                                            <span className="wishlist-text ms-1">{isWishlisted ? 'Added to Wishlist' : 'Add to Wishlist'}</span>
+                                        </button>
                                     </div>
                                     <div className="mb-4">
                                         <h5 className="mb-2 fw-bold book-description-heading">Description</h5>
