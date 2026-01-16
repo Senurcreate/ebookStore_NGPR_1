@@ -91,9 +91,7 @@ const WishlistPage = () => {
       
       if (wishlist.length === 1 && currentPage > 1) {
         setCurrentPage((prev) => prev - 1);
-      } else {
-        loadWishlist();
-      }
+      } 
     } catch (err) {
       alert("Failed to remove book.");
       setWishlist(originalList); 

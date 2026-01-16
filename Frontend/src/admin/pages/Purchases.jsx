@@ -298,9 +298,10 @@ const Purchases = () => {
                       
                       {openMenuIndex === i && (
                         <div className="position-absolute end-0 mt-2 bg-white rounded-3 shadow border py-2" style={{ zIndex: 1000, minWidth: '180px', right: '20px' }}>
+                          {/*
                           <button className="dropdown-item px-3 py-2 d-flex align-items-center">
                             <i className="bi bi-receipt me-2 text-muted"></i> View Receipt
-                          </button>
+                          </button>*/}
                           
                           {item.status !== 'cancelled' && (
                               <>

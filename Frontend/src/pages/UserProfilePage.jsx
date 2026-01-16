@@ -98,6 +98,20 @@ const UserProfilePage = () => {
     const file = e.target.files[0];
     if (!file) return;
 
+    const validTypes = ['image/jpeg', 'image/png', 'image/jpg'];
+    if (!validTypes.includes(file.type)) {
+        alert("Invalid file format. Please upload a PNG or JPEG image.");
+        e.target.value = ''; 
+        return;
+    }
+
+    const maxSize = 5 * 1024 * 1024; // 5MB in bytes
+    if (file.size > maxSize) {
+        alert("File size is too large. Please upload an image smaller than 5MB.");
+        e.target.value = ''; // Reset input
+        return;
+    }
+
     //  Immediate Preview
     const reader = new FileReader();
     reader.readAsDataURL(file);

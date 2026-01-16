@@ -5,6 +5,9 @@ import { auth } from '../../firebase/firebase.config';
 import { API_ENDPOINTS } from '../../config/config'; 
 import PP from "../../assets/PP.png"
 import "../../styles/main.scss"; 
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchPurchasedBooks } from '../../redux/features/purchases/purchaseSlice';
+import { Link } from 'react-router-dom';
 
 const DEFAULT_PROFILE_PIC = PP;
 
@@ -36,6 +39,8 @@ const StarRating = ({ rating, editable = false, onRatingChange, hoverRating = 0,
 // --- MAIN COMPONENT ---
 const CommentSection = ({ bookId, onReviewAdded }) => {
   const { currentUser } = useAuth();
+  const dispatch = useDispatch();
+  const { purchasedBookIds } = useSelector((state) => state.purchases);
   
   // --- STATE ---
   const [mongoUser, setMongoUser] = useState(null); 
@@ -45,8 +50,6 @@ const CommentSection = ({ bookId, onReviewAdded }) => {
   const [showAllReviews, setShowAllReviews] = useState(false);
   const [isPosting, setIsPosting] = useState(false);
   const [loading, setLoading] = useState(true);
-
-  // --- NEW STATE: Track locally hidden content (Preserved from Current Version) ---
   const [hiddenContentIds, setHiddenContentIds] = useState([]); 
 
   const [editingId, setEditingId] = useState(null);
@@ -73,6 +76,14 @@ const CommentSection = ({ bookId, onReviewAdded }) => {
       return { Authorization: `Bearer ${token}` };
     } catch (error) { return {}; }
   };
+
+  useEffect(() => {
+    if (currentUser) {
+        dispatch(fetchPurchasedBooks());
+    }
+  }, [currentUser, dispatch]);
+
+  const hasPurchased = purchasedBookIds.some(id => String(id) === String(bookId));
 
   // --- FETCH USER ---
   useEffect(() => {
@@ -126,7 +137,7 @@ const CommentSection = ({ bookId, onReviewAdded }) => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [flagPopup.show]);
 
-  // --- HANDLERS (RESTORED FROM OLD VERSION) ---
+  // --- HANDLERS  ---
 
   const handleStartEdit = (review) => { 
       setEditingId(review.id); 
@@ -174,7 +185,7 @@ const CommentSection = ({ bookId, onReviewAdded }) => {
     }
   };
 
-  // Restored handlePostReview
+  // handlePostReview
   const handlePostReview = async () => {
     if (!loggedInUser) return alert("Please log in to write a review");
     if (!newReview.comment.trim() || newReview.rating === 0) return alert("Please write a review and provide a rating");
@@ -203,7 +214,7 @@ const CommentSection = ({ bookId, onReviewAdded }) => {
     }
   };
 
-  // Restored handleVote logic (Crucial for Likes/Dislikes)
+  // handleVote logic (Crucial for Likes/Dislikes)
   const handleVote = async (reviewId, replyId, action) => {
     if (!loggedInUser) return alert("Please log in to vote");
 
@@ -272,17 +283,15 @@ const CommentSection = ({ bookId, onReviewAdded }) => {
     setFlagPopup({ show: true, reviewId, replyId, userName, type: type || (replyId ? 'reply' : 'review'), position: { top, left, arrowPosition } });
   };
 
-  // --- CONFIRM FLAG (KEPT FROM NEW VERSION WITH HIDE LOGIC) ---
+  // --- CONFIRM FLAG---
   const confirmFlag = async () => {
     const { reviewId, replyId } = flagPopup;
     try {
       const headers = await getAuthHeader();
       await axios.post(API_ENDPOINTS.REPORT_REVIEW(reviewId), { reason: 'inappropriate', replyId }, { headers });
-      
-      // 1. Close Popup
+
       setFlagPopup({ ...flagPopup, show: false });
       
-      // 2. Hide content locally immediately (Optimistic UI)
       const idToHide = replyId || reviewId;
       setHiddenContentIds(prev => [...prev, idToHide]);
 
@@ -292,7 +301,6 @@ const CommentSection = ({ bookId, onReviewAdded }) => {
 
   const cancelFlag = () => setFlagPopup({ ...flagPopup, show: false });
 
-  // Restored handleDelete
   const handleDelete = async (reviewId, replyId = null) => {
     if (!window.confirm("Are you sure?")) return;
     try {
@@ -312,7 +320,6 @@ const CommentSection = ({ bookId, onReviewAdded }) => {
     } catch (err) { alert("Failed to delete."); }
   };
 
-  // Restored handlePostReply
   const handlePostReply = async (reviewId) => {
     if (!loggedInUser) return alert("Please log in to reply");
     const replyText = replyInput[reviewId];
@@ -338,7 +345,7 @@ const CommentSection = ({ bookId, onReviewAdded }) => {
     }
   };
 
-  // Restored toggleReplies
+
   const toggleReplies = (reviewId) => {
     setReviews(reviews.map(review => review.id === reviewId ? { ...review, showReplies: !review.showReplies } : review));
   };
@@ -359,26 +366,110 @@ const CommentSection = ({ bookId, onReviewAdded }) => {
         .hidden-content-placeholder { background: #f8f9fa; border: 1px dashed #dee2e6; padding: 10px; border-radius: 8px; color: #6c757d; font-style: italic; font-size: 0.9rem; display: flex; align-items: center; justify-content: space-between; }
       `}</style>
 
-      {/* Flag Popup - Keep exactly as is */}
+      {/* Flag Popup */}
       {flagPopup.show && (
-        <div ref={popupRef} className="flag-popup" style={{ top: `${flagPopup.position.top}px`, left: `${flagPopup.position.left}px` }} onClick={(e) => e.stopPropagation()}>
-          <div className="popup-header"><i className="bi bi-flag-fill text-danger me-2"></i><span>Report {flagPopup.type}</span><button type="button" className="popup-close" onClick={cancelFlag}><i className="bi bi-x"></i></button></div>
-          <div className="popup-body"><p className="mb-2">Report this {flagPopup.type} by <strong>{flagPopup.userName}</strong>?</p><p className="text-muted small mb-0"><i className="bi bi-info-circle me-1"></i> Moderators will review this content.</p></div>
-          <div className="popup-footer"><button type="button" className="btn btn-outline-secondary" onClick={cancelFlag}>Cancel</button><button type="button" className="btn  btn-danger" onClick={confirmFlag}><i className="bi bi-flag-fill me-1"></i> Report</button></div>
+        <div ref={popupRef} className="flag-popup" 
+          style={{ top: `${flagPopup.position.top}px`, 
+          left: `${flagPopup.position.left}px` }} 
+          onClick={(e) => e.stopPropagation()}>
+          <div className="popup-header">
+            <i className="bi bi-flag-fill text-danger me-2"></i>
+            <span>Report {flagPopup.type}</span>
+            <button type="button" className="popup-close" onClick={cancelFlag}>
+              <i className="bi bi-x"></i>
+              </button>
+          </div>
+          <div className="popup-body">
+            <p className="mb-2">Report this {flagPopup.type} by 
+              <strong>{flagPopup.userName}</strong>?</p>
+              <p className="text-muted small mb-0"><i className="bi bi-info-circle me-1"></i> Moderators will review this content.</p>
+            </div>
+          <div className="popup-footer">
+            <button type="button" className="btn btn-outline-secondary" 
+            onClick={cancelFlag}>Cancel</button>
+            <button type="button" className="btn  btn-danger" onClick={confirmFlag}>
+              <i className="bi bi-flag-fill me-1"></i> Report</button>
+            </div>
         </div>
       )}
 
       <h5 className="mb-4">Reader Reviews ({reviews.length})</h5>
 
-      {/* User Info Alert - Keep as is */}
+      {/* User Info Alert*/}
       <div className={`alert ${loggedInUser ? 'alert-info' : 'alert-warning'} d-flex align-items-center mb-4`}>
-        {loggedInUser ? ( <> <img src={loggedInUser.photo} alt={loggedInUser.name} className="user-avatar" onError={(e) => e.target.src = DEFAULT_PROFILE_PIC} /> <div> <strong>Logged in as:</strong> {loggedInUser.name} {loggedInUser.isAdmin && <span className="badge bg-danger ms-2">Admin</span>} </div> </> ) : ( <div>Please <a href="/login">log in</a> to write a review.</div> )}
+        {loggedInUser ? 
+        ( 
+        <> 
+        <img src={loggedInUser.photo} 
+        alt={loggedInUser.name} 
+        className="user-avatar" 
+        onError={(e) => e.target.src = DEFAULT_PROFILE_PIC} /> 
+        <div> 
+          <strong>Logged in as:</strong> 
+          {loggedInUser.name} 
+          {loggedInUser.isAdmin && 
+          <span className="badge bg-danger ms-2">Admin</span>} 
+          </div> 
+          </> 
+        ) : ( 
+        <div>Please 
+          <a href="/login">log in</a> to write a review.</div> 
+        )}
       </div>
 
-      {/* Write Review - Keep as is */}
-      {loggedInUser && ( <div className="review-card mb-4"> <h5>Write a Review</h5> <div className="mb-3"> <label className="form-label">Your Rating</label> <StarRating rating={newReview.rating} editable={true} hoverRating={newReview.hoverRating} onRatingChange={(r) => setNewReview({...newReview, rating: r})} onHoverChange={(r) => setNewReview({...newReview, hoverRating: r})} showNumber={false} /> </div> <div className="mb-3"> <label htmlFor="comment" className="form-label"> Share your thoughts about this book... </label> <div className="d-flex gap-2"> <img src={loggedInUser.photo} alt="Me" className="user-avatar" style={{marginTop:'5px'}} onError={(e) => e.target.src = DEFAULT_PROFILE_PIC} /> <textarea className="form-control" id="comment" rows="3" placeholder="Write your review here..." value={newReview.comment} onChange={(e) => setNewReview({...newReview, comment: e.target.value})} ></textarea> </div> </div> <button className="btn btn-primary post-review-btn" onClick={handlePostReview} disabled={isPosting}> {isPosting ? ( <><span className="spinner-border spinner-border-sm me-2"></span>Posting...</> ) : ( <><i className="bi bi-send me-2"></i> Post Review</> )} </button> </div> )}
+      
 
-      {loading ? ( <div className="text-center p-5"><div className="spinner-border text-primary"></div></div> ) : reviews.length === 0 ? ( <div className="text-center p-5 border rounded bg-light"> <i className="bi bi-chat-square-quote display-4 text-muted mb-3"></i> <p className="lead">No reviews yet.</p> </div> ) : (
+{loggedInUser ? (
+
+    hasPurchased ? (
+        <div className="review-card mb-4"> 
+            <h5>Write a Review</h5> 
+            <div className="mb-3"> 
+                <label className="form-label">Your Rating</label> 
+                <StarRating rating={newReview.rating} editable={true} hoverRating={newReview.hoverRating} onRatingChange={(r) => setNewReview({...newReview, rating: r})} onHoverChange={(r) => setNewReview({...newReview, hoverRating: r})} showNumber={false} /> 
+            </div> 
+            <div className="mb-3"> 
+                <label htmlFor="comment" className="form-label"> Share your thoughts about this book... </label> 
+                <div className="d-flex gap-2"> 
+                    <img src={loggedInUser.photo} alt="Me" className="user-avatar" style={{marginTop:'5px'}} onError={(e) => e.target.src = DEFAULT_PROFILE_PIC} /> 
+                    <textarea className="form-control" id="comment" rows="3" placeholder="Write your review here..." value={newReview.comment} onChange={(e) => setNewReview({...newReview, comment: e.target.value})} ></textarea> 
+                </div> 
+            </div> 
+            <button className="btn btn-primary post-review-btn" onClick={handlePostReview} disabled={isPosting}> 
+                {isPosting ? ( <><span className="spinner-border spinner-border-sm me-2"></span>Posting...</> ) : ( <><i className="bi bi-send me-2"></i> Post Review</> )} 
+            </button> 
+        </div>
+    ) : (
+
+        <div className="alert alert-warning d-flex align-items-center mb-4">
+            <i className="bi bi-cart-x-fill fs-4 me-3"></i>
+            <div>
+                <strong>Verified Purchase Only</strong>
+                <br />
+                You must own this book to leave a review.
+            </div>
+        </div>
+    )
+) : (
+
+    <div className="alert alert-info d-flex align-items-center mb-4">
+        <div>Please <a href="/login">log in</a> to write a review.</div>
+    </div>
+)}
+
+      {loading ? 
+      ( 
+      <div className="text-center p-5">
+        <div className="spinner-border text-primary">
+          </div>
+          </div> 
+          ) : reviews.length === 0 ? 
+          ( 
+          <div className="text-center p-5 border rounded bg-light"> 
+          <i className="bi bi-chat-square-quote display-4 text-muted mb-3"></i> <p className="lead">No reviews yet.</p> 
+          
+        </div> 
+        ) : (
         /* Reviews List */
         visibleReviews.map((review) => {
           const userHasFlaggedReview = hasUserFlagged(review.flaggedBy);
@@ -403,10 +494,15 @@ const CommentSection = ({ bookId, onReviewAdded }) => {
               {/* Review Header */}
               <div className="review-header">
                 <div className="d-flex align-items-center">
-                  <img src={`${review.photo || DEFAULT_PROFILE_PIC}?t=${new Date(review.time).getTime()}`} alt={review.name} className="user-avatar" onError={(e) => e.target.src = DEFAULT_PROFILE_PIC} />
-                  <span className="user-badge"> {review.name} {loggedInUser && review.userId === loggedInUser.id && <span className="badge bg-primary ms-2">You</span>} </span>
-                  <span className="time-badge ms-2">• {review.time}</span>
-                  {review.flagged && <span className="badge bg-danger ms-2"><i className="bi bi-flag-fill me-1"></i> Reported</span>}
+                  <img 
+                  src={`${review.photo || DEFAULT_PROFILE_PIC}?t=${new Date(review.time).getTime()}`} alt={review.name} className="user-avatar" 
+                  onError={(e) => e.target.src = DEFAULT_PROFILE_PIC} />
+                  <span className="user-badge"> {review.name} {loggedInUser && review.userId === loggedInUser.id && 
+                    <span className="badge bg-primary ms-2">You</span>} </span>
+                    <span className="time-badge ms-2">• {review.time}</span>
+                  {review.flagged && 
+                  <span className="badge bg-danger ms-2">
+                    <i className="bi bi-flag-fill me-1"></i> Reported</span>}
                 </div>
                 
                 <div className="review-actions">
@@ -418,19 +514,35 @@ const CommentSection = ({ bookId, onReviewAdded }) => {
                 </div>
               </div>
 
-              {/* Editing vs Viewing Logic - Keep as is */}
+              {/* Editing vs Viewing Logic*/}
               {isEditing ? (
                 <div className="edit-form mt-2 mb-3 p-3 bg-light rounded">
-                   {/* ... Edit form inputs ... */}
-                   <div className="mb-2"><label className="form-label small text-muted">Update Rating</label><StarRating rating={editForm.rating} editable={true} hoverRating={editForm.hoverRating} onRatingChange={(r) => setEditForm(prev => ({...prev, rating: r}))} onHoverChange={(r) => setEditForm(prev => ({...prev, hoverRating: r}))} showNumber={false} /></div>
-                   <div className="mb-3"><label className="form-label small text-muted">Update Comment</label><textarea className="form-control" rows="3" value={editForm.comment} onChange={(e) => setEditForm(prev => ({...prev, comment: e.target.value}))} ></textarea></div>
-                   <div className="d-flex gap-2"><button className="btn btn-sm btn-success" onClick={() => handleSaveEdit(review.id)} disabled={isSaving}>{isSaving ? 'Saving...' : 'Save Changes'}</button><button className="btn btn-outline-secondary" onClick={handleCancelEdit} disabled={isSaving}>Cancel</button></div>
+                   <div className="mb-2">
+                    <label className="form-label small text-muted">Update Rating</label>
+                    <StarRating 
+                    rating={editForm.rating} 
+                    editable={true} 
+                    hoverRating={editForm.hoverRating} 
+                    onRatingChange={(r) => setEditForm(prev => ({...prev, rating: r}))} 
+                    onHoverChange={(r) => setEditForm(prev => ({...prev, hoverRating: r}))} 
+                    showNumber={false} />
+                  </div>
+                   <div className="mb-3">
+                    <label className="form-label small text-muted">Update Comment</label>
+                    <textarea className="form-control" rows="3" value={editForm.comment} onChange={(e) => setEditForm(prev => ({...prev, comment: e.target.value}))} >
+                    </textarea>
+                  </div>
+                   <div className="d-flex gap-2">
+                    <button className="btn btn-sm btn-success" onClick={() => handleSaveEdit(review.id)} disabled={isSaving}>{isSaving ? 'Saving...' : 'Save Changes'}
+                    </button>
+                    <button className="btn btn-outline-secondary" onClick={handleCancelEdit} disabled={isSaving}>Cancel</button>
+                  </div>
                 </div>
               ) : (
                 <> <div className="mb-2"><StarRating rating={review.rating} showNumber={true} /></div> <p className="mb-3 comment-text">{review.comment}</p> </>
               )}
 
-              {/* Action Buttons - Keep as is */}
+              {/* Action Buttons */}
               {!isEditing && (
                 <div className="action-buttons">
                   <button className={`action-btn like-btn ${review.userLiked ? 'active' : ''}`} onClick={() => handleLike(review.id)}> <i className={`bi ${review.userLiked ? 'bi-hand-thumbs-up-fill' : 'bi-hand-thumbs-up'}`}></i> <span>{review.likes}</span> </button>
@@ -441,7 +553,7 @@ const CommentSection = ({ bookId, onReviewAdded }) => {
                 </div>
               )}
 
-              {/* Reply Input - Keep as is */}
+              {/* Reply Input */}
               {!isEditing && replyInput[review.id] !== undefined && (
                 <div className="reply-input-container"> <div className="d-flex gap-2 align-items-center"> <img src={loggedInUser?.photo || DEFAULT_PROFILE_PIC} className="user-avatar small" alt="Me" onError={(e) => e.target.src = DEFAULT_PROFILE_PIC} /> <div className="input-group"> <input type="text" className="form-control" placeholder={`Reply as ${loggedInUser.name}...`} value={replyInput[review.id]} onChange={(e) => setReplyInput({...replyInput, [review.id]: e.target.value})} onKeyPress={(e) => e.key === 'Enter' && handlePostReply(review.id)} /> <button className="btn btn-outline-primary" onClick={() => handlePostReply(review.id)}><i className="bi bi-send"></i></button> </div> </div> </div>
               )}

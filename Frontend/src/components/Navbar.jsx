@@ -108,11 +108,18 @@ function Navbar() {
     }
   };
 
+  const scrollToTop = () => {
+  window.scrollTo({
+    top: 0,
+    behavior: 'smooth' 
+  });
+};
+
   return (
     <>
       <nav className="navbar navbar-expand-lg fixed-top shadow-sm custom-navbar ">
         <div className="container-fluid px-4">
-          <Link className="navbar-brand d-flex align-items-center" to="/">
+          <Link className="navbar-brand d-flex align-items-center" onClick={scrollToTop} to="/">
             <img src={logo} alt="Logo" className="navbar-logo" />
           </Link>
 
@@ -131,16 +138,16 @@ function Navbar() {
           <div className="collapse navbar-collapse" id="navbarNav">
             <ul className="navbar-nav ms-4 me-auto mb-2 mb-lg-0">
               <li className="nav-item">
-                <Link className="nav-link fw-medium" to="/">Home</Link>
+                <Link className="nav-link fw-medium" onClick={scrollToTop} to="/">Home</Link>
               </li>
               <li className="nav-item font-family-sans-serif">
-                <Link className="nav-link fw-medium" to="/e-books">E-books</Link>
+                <Link className="nav-link fw-medium" onClick={scrollToTop} to="/e-books">E-books</Link>
               </li>
               <li className="nav-item">
-                <Link className="nav-link fw-medium" to="/audiobooks">Audiobooks</Link>
+                <Link className="nav-link fw-medium" onClick={scrollToTop} to="/audiobooks">Audiobooks</Link>
               </li>
               <li className="nav-item">
-                <Link className="nav-link fw-medium" to="/help">Help</Link>
+                <Link className="nav-link fw-medium" onClick={scrollToTop} to="/help">Help</Link>
               </li>
             </ul>
 
@@ -181,6 +188,24 @@ function Navbar() {
                   </Link>
 
                   <div className="position-relative">
+                    {currentUser.photoURL ? (
+                        <img 
+                            ref={profileIconRef}
+                            src={currentUser.photoURL}
+                            alt="Profile"
+                            className="rounded-circle border"
+                            style={{ 
+                                width: '38px', 
+                                height: '38px', 
+                                objectFit: 'cover',
+                                cursor: 'pointer',
+                                transition: '0.2s'
+                            }}
+                            onMouseEnter={handleProfileMouseEnter}
+                            onMouseLeave={handleProfileMouseLeave}
+                            onClick={() => setShowProfileMenu(!showProfileMenu)}
+                        />
+                    ) : (
                     <i
                       ref={profileIconRef}
                       className="bi bi-person custom-person fs-4"
@@ -189,6 +214,8 @@ function Navbar() {
                       onClick={() => setShowProfileMenu(!showProfileMenu)}
                       style={{ cursor: "pointer" }}
                     ></i>
+
+                    )}
 
                     {showProfileMenu && (
                       <div
