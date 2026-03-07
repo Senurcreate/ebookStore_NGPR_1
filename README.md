@@ -53,10 +53,11 @@ The goal is to implement an eBook marketplace where users can explore titles, pr
 ## <a id="features"></a> ✨ Features
 
 - User registration and login (authentication system)  
-- Browse and search eBooks  
+- Browse and search eBooks & audiobooks
 - View book details and cover images  
 - Add books to a shopping cart  
-- Freemium and premium eBook options   
+- Freemium and premium eBook options
+- Simulated Secure Payment Flow 
 
 ---
 
