@@ -85,35 +85,76 @@ While the core functionality is complete, the following features are planned or 
 
 ## <a id="getting-started"></a>🚀 Getting Started
 
-1. **Clone the repository**  
-
+### 1. Clone the repository
 ```bash
 git clone https://github.com/Senurcreate/ebookStore_NGPR_1.git
 ```
 
-2. **Go into the frontend and install dependencies**
+### 2. Set up Environment Variables
+You will need to create two `.env` files (one in the frontend and one in the backend) to run this project locally.
 
+**Frontend Environment Variables**
+Create a `.env` file in the `/frontend` directory and add the following keys. Replace the placeholder values with your own Firebase and EmailJS credentials:
+
+```env
+VITE_API_KEY="your_firebase_api_key"
+VITE_AUTH_DOMAIN="your_project_id.firebaseapp.com"
+VITE_PROJECT_ID="your_project_id"
+VITE_STORAGE_BUCKET="your_project_id.firebasestorage.app"
+VITE_MESSAGING_SENDER_ID="your_sender_id"
+VITE_APP_ID="your_app_id"
+VITE_MEASUREMENT_ID="your_measurement_id"
+
+VITE_API_URL="http://localhost:3000/api"
+
+VITE_EMAILJS_SERVICE_ID="your_emailjs_service_id"
+VITE_EMAILJS_TEMPLATE_ID="your_emailjs_template_id"
+VITE_EMAILJS_PUBLIC_KEY="your_emailjs_public_key"
+```
+<br>
+
+**Backend Environment Variables**
+Create a `.env` file in the `/backend` directory and add the following keys. Make sure to input your actual MongoDB URI and Firebase Admin SDK credentials:
+
+```env
+# Database
+DB_URL="mongodb+srv://<username>:<password>@cluster0.mongodb.net/?appName=Cluster0"
+
+# Firebase Admin Configuration
+FIREBASE_TYPE="service_account"
+FIREBASE_PROJECT_ID="your_project_id"
+FIREBASE_PRIVATE_KEY_ID="your_private_key_id"
+FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\nYOUR_PRIVATE_KEY\n-----END PRIVATE KEY-----\n"
+FIREBASE_CLIENT_EMAIL="firebase-adminsdk-fbsvc@your_project_id.iam.gserviceaccount.com"
+FIREBASE_CLIENT_ID="your_client_id"
+FIREBASE_AUTH_URI="https://accounts.google.com/o/oauth2/auth"
+FIREBASE_TOKEN_URI="https://oauth2.googleapis.com/token"
+FIREBASE_AUTH_PROVIDER_CERT_URL="https://www.googleapis.com/oauth2/v1/certs"
+FIREBASE_CLIENT_CERT_URL="https://www.googleapis.com/robot/v1/metadata/x509/your_client_email"
+FIREBASE_UNIVERSE_DOMAIN="googleapis.com"
+
+# Download Settings
+PREMIUM_MAX_DOWNLOADS=3
+DOWNLOAD_WINDOW_HOURS=24
+FREE_MAX_DOWNLOADS=1
+
+# Preview Settings
+PREVIEW_PAGES=20
+```
+
+### 3. Install Dependencies and Run Servers
+
+**Frontend**
 ```bash
 cd frontend
 npm ci
-```
-
-3. **Go into the backend and install dependencies**
-   
-```bash
-cd backend
-npm ci
-```
-4. **Start the development servers**
-
-Frontend
-```bash
-cd frontend
 npm run dev
 ```
-Backend
+
+**Backend**
 ```bash
 cd backend
+npm ci
 npm run dev
 ```
    
@@ -123,8 +164,7 @@ npm run dev
 
 ```bash
 /frontend    → React UI (Bootstrap + SCSS)
-/backend     → Node.js + Express API  
-/database    → MongoDB collections  
+/backend     → Node.js + Express API and Mongoose models
 ```
 
 ---
